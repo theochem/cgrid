@@ -22,7 +22,7 @@ project(QCGrids CXX)
 
 string(TOUPPER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE)
 IF (CMAKE_BUILD_TYPE STREQUAL "DEBUG")
-    SET (CMAKE_VERBOSE_MAKEFILE "ON")
+    #SET (CMAKE_VERBOSE_MAKEFILE "ON")
     IF (CMAKE_COMPILER_IS_GNUCXX)
         # When coding (debug mode), we want to know when there might be trouble ...
         SET (CMAKE_CXX_FLAGS "-g -O0 -Wall -Wconversion -Wextra -Werror -pedantic -coverage")

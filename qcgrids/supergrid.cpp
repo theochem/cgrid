@@ -60,6 +60,7 @@ const cl::CellMap* Supergrid::cell_map() const {
   return cell_map_.get();
 }
 
+
 void Supergrid::emplace_back(const double* cart, const double weight) {
   grid_array_.emplace_back(cart, weight, grid_array_.size());
 }
@@ -101,7 +102,7 @@ Subgrid* Supergrid::create_subgrid(const double* center, const double cutoff) co
       for (size_t ipoint = it->second[0]; ipoint < it->second[1]; ++ipoint) {
         double cart[3];
         std::copy(grid_array_[ipoint].cart_, grid_array_[ipoint].cart_ + 3, cart);
-        subcell_->iadd_vec(cart, bit.coeffs());
+        cell_->iadd_vec(cart, bit.coeffs());
         double d = vec3::distance(center, cart);
         if (d < cutoff)
           subgrid->emplace_back(cart, d, grid_array_[ipoint].weight_, ipoint);
