@@ -37,7 +37,7 @@ namespace qcg = qcgrids;
 namespace vec3 = celllists::vec3;
 
 
-TEST(SuperGridTest, example1) {
+TEST(SupergridTest, example1) {
   size_t ncell_total = 0;
   size_t npoint_inside = 0;
   for (int irep = 0; irep < NREP; ++irep) {
@@ -152,7 +152,7 @@ TEST(SuperGridTest, example1) {
 }
 
 
-TEST(SuperGridTest, example2) {
+TEST(SupergridTest, example2) {
   size_t ncell_total = 0;
   size_t npoint_inside = 0;
   for (int irep = 0; irep < NREP; ++irep) {

@@ -31,6 +31,7 @@ find_library(CELLLISTS_LIBRARY celllists
 # Define test source files
 set(TEST_SOURCE_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/test_supergrid.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/test_subgrid.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/common.cpp
 )
 
