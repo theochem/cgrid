@@ -1,0 +1,8 @@
+*.o
+*.so*
+build
+tmp
+debug
+install
+python-qcgrids/qcgrids.cpp
+python-qcgrids/build

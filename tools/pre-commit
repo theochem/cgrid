@@ -1,0 +1,18 @@
+#!/bin/bash
+
+red="\033[1;31m"
+color_end="\033[0m"
+
+# Check unwanted trailing whitespace or space/tab indents;
+if [[ `git diff --cached --check` ]]; then
+    echo -e "${red}Commit failed: trailing whitespace, trailing empty lines, dos line endings${color_end}"
+    git diff --cached --check
+    exit 1
+fi
+
+# Check for untracked files (not in .gitignore)
+if [[ `git status -u qcgrids COPYING HEADER python-qcgrids tools *.* -s | grep "^??"` ]]; then
+    echo -e "${red}Commit failed: untracked files (not in .gitignore).${color_end}"
+    git status -u qcgrids COPYING HEADER python-qcgrids tools -s | grep "^??"
+    exit 1
+fi
