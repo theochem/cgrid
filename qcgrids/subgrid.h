@@ -33,7 +33,7 @@ namespace qcgrids {
 class SubgridPoint {
  public:
   SubgridPoint(const double* cart, const double distance, const double weight,
-      const size_t index);
+      const int index);
   SubgridPoint() : cart_{0.0, 0.0, 0.0}, distance_(0.0), weight_(0), index_(0) {}
 
   bool operator<(const SubgridPoint& other) const { return distance_ < other.distance_; }
@@ -41,7 +41,7 @@ class SubgridPoint {
   double cart_[3];
   double distance_;
   double weight_;
-  size_t index_;
+  int index_;
 };
 
 
@@ -49,8 +49,8 @@ class Subgrid {
  public:
   explicit Subgrid(const double* center);
 
-  std::vector<SubgridPoint>& grid_array() { return grid_array_; }
-  const double* center() { return center_; }
+  const std::vector<SubgridPoint>& grid_array() const { return grid_array_; }
+  const double* center() const { return center_; }
 
   void iadd_super(double* super_array, const double* sub_array);
   void take_sub(const double* super_array, double* sub_array);
@@ -58,7 +58,7 @@ class Subgrid {
       const size_t nfactor);
 
   void emplace_back(const double* cart, const double distance, const double weight,
-      const size_t index);
+      const int index);
   void sort();
 
  private:

@@ -40,13 +40,13 @@ namespace qcgrids {
 
 class SupergridPoint {
  public:
-  SupergridPoint(const double* cart, const double weight, const size_t index);
+  SupergridPoint(const double* cart, const double weight, const int index);
   SupergridPoint() : cart_{0.0, 0.0, 0.0}, icell_{0, 0, 0}, weight_(0.0), index_(0) {}
 
   double cart_[3];
   int icell_[3];
   double weight_;
-  size_t index_;
+  int index_;
 };
 
 

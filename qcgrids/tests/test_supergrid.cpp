@@ -129,7 +129,7 @@ TEST(SupergridTest, example1) {
 
     // Go over all the points in the supergrid and check that each point within the cutoff
     // is included in the subgrid.
-    size_t isuper = 0;
+    int isuper = 0;
     for (const qcg::SupergridPoint point0 : supergrid.grid_array()) {
       const double d(vec3::distance(center, point0.cart_));
       if (d <= cutoff) {

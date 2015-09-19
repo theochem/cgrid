@@ -39,7 +39,7 @@ namespace qcgrids {
 
 
 SupergridPoint::SupergridPoint(const double* cart, const double weight,
-    const size_t index) : icell_{0, 0, 0}, weight_(weight), index_(index) {
+    const int index) : icell_{0, 0, 0}, weight_(weight), index_(index) {
   std::copy(cart, cart + 3, cart_);
 }
 
@@ -105,7 +105,7 @@ Subgrid* Supergrid::create_subgrid(const double* center, const double cutoff) co
         cell_->iadd_vec(cart, bit.coeffs());
         double d = vec3::distance(center, cart);
         if (d < cutoff)
-          subgrid->emplace_back(cart, d, grid_array_[ipoint].weight_, ipoint);
+          subgrid->emplace_back(cart, d, grid_array_[ipoint].weight_, static_cast<int>(ipoint));
       }
     }
   }

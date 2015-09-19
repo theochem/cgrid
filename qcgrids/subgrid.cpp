@@ -28,7 +28,7 @@ namespace qcgrids {
 
 
 SubgridPoint::SubgridPoint(const double* cart, const double distance, const double weight,
-    const size_t index) : distance_(distance), weight_(weight), index_(index) {
+    const int index) : distance_(distance), weight_(weight), index_(index) {
   std::copy(cart, cart + 3, cart_);
 }
 
@@ -73,7 +73,7 @@ double Subgrid::integrate(const double*const* factors, const size_t* strides,
 
 
 void Subgrid::emplace_back(const double* cart, const double distance, const double weight,
-    const size_t index) {
+    const int index) {
   grid_array_.emplace_back(cart, distance, weight, index);
 }
 
