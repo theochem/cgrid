@@ -18,54 +18,58 @@
 #--
 
 # Make use of the GTest CMake module
-find_package(GTest REQUIRED)
+find_package(GTest)
 
-# Make sure the header files are found
-include_directories(${GTEST_INCLUDE_DIRS})
+if (GTest_FOUND)
 
-# Find the celllists library. Let's be nice with manually compiled stuff in
-# LD_LIBRARY_PATH...
-find_library(CELLLISTS_LIBRARY celllists
-             HINTS ENV LD_LIBRARY_PATH)
+    # Make sure the header files are found
+    include_directories(${GTEST_INCLUDE_DIRS})
 
-# Define test source files
-set(TEST_SOURCE_FILES
-  ${CMAKE_CURRENT_SOURCE_DIR}/test_supergrid.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/test_subgrid.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/common.cpp
-)
+    # Find the celllists library. Let's be nice with manually compiled stuff in
+    # LD_LIBRARY_PATH...
+    find_library(CELLLISTS_LIBRARY celllists
+                 HINTS ENV LD_LIBRARY_PATH)
 
-# The testing executable
-add_executable(test_qcgrids EXCLUDE_FROM_ALL ${TEST_SOURCE_FILES})
-set_property(TARGET test_qcgrids PROPERTY CXX_STANDARD 11)
+    # Define test source files
+    set(TEST_SOURCE_FILES
+      ${CMAKE_CURRENT_SOURCE_DIR}/test_supergrid.cpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/test_subgrid.cpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/common.cpp
+    )
 
-# How the testing executable has to be linked...
-target_link_libraries(test_qcgrids qcgrids ${CELLLISTS_LIBRARY} ${GTEST_BOTH_LIBRARIES} gcov pthread)
+    # The testing executable
+    add_executable(test_qcgrids EXCLUDE_FROM_ALL ${TEST_SOURCE_FILES})
+    set_property(TARGET test_qcgrids PROPERTY CXX_STANDARD 11)
 
-# Use our own test target because ctest hides relevant output.
-IF(QCGRIDS_DO_COVERAGE)
-    add_custom_target(clean_coverage
-                      COMMAND ${PROJECT_SOURCE_DIR}/tools/coverage_clean.sh
-                      WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-                      COMMENT "Removing old coverage statistics")
+    # How the testing executable has to be linked...
+    target_link_libraries(test_qcgrids qcgrids ${CELLLISTS_LIBRARY} ${GTEST_BOTH_LIBRARIES} gcov pthread)
 
-    add_custom_target(check
-                      COMMAND test_qcgrids
-                      DEPENDS test_qcgrids clean_coverage
-                      COMMENT "Running tests")
+    # Use our own test target because ctest hides relevant output.
+    if(QCGRIDS_DO_COVERAGE)
+        add_custom_target(clean_coverage
+                          COMMAND ${PROJECT_SOURCE_DIR}/tools/coverage_clean.sh
+                          WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+                          COMMENT "Removing old coverage statistics")
 
-    add_custom_target(coverage
-                      COMMAND ${PROJECT_SOURCE_DIR}/tools/coverage_analyze.py
-                      DEPENDS check
-                      WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-                      COMMENT "Coverage analysis")
+        add_custom_target(check
+                          COMMAND test_qcgrids
+                          DEPENDS test_qcgrids clean_coverage
+                          COMMENT "Running tests")
 
-ELSE()
-    add_custom_target(check
-                      COMMAND test_qcgrids
-                      DEPENDS test_qcgrids
-                      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-                      COMMENT "Running tests")
+        add_custom_target(coverage
+                          COMMAND ${PROJECT_SOURCE_DIR}/tools/coverage_analyze.py
+                          DEPENDS check
+                          WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+                          COMMENT "Coverage analysis")
+
+    else()
+        add_custom_target(check
+                          COMMAND test_qcgrids
+                          DEPENDS test_qcgrids
+                          WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+                          COMMENT "Running tests")
 
 
-ENDIF()
+    endif()
+
+endif()
