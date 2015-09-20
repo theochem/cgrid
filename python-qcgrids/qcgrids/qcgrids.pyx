@@ -29,8 +29,6 @@ cimport subgrid
 
 cimport celllists.celllists as celllists
 
-from horton.grid.cext import dot_multi
-
 from cpython.ref cimport PyTypeObject
 from libc.string cimport memcpy
 from cpython cimport Py_INCREF
@@ -53,7 +51,7 @@ def check_array_arg(name, arg, expected_shape):
                              'expecting %i') % (i, name, arg.shape[i], n))
 
 
-cdef class Supergrid:
+cdef class Supergrid(object):
     def __cinit__(self, celllists.Cell cell, double spacing=1):
         self._this = new supergrid.Supergrid(cell._this[0], spacing)
 
@@ -70,9 +68,9 @@ cdef class Supergrid:
 
     property cell:
         def __get__(self):
-            cdef celllists.Cell result = celllists.Cell.__new__(celllists.Cell, initvoid=True)
-            result._this = self._this.cell()
-            return result
+            cdef np.ndarray[double, ndim=2] vecs = np.zeros((3, 3), float)
+            memcpy(&vecs[0, 0], self._this.cell().vecs(), sizeof(double)*9);
+            return celllists.Cell(vecs)
 
     property grid_array:
         def __get__(self):
@@ -84,7 +82,7 @@ cdef class Supergrid:
                 ('weight', np.double),
                 ('index', np.intc),
             ], align=True)
-            assert dtype.itemsize == sizeof(subgrid.SupergridPoint)
+            assert dtype.itemsize == sizeof(supergrid.SupergridPoint)
             Py_INCREF(dtype)
             result = PyArray_NewFromDescr(
                 <PyTypeObject*> np.ndarray,
@@ -106,19 +104,45 @@ cdef class Supergrid:
         def __get__(self):
             return self.grid_array['weight']
 
+    property indices:
+        def __get__(self):
+            return self.grid_array['index']
 
+    def append_many(self, np.ndarray[double, ndim=2] points not None,
+                    np.ndarray[double, ndim=1] weights not None):
+        cdef size_t npoint = 0;
+        check_array_arg('points', points, (-1, 3))
+        check_array_arg('weights', weights, (-1,))
+        if points.shape[0] != weights.shape[0]:
+            raise TypeError('Points and weights must have the same length')
+        npoint = points.shape[0]
+        self._this.emplace_back_many(&points[0, 0], &weights[0], npoint)
 
-cdef packed struct subgrid_point:
-  double cart[3]
-  double distance
-  double weight
-  int index
+    def sort(self):
+        self._this.sort()
 
-
-cdef class Subgrid:
-    def __cinit__(self, np.ndarray[double, ndim=1] center not None):
+    def create_subgrid(self, np.ndarray[double, ndim=1] center not None, double cutoff):
+        cdef Subgrid result = Subgrid.__new__(Subgrid, initvoid=True)
         check_array_arg('center', center, (3,))
-        self._this = new subgrid.Subgrid(&center[0])
+        if cutoff <= 0:
+            raise ValueError('The cutoff must be strictly positive.')
+        result._this = self._this.create_subgrid(&center[0], cutoff)
+        return result
+
+    def integrate(self, *factors):
+        tmp = self.weights.copy()
+        for factor in factors:
+            tmp *= factor
+        return tmp.sum()
+
+
+cdef class Subgrid(object):
+    def __cinit__(self, np.ndarray[double, ndim=1] center=None, initvoid=False):
+        if initvoid:
+            self._this = NULL
+        else:
+            check_array_arg('center', center, (3,))
+            self._this = new subgrid.Subgrid(&center[0])
 
     def __init__(self, np.ndarray[double, ndim=1] center not None):
         pass
@@ -195,6 +219,7 @@ cdef class Subgrid:
         self._this.take_sub(&super_array[0], &sub_array[0]);
 
     def integrate(self, *factors):
-        args = list(factors)
-        args.append(self.weights)
-        return dot_multi(args)
+        tmp = self.weights.copy()
+        for factor in factors:
+            tmp *= factor
+        return tmp.sum()

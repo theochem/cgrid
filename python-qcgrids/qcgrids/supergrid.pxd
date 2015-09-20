@@ -20,6 +20,7 @@
 
 cimport celllists.cell
 from libcpp.vector cimport vector
+cimport qcgrids.subgrid
 
 cdef extern from "qcgrids/supergrid.h" namespace "qcgrids":
     cdef cppclass SupergridPoint:
@@ -31,3 +32,8 @@ cdef extern from "qcgrids/supergrid.h" namespace "qcgrids":
 
         const vector[SupergridPoint]& grid_array();
         const celllists.cell.Cell* cell();
+
+        void emplace_back_many(const double* cart, const double* weight, const size_t npoint);
+        void sort();
+
+        qcgrids.subgrid.Subgrid* create_subgrid(const double* center, const double cutoff);
