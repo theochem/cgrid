@@ -280,7 +280,7 @@ double test_fn(const double* delta, const double d, const void* extra_arg) {
 }
 
 
-TEST_F(SupergridTest, iadd_integrate_cutoff) {
+TEST_F(SupergridTest, iadd_integrate_cutoff_0) {
   size_t ncell_total = 0;
   double work[NPOINT];
   for (int irep = 0; irep < NREP; ++irep) {
@@ -333,6 +333,88 @@ TEST_F(SupergridTest, iadd_integrate_cutoff) {
 
   // Sufficiency checks
   EXPECT_LT(3*NREP, ncell_total);
+}
+
+
+TEST_F(SupergridTest, iadd_integrate_cutoff_3) {
+  size_t ncell_total = 0;
+  size_t nnotvisited = 0;
+  double vecs[9]{1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
+  cl::Cell cell(vecs, 3);
+  double work[NPOINT];
+  for (int irep = 0; irep < NREP; ++irep) {
+    std::unique_ptr<qcg::Supergrid> supergrid(create_case_3(irep, cell));
+    ncell_total += supergrid->cell_map()->size();
+    
+    // Select a cutoff sphere
+    double center[3];
+    double cutoff;
+    unsigned int seed = fill_random_double(irep + NREP, center, 3, -2, 2);
+    seed = fill_random_double(seed, &cutoff, 1, 0.5, 2.5);
+    
+    // Set extra arguments
+    double extra_arg[2];
+    seed = fill_random_double(seed, extra_arg, 2, 1.0, 3.0);
+    
+    // Call iadd
+    std::fill(work, work+NPOINT, 0.0);
+    supergrid->iadd_cutoff(center, cutoff, test_fn, extra_arg, work);
+    
+    // Check every point in work, and computing integral
+    double expected_integral = 0.0;
+    size_t ipoint = 0;
+    for (const qcg::SupergridPoint& point : supergrid->grid_array()) {
+      double delta0[3];
+      vec3::delta(center, point.cart_, delta0);
+      int ranges_begin[3];
+      int ranges_end[3];
+      supergrid->cell()->ranges_cutoff(center, cutoff, ranges_begin, ranges_end);
+      int icell[3];
+      double expected = 0.0;
+      bool visited = false;
+      for (icell[0] = ranges_begin[0]; icell[0] < ranges_end[0]; ++icell[0]) {
+        for (icell[1] = ranges_begin[1]; icell[1] < ranges_end[1]; ++icell[1]) {
+          for (icell[2] = ranges_begin[2]; icell[2] < ranges_end[2]; ++icell[2]) {
+            double delta[3];
+            vec3::copy(delta0, delta);
+            supergrid->cell()->iadd_vec(delta, icell);
+            double distance = vec3::norm(delta);
+            if (distance < cutoff) {
+              expected += test_fn(delta, distance, extra_arg);
+              visited = true;
+            }
+          }
+        }
+      }
+      EXPECT_NEAR(expected, work[ipoint], EPS);
+      expected_integral += work[ipoint]*point.weight_;
+      if (!visited) {
+        // Set this work element to one, just to make sure it is not used in
+        // integrate_cutoff (test below).
+        work[ipoint] = 1.0;
+        ++nnotvisited;
+      }
+      ++ipoint;
+    }
+    
+    // Compute integral in different ways
+    /* The first one is not supposed to wrok as in the aperiodic case. The integrand is
+       already wrapped periodically in work, and the following would again periodically
+       repeast that wrapped result. This effectively "double wraps" the integrand, which
+       does not make any sense.
+    double integral1 = supergrid->integrate_cutoff(center, cutoff, nullptr, nullptr, work);
+    EXPECT_NEAR(expected_integral, integral1, EPS);
+    */
+    double integral2 = supergrid->integrate_cutoff(center, cutoff, test_fn, extra_arg, nullptr);
+    EXPECT_NEAR(expected_integral, integral2, EPS);
+    std::fill(work, work+NPOINT, 2.0);
+    double integral3 = supergrid->integrate_cutoff(center, cutoff, test_fn, extra_arg, work);
+    EXPECT_NEAR(2*expected_integral, integral3, EPS*10);  // Order-of-operations differs
+  }
+
+  // Sufficiency checks
+  EXPECT_LT(3*NREP, ncell_total);
+  EXPECT_LT(0, nnotvisited);
 }
 
 
