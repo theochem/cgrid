@@ -50,6 +50,9 @@ class SupergridPoint {
 };
 
 
+typedef double (*GridFunc) (const double*, const double, const void*);
+
+
 class Supergrid {
  public:
   explicit Supergrid(const cl::Cell& cell, double spacing = 1.0);
@@ -63,6 +66,12 @@ class Supergrid {
   void emplace_back(const double* cart, const double weight);
   void emplace_back_many(const double* cart, const double* weight, const size_t npoint);
   void sort();
+
+  void iadd_cutoff(const double* center, const double cutoff, GridFunc grid_func,
+      const void* extra_arg, double* output);
+  double integrate_cutoff(const double* center, const double cutoff, GridFunc grid_func,
+      const void* extra_arg, const double* factor);
+
   Subgrid* create_subgrid(const double* center, const double cutoff) const;
 
  private:

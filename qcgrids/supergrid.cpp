@@ -86,6 +86,70 @@ void Supergrid::sort() {
 }
 
 
+void Supergrid::iadd_cutoff(const double* center, const double cutoff, GridFunc grid_func, const void* extra_arg, double* output) {
+  // The sort method must have been called before
+  if (cell_map_.get() == nullptr)
+    throw std::logic_error("sort must be called before calling create_subgrid.");
+
+  // Compute the relevant bars for this addition
+  std::vector<int> bars;
+  subcell_->bars_cutoff(center, cutoff, &bars);
+
+  // Loop over all cells and call the function for distances below the cutoff.
+  for (cl::BarIterator3D bit(bars, shape_); bit.busy(); ++bit) {
+    auto it = cell_map_->find(bit.icell());
+    if (it != cell_map_->end()) {
+      for (size_t ipoint = it->second[0]; ipoint < it->second[1]; ++ipoint) {
+        double delta[3];
+        std::copy(grid_array_[ipoint].cart_, grid_array_[ipoint].cart_ + 3, delta);
+        // TODO: merge into one call
+        cell_->iadd_vec(delta, bit.coeffs());
+        vec3::iadd(delta, center, -1);
+        double d = vec3::norm(delta);
+        if (d < cutoff)
+          output[ipoint] += grid_func(delta, d, extra_arg);
+      }
+    }
+  }
+
+}
+
+
+double Supergrid::integrate_cutoff(const double* center, const double cutoff, GridFunc grid_func, const void* extra_arg, const double* factor) {
+  // The sort method must have been called before
+  if (cell_map_.get() == nullptr)
+    throw std::logic_error("sort must be called before calling create_subgrid.");
+
+  // Compute the relevant bars for this addition
+  std::vector<int> bars;
+  subcell_->bars_cutoff(center, cutoff, &bars);
+
+  // Loop over all cells and call the function for distances below the cutoff.
+  double result = 0.0;
+  for (cl::BarIterator3D bit(bars, shape_); bit.busy(); ++bit) {
+    auto it = cell_map_->find(bit.icell());
+    if (it != cell_map_->end()) {
+      for (size_t ipoint = it->second[0]; ipoint < it->second[1]; ++ipoint) {
+        double delta[3];
+        std::copy(grid_array_[ipoint].cart_, grid_array_[ipoint].cart_ + 3, delta);
+        // TODO: merge into one call
+        cell_->iadd_vec(delta, bit.coeffs());
+        vec3::iadd(delta, center, -1);
+        double d = vec3::norm(delta);
+        if (d < cutoff) {
+          double term = grid_array_[ipoint].weight_;
+          if (grid_func != nullptr)
+            term *= grid_func(delta, d, extra_arg);
+          if (factor != nullptr)
+            term *= factor[ipoint];
+          result += term;
+        }
+      }
+    }
+  }
+  return result;
+}
+
 
 Subgrid* Supergrid::create_subgrid(const double* center, const double cutoff) const {
   // The sort method must have been called before
