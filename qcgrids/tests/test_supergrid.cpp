@@ -37,52 +37,50 @@ namespace qcg = qcgrids;
 namespace vec3 = celllists::vec3;
 
 
-TEST(SupergridTest, example1) {
-  size_t ncell_total = 0;
-  size_t npoint_inside = 0;
-  for (int irep = 0; irep < NREP; ++irep) {
+// Fixtures
+// ========
+
+class SupergridTest : public ::testing::Test {
+ public:
+  qcg::Supergrid* create_case_0(unsigned int seed) {
     // Construct the grid
     cl::Cell cell;
-    qcg::Supergrid supergrid(cell);
+    qcg::Supergrid* supergrid = new qcg::Supergrid(cell);
 
     // Add points
     for (int ipoint = 0; ipoint < NPOINT; ipoint++) {
       double cart[3];
       double weight;
-      fill_random_double(ipoint + irep*(2*NPOINT+2), cart, 3, -5, 5);
-      fill_random_double(ipoint + NPOINT + irep*(2*NPOINT+2), &weight, 1, 1, 2);
-      supergrid.emplace_back(cart, weight);
-      EXPECT_EQ(cart[0], supergrid.grid_array()[ipoint].cart_[0]);
-      EXPECT_EQ(cart[1], supergrid.grid_array()[ipoint].cart_[1]);
-      EXPECT_EQ(cart[2], supergrid.grid_array()[ipoint].cart_[2]);
-      EXPECT_EQ(weight, supergrid.grid_array()[ipoint].weight_);
-      EXPECT_EQ(0, supergrid.grid_array()[ipoint].icell_[0]);
-      EXPECT_EQ(0, supergrid.grid_array()[ipoint].icell_[1]);
-      EXPECT_EQ(0, supergrid.grid_array()[ipoint].icell_[2]);
-      EXPECT_EQ(ipoint, supergrid.grid_array()[ipoint].index_);
+      seed = fill_random_double(seed, cart, 3, -5, 5);
+      seed = fill_random_double(seed, &weight, 1, 1, 2);
+      supergrid->emplace_back(cart, weight);
+      EXPECT_EQ(cart[0], supergrid->grid_array()[ipoint].cart_[0]);
+      EXPECT_EQ(cart[1], supergrid->grid_array()[ipoint].cart_[1]);
+      EXPECT_EQ(cart[2], supergrid->grid_array()[ipoint].cart_[2]);
+      EXPECT_EQ(weight, supergrid->grid_array()[ipoint].weight_);
+      EXPECT_EQ(0, supergrid->grid_array()[ipoint].icell_[0]);
+      EXPECT_EQ(0, supergrid->grid_array()[ipoint].icell_[1]);
+      EXPECT_EQ(0, supergrid->grid_array()[ipoint].icell_[2]);
+      EXPECT_EQ(ipoint, supergrid->grid_array()[ipoint].index_);
     }
 
     // Basic checks on data members
-    EXPECT_EQ(NPOINT, supergrid.grid_array().size());
-    EXPECT_TRUE(std::isnan(supergrid.cell()->volume()));
-    EXPECT_NEAR(1.0, supergrid.subcell()->volume(), EPS);
-    EXPECT_EQ(0, supergrid.shape()[0]);
-    EXPECT_EQ(0, supergrid.shape()[1]);
-    EXPECT_EQ(0, supergrid.shape()[2]);
+    EXPECT_EQ(NPOINT, supergrid->grid_array().size());
+    EXPECT_TRUE(std::isnan(supergrid->cell()->volume()));
+    EXPECT_NEAR(1.0, supergrid->subcell()->volume(), EPS);
+    EXPECT_EQ(0, supergrid->shape()[0]);
+    EXPECT_EQ(0, supergrid->shape()[1]);
+    EXPECT_EQ(0, supergrid->shape()[2]);
 
     // Check for the right exception (sort isn't called yet)
-    double center[3];
-    double cutoff;
-    fill_random_double(2*NPOINT + irep*(2*NPOINT+2), center, 3, -2, 2);
-    fill_random_double(2*NPOINT + 1 + irep*(2*NPOINT+2), &cutoff, 1, 3, 15);
-    EXPECT_THROW(supergrid.cell_map(), std::logic_error);
-    EXPECT_THROW(supergrid.create_subgrid(center, cutoff), std::logic_error);
+    EXPECT_THROW(supergrid->cell_map(), std::logic_error);
+    EXPECT_THROW(supergrid->create_subgrid(nullptr, 1.0), std::logic_error);
 
     // Sort the grid_array, assign icell and make cell_map
-    supergrid.sort();
+    supergrid->sort();
 
     // Test if points are sorted
-    const std::vector<qcg::SupergridPoint>& grid_array(supergrid.grid_array());
+    const std::vector<qcg::SupergridPoint>& grid_array(supergrid->grid_array());
     size_t ncell = 0;
     for (size_t ipoint = 1; ipoint < NPOINT; ipoint++) {
       EXPECT_LE(grid_array[ipoint - 1].icell_[0], grid_array[ipoint].icell_[0]);
@@ -100,11 +98,86 @@ TEST(SupergridTest, example1) {
     ++ncell;
 
     // Basic test of the cell_map
-    EXPECT_EQ(ncell, supergrid.cell_map()->size());
-    ncell_total += ncell;
+    EXPECT_EQ(ncell, supergrid->cell_map()->size());
+
+    return supergrid;
+  }
+
+  qcg::Supergrid* create_case_3(unsigned int seed, const cl::Cell& cell) {
+    // Construct the grid
+    qcg::Supergrid* supergrid = new qcg::Supergrid(cell, 0.55);
+
+    // Add points
+    double all_cart[3*NPOINT];
+    double all_weight[NPOINT];
+    seed = fill_random_double(seed, all_cart, 3*NPOINT, -5, 5);
+    seed = fill_random_double(seed, all_weight, NPOINT, 1, 2);
+    supergrid->emplace_back_many(all_cart, all_weight, NPOINT);
+    for (int ipoint = 0; ipoint < NPOINT; ipoint++) {
+      EXPECT_EQ(all_cart[3*ipoint], supergrid->grid_array()[ipoint].cart_[0]);
+      EXPECT_EQ(all_cart[3*ipoint + 1], supergrid->grid_array()[ipoint].cart_[1]);
+      EXPECT_EQ(all_cart[3*ipoint + 2], supergrid->grid_array()[ipoint].cart_[2]);
+      EXPECT_EQ(all_weight[ipoint], supergrid->grid_array()[ipoint].weight_);
+      EXPECT_EQ(0, supergrid->grid_array()[ipoint].icell_[0]);
+      EXPECT_EQ(0, supergrid->grid_array()[ipoint].icell_[1]);
+      EXPECT_EQ(0, supergrid->grid_array()[ipoint].icell_[2]);
+      EXPECT_EQ(ipoint, supergrid->grid_array()[ipoint].index_);
+    }
+
+    // Basic checks on data members
+    EXPECT_EQ(NPOINT, supergrid->grid_array().size());
+    EXPECT_NEAR(1.0, supergrid->cell()->volume(), EPS);
+    EXPECT_NEAR(0.125, supergrid->subcell()->volume(), EPS);
+    EXPECT_EQ(2, supergrid->shape()[0]);
+    EXPECT_EQ(2, supergrid->shape()[1]);
+    EXPECT_EQ(2, supergrid->shape()[2]);
+
+    // Check for the right exception (sort isn't called yet)
+    EXPECT_THROW(supergrid->cell_map(), std::logic_error);
+    EXPECT_THROW(supergrid->create_subgrid(nullptr, 1.0), std::logic_error);
+
+    // Sort the grid_array, assign icell and make cell_map
+    supergrid->sort();
+
+    // Test if points are sorted
+    const std::vector<qcg::SupergridPoint>& grid_array(supergrid->grid_array());
+    size_t ncell = 0;
+    for (size_t ipoint = 1; ipoint < NPOINT; ipoint++) {
+      EXPECT_LE(grid_array[ipoint - 1].icell_[0], grid_array[ipoint].icell_[0]);
+      if (grid_array[ipoint - 1].icell_[0] == grid_array[ipoint].icell_[0]) {
+        EXPECT_LE(grid_array[ipoint - 1].icell_[1], grid_array[ipoint].icell_[1]);
+        if (grid_array[ipoint - 1].icell_[1] == grid_array[ipoint].icell_[1]) {
+          EXPECT_LE(grid_array[ipoint - 1].icell_[2], grid_array[ipoint].icell_[2]);
+        }
+      }
+      if ((grid_array[ipoint - 1].icell_[0] != grid_array[ipoint].icell_[0]) ||
+          (grid_array[ipoint - 1].icell_[1] != grid_array[ipoint].icell_[1]) ||
+          (grid_array[ipoint - 1].icell_[2] != grid_array[ipoint].icell_[2]))
+        ++ncell;
+    }
+    ++ncell;
+
+    // Basic test of the cell_map
+    EXPECT_EQ(ncell, supergrid->cell_map()->size());
+
+    return supergrid;
+  }
+};
+
+
+TEST_F(SupergridTest, subgrid_example1) {
+  size_t ncell_total = 0;
+  size_t npoint_inside = 0;
+  for (int irep = 0; irep < NREP; ++irep) {
+    std::unique_ptr<qcg::Supergrid> supergrid(create_case_0(irep));
+    ncell_total += supergrid->cell_map()->size();
 
     // Make a subgrid
-    std::unique_ptr<qcg::Subgrid> subgrid(supergrid.create_subgrid(center, cutoff));
+    double center[3];
+    double cutoff;
+    unsigned int seed = fill_random_double(irep + NREP, center, 3, -2, 2);
+    fill_random_double(seed, &cutoff, 1, 3, 15);
+    std::unique_ptr<qcg::Subgrid> subgrid(supergrid->create_subgrid(center, cutoff));
 
     // Check basics of subgrid
     EXPECT_EQ(center[0], subgrid->center()[0]);
@@ -113,14 +186,14 @@ TEST(SupergridTest, example1) {
 
     // Compare all the points in the subgrid with the supergrid
     for (const qcg::SubgridPoint& point : subgrid->grid_array()) {
-      EXPECT_GT(supergrid.grid_array().size(), point.index_);
+      EXPECT_GT(supergrid->grid_array().size(), point.index_);
       // Cartesian coordinates must be the same because there are no periodic boundary
       // conditions.
-      EXPECT_EQ(supergrid.grid_array()[point.index_].cart_[0], point.cart_[0]);
-      EXPECT_EQ(supergrid.grid_array()[point.index_].cart_[1], point.cart_[1]);
-      EXPECT_EQ(supergrid.grid_array()[point.index_].cart_[2], point.cart_[2]);
+      EXPECT_EQ(supergrid->grid_array()[point.index_].cart_[0], point.cart_[0]);
+      EXPECT_EQ(supergrid->grid_array()[point.index_].cart_[1], point.cart_[1]);
+      EXPECT_EQ(supergrid->grid_array()[point.index_].cart_[2], point.cart_[2]);
       // Weights should always be the same
-      EXPECT_EQ(supergrid.grid_array()[point.index_].weight_, point.weight_);
+      EXPECT_EQ(supergrid->grid_array()[point.index_].weight_, point.weight_);
       // Check correctness of distance
       EXPECT_GE(cutoff, point.distance_);
       EXPECT_NEAR(vec3::distance(center, point.cart_), point.distance_, EPS);
@@ -130,7 +203,7 @@ TEST(SupergridTest, example1) {
     // Go over all the points in the supergrid and check that each point within the cutoff
     // is included in the subgrid.
     int isuper = 0;
-    for (const qcg::SupergridPoint point0 : supergrid.grid_array()) {
+    for (const qcg::SupergridPoint point0 : supergrid->grid_array()) {
       const double d(vec3::distance(center, point0.cart_));
       if (d <= cutoff) {
         bool found(false);
@@ -152,75 +225,21 @@ TEST(SupergridTest, example1) {
 }
 
 
-TEST(SupergridTest, example2) {
+TEST_F(SupergridTest, subgrid_example2) {
   size_t ncell_total = 0;
   size_t npoint_inside = 0;
+  double vecs[9]{1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
+  cl::Cell cell(vecs, 3);
   for (int irep = 0; irep < NREP; ++irep) {
-    // Construct the grid
-    double vecs[9]{1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
-    cl::Cell cell(vecs, 3);
-    qcg::Supergrid supergrid(cell, 0.55);
-
-    // Add points
-    double all_cart[3*NPOINT];
-    double all_weight[NPOINT];
-    fill_random_double(irep, all_cart, 3*NPOINT, -5, 5);
-    fill_random_double(irep + NREP, all_weight, NPOINT, 1, 2);
-    supergrid.emplace_back_many(all_cart, all_weight, NPOINT);
-    for (int ipoint = 0; ipoint < NPOINT; ipoint++) {
-      EXPECT_EQ(all_cart[3*ipoint], supergrid.grid_array()[ipoint].cart_[0]);
-      EXPECT_EQ(all_cart[3*ipoint + 1], supergrid.grid_array()[ipoint].cart_[1]);
-      EXPECT_EQ(all_cart[3*ipoint + 2], supergrid.grid_array()[ipoint].cart_[2]);
-      EXPECT_EQ(all_weight[ipoint], supergrid.grid_array()[ipoint].weight_);
-      EXPECT_EQ(0, supergrid.grid_array()[ipoint].icell_[0]);
-      EXPECT_EQ(0, supergrid.grid_array()[ipoint].icell_[1]);
-      EXPECT_EQ(0, supergrid.grid_array()[ipoint].icell_[2]);
-      EXPECT_EQ(ipoint, supergrid.grid_array()[ipoint].index_);
-    }
-
-    // Basic checks on data members
-    EXPECT_EQ(NPOINT, supergrid.grid_array().size());
-    EXPECT_NEAR(1.0, supergrid.cell()->volume(), EPS);
-    EXPECT_NEAR(0.125, supergrid.subcell()->volume(), EPS);
-    EXPECT_EQ(2, supergrid.shape()[0]);
-    EXPECT_EQ(2, supergrid.shape()[1]);
-    EXPECT_EQ(2, supergrid.shape()[2]);
-
-    // Check for the right exception (sort isn't called yet)
-    double center[3];
-    double cutoff;
-    fill_random_double(irep + 2*NREP, center, 3, -2, 2);
-    fill_random_double(irep + 2*NREP+1, &cutoff, 1, 0.5, 2.5);
-    EXPECT_THROW(supergrid.cell_map(), std::logic_error);
-    EXPECT_THROW(supergrid.create_subgrid(center, cutoff), std::logic_error);
-
-    // Sort the grid_array, assign icell and make cell_map
-    supergrid.sort();
-
-    // Test if points are sorted
-    const std::vector<qcg::SupergridPoint>& grid_array(supergrid.grid_array());
-    size_t ncell = 0;
-    for (size_t ipoint = 1; ipoint < NPOINT; ipoint++) {
-      EXPECT_LE(grid_array[ipoint - 1].icell_[0], grid_array[ipoint].icell_[0]);
-      if (grid_array[ipoint - 1].icell_[0] == grid_array[ipoint].icell_[0]) {
-        EXPECT_LE(grid_array[ipoint - 1].icell_[1], grid_array[ipoint].icell_[1]);
-        if (grid_array[ipoint - 1].icell_[1] == grid_array[ipoint].icell_[1]) {
-          EXPECT_LE(grid_array[ipoint - 1].icell_[2], grid_array[ipoint].icell_[2]);
-        }
-      }
-      if ((grid_array[ipoint - 1].icell_[0] != grid_array[ipoint].icell_[0]) ||
-          (grid_array[ipoint - 1].icell_[1] != grid_array[ipoint].icell_[1]) ||
-          (grid_array[ipoint - 1].icell_[2] != grid_array[ipoint].icell_[2]))
-        ++ncell;
-    }
-    ++ncell;
-
-    // Basic test of the cell_map
-    EXPECT_EQ(ncell, supergrid.cell_map()->size());
-    ncell_total += ncell;
+    std::unique_ptr<qcg::Supergrid> supergrid(create_case_3(irep, cell));
+    ncell_total += supergrid->cell_map()->size();
 
     // Make a subgrid
-    std::unique_ptr<qcg::Subgrid> subgrid(supergrid.create_subgrid(center, cutoff));
+    double center[3];
+    double cutoff;
+    unsigned int seed = fill_random_double(irep + NREP, center, 3, -2, 2);
+    fill_random_double(seed, &cutoff, 1, 0.5, 2.5);
+    std::unique_ptr<qcg::Subgrid> subgrid(supergrid->create_subgrid(center, cutoff));
 
     // Check basics of subgrid
     EXPECT_EQ(center[0], subgrid->center()[0]);
@@ -229,17 +248,17 @@ TEST(SupergridTest, example2) {
 
     // Compare all the points in the subgrid with the supergrid
     for (const qcg::SubgridPoint& point : subgrid->grid_array()) {
-      EXPECT_GT(supergrid.grid_array().size(), point.index_);
+      EXPECT_GT(supergrid->grid_array().size(), point.index_);
       // The cartesian coordinates may differ up to a linear combination of cell vectors.
       // Hence, only tesing wrapped relative fractional coordinates
       double delta[3];
-      vec3::delta(supergrid.grid_array()[point.index_].cart_, point.cart_, delta);
+      vec3::delta(supergrid->grid_array()[point.index_].cart_, point.cart_, delta);
       cell.iwrap_mic(delta);
       EXPECT_NEAR(0.0, delta[0], EPS);
       EXPECT_NEAR(0.0, delta[1], EPS);
       EXPECT_NEAR(0.0, delta[2], EPS);
       // Weights should always be the same
-      EXPECT_EQ(supergrid.grid_array()[point.index_].weight_, point.weight_);
+      EXPECT_EQ(supergrid->grid_array()[point.index_].weight_, point.weight_);
       // Check correctness of distance
       EXPECT_GE(cutoff, point.distance_);
       EXPECT_NEAR(vec3::distance(center, point.cart_), point.distance_, EPS);
