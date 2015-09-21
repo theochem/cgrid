@@ -23,6 +23,11 @@ cimport supergrid
 cimport subgrid
 
 
+cdef class GridFunc:
+    cdef supergrid.GridFunc _funcptr
+    cdef void* _extra_arg
+
+
 cdef class Supergrid:
     cdef supergrid.Supergrid* _this
 

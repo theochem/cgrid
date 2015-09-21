@@ -286,21 +286,21 @@ TEST_F(SupergridTest, iadd_integrate_cutoff_0) {
   for (int irep = 0; irep < NREP; ++irep) {
     std::unique_ptr<qcg::Supergrid> supergrid(create_case_0(irep));
     ncell_total += supergrid->cell_map()->size();
-    
+
     // Select a cutoff sphere
     double center[3];
     double cutoff;
     unsigned int seed = fill_random_double(irep + NREP, center, 3, -2, 2);
     seed = fill_random_double(seed, &cutoff, 1, 0.5, 2.5);
-    
+
     // Set extra arguments
     double extra_arg[2];
     seed = fill_random_double(seed, extra_arg, 2, 1.0, 3.0);
-    
+
     // Call iadd
     std::fill(work, work+NPOINT, 0.0);
     supergrid->iadd_cutoff(center, cutoff, test_fn, extra_arg, work);
-    
+
     // Check every point in work, and computing integral
     double expected_integral = 0.0;
     size_t ipoint = 0;
@@ -320,7 +320,7 @@ TEST_F(SupergridTest, iadd_integrate_cutoff_0) {
       }
       ++ipoint;
     }
-    
+
     // Compute integral in different ways
     double integral1 = supergrid->integrate_cutoff(center, cutoff, nullptr, nullptr, work);
     EXPECT_NEAR(expected_integral, integral1, EPS);
@@ -345,21 +345,21 @@ TEST_F(SupergridTest, iadd_integrate_cutoff_3) {
   for (int irep = 0; irep < NREP; ++irep) {
     std::unique_ptr<qcg::Supergrid> supergrid(create_case_3(irep, cell));
     ncell_total += supergrid->cell_map()->size();
-    
+
     // Select a cutoff sphere
     double center[3];
     double cutoff;
     unsigned int seed = fill_random_double(irep + NREP, center, 3, -2, 2);
     seed = fill_random_double(seed, &cutoff, 1, 0.5, 2.5);
-    
+
     // Set extra arguments
     double extra_arg[2];
     seed = fill_random_double(seed, extra_arg, 2, 1.0, 3.0);
-    
+
     // Call iadd
     std::fill(work, work+NPOINT, 0.0);
     supergrid->iadd_cutoff(center, cutoff, test_fn, extra_arg, work);
-    
+
     // Check every point in work, and computing integral
     double expected_integral = 0.0;
     size_t ipoint = 0;
@@ -396,7 +396,7 @@ TEST_F(SupergridTest, iadd_integrate_cutoff_3) {
       }
       ++ipoint;
     }
-    
+
     // Compute integral in different ways
     /* The first one is not supposed to wrok as in the aperiodic case. The integrand is
        already wrapped periodically in work, and the following would again periodically

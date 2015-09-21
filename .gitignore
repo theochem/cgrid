@@ -5,5 +5,5 @@ build
 tmp
 debug
 install
-python-qcgrids/qcgrids.cpp
+python-qcgrids/qcgrids/qcgrids.cpp
 python-qcgrids/build

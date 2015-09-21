@@ -26,6 +26,7 @@ cdef extern from "qcgrids/supergrid.h" namespace "qcgrids":
     cdef cppclass SupergridPoint:
         SupergridPoint(const double* cart, const double weight, const int index);
 
+    ctypedef double (*GridFunc) (const double*, const double, const void*);
 
     cdef cppclass Supergrid:
         Supergrid(const celllists.cell.Cell& cell, double spacing);
@@ -35,5 +36,12 @@ cdef extern from "qcgrids/supergrid.h" namespace "qcgrids":
 
         void emplace_back_many(const double* cart, const double* weight, const size_t npoint);
         void sort();
+
+        void iadd_cutoff(const double* center, const double cutoff,
+            GridFunc grid_func, const void* extra_arg, double* output);
+        double integrate_cutoff(const double* center, const double cutoff,
+            GridFunc grid_func, const void* extra_arg, const double* factor);
+
+
 
         qcgrids.subgrid.Subgrid* create_subgrid(const double* center, const double cutoff);

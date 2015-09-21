@@ -121,6 +121,22 @@ cdef class Supergrid(object):
     def sort(self):
         self._this.sort()
 
+    def iadd_cutoff(self, np.ndarray[double, ndim=1] center not None,
+                    double cutoff, GridFunc grid_func not None,
+                    np.ndarray[double, ndim=1] output not None):
+        check_array_arg('center', center, (3,))
+        check_array_arg('output', output, (-1,))
+        self._this.iadd_cutoff(&center[0], cutoff, grid_func._funcptr,
+                               grid_func._extra_arg, &output[0])
+
+    def integrate_cutoff(self, np.ndarray[double, ndim=1] center not None,
+                         double cutoff, GridFunc grid_func not None,
+                         np.ndarray[double, ndim=1] factor not None):
+        check_array_arg('center', center, (3,))
+        check_array_arg('factor', factor, (-1,))
+        self._this.integrate_cutoff(&center[0], cutoff, grid_func._funcptr,
+                                    grid_func._extra_arg, &factor[0])
+
     def create_subgrid(self, np.ndarray[double, ndim=1] center not None, double cutoff):
         cdef Subgrid result = Subgrid.__new__(Subgrid, initvoid=True)
         check_array_arg('center', center, (3,))
