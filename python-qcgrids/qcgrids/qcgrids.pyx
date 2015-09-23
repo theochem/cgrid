@@ -133,8 +133,8 @@ cdef class Cellgrid(object):
                          np.ndarray[double, ndim=1] factor not None):
         check_array_arg('center', center, (3,))
         check_array_arg('factor', factor, (-1,))
-        self._this.integrate_cutoff(&center[0], cutoff, grid_func._funcptr,
-                                    grid_func._extra_arg, &factor[0])
+        return self._this.integrate_cutoff(&center[0], cutoff, grid_func._funcptr,
+                                           grid_func._extra_arg, &factor[0])
 
     def integrate(self, *factors):
         tmp = self.weights.copy()
