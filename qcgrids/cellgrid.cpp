@@ -86,7 +86,8 @@ void Cellgrid::sort() {
 }
 
 
-void Cellgrid::iadd_cutoff(const double* center, const double cutoff, GridFunc grid_func, const void* extra_arg, double* output) {
+void Cellgrid::iadd_cutoff(const double* center, const double cutoff, GridFunc grid_func,
+    const void* extra_arg, double* output) {
   // The sort method must have been called before
   if (cell_map_.get() == nullptr)
     throw std::logic_error("sort must be called before calling create_subgrid.");
@@ -103,7 +104,8 @@ void Cellgrid::iadd_cutoff(const double* center, const double cutoff, GridFunc g
 }
 
 
-double Cellgrid::integrate_cutoff(const double* center, const double cutoff, GridFunc grid_func, const void* extra_arg, const double* factor) {
+double Cellgrid::integrate_cutoff(const double* center, const double cutoff,
+    GridFunc grid_func, const void* extra_arg, const double* factor) {
   // The sort method must have been called before
   if (cell_map_.get() == nullptr)
     throw std::logic_error("sort must be called before calling create_subgrid.");
