@@ -18,7 +18,7 @@
 //--
 
 
-#include "qcgrids/subgrid.h"
+#include "qcgrids/cellgrid.h"
 
 #include <algorithm>
 #include <memory>
@@ -28,8 +28,6 @@
 #include <celllists/decomposition.h>
 #include <celllists/iterators.h>
 #include <celllists/vec3.h>
-
-#include "qcgrids/cellgrid.h"
 
 
 namespace cl = celllists;
