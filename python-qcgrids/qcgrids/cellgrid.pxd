@@ -20,18 +20,17 @@
 
 cimport celllists.cell
 from libcpp.vector cimport vector
-cimport qcgrids.subgrid
 
-cdef extern from "qcgrids/supergrid.h" namespace "qcgrids":
-    cdef cppclass SupergridPoint:
-        SupergridPoint(const double* cart, const double weight, const int index);
+cdef extern from "qcgrids/cellgrid.h" namespace "qcgrids":
+    cdef cppclass CellgridPoint:
+        CellgridPoint(const double* cart, const double weight, const int index);
 
     ctypedef double (*GridFunc) (const double*, const double, const void*);
 
-    cdef cppclass Supergrid:
-        Supergrid(const celllists.cell.Cell& cell, double spacing);
+    cdef cppclass Cellgrid:
+        Cellgrid(const celllists.cell.Cell& cell, double spacing);
 
-        const vector[SupergridPoint]& grid_array();
+        const vector[CellgridPoint]& grid_array();
         const celllists.cell.Cell* cell();
 
         void emplace_back_many(const double* cart, const double* weight, const size_t npoint);
@@ -41,7 +40,3 @@ cdef extern from "qcgrids/supergrid.h" namespace "qcgrids":
             GridFunc grid_func, const void* extra_arg, double* output);
         double integrate_cutoff(const double* center, const double cutoff,
             GridFunc grid_func, const void* extra_arg, const double* factor);
-
-
-
-        qcgrids.subgrid.Subgrid* create_subgrid(const double* center, const double cutoff);

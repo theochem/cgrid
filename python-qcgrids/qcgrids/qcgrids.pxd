@@ -19,18 +19,13 @@
 #--
 
 
-cimport supergrid
-cimport subgrid
+cimport cellgrid
 
 
 cdef class GridFunc:
-    cdef supergrid.GridFunc _funcptr
+    cdef cellgrid.GridFunc _funcptr
     cdef void* _extra_arg
 
 
-cdef class Supergrid:
-    cdef supergrid.Supergrid* _this
-
-
-cdef class Subgrid:
-    cdef subgrid.Subgrid* _this
+cdef class Cellgrid:
+    cdef cellgrid.Cellgrid* _this

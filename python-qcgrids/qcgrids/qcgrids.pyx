@@ -24,8 +24,7 @@ import numpy as np
 cimport numpy as np
 np.import_array()
 
-cimport supergrid
-cimport subgrid
+cimport cellgrid
 
 cimport celllists.celllists as celllists
 
@@ -39,7 +38,7 @@ cdef extern from "numpy/arrayobject.h":
                                 void* data, int flags, object obj)
 
 
-__all__ = ['Supergrid', 'Subgrid']
+__all__ = ['Cellgrid']
 
 
 def check_array_arg(name, arg, expected_shape):
@@ -51,9 +50,9 @@ def check_array_arg(name, arg, expected_shape):
                              'expecting %i') % (i, name, arg.shape[i], n))
 
 
-cdef class Supergrid(object):
+cdef class Cellgrid(object):
     def __cinit__(self, celllists.Cell cell, double spacing=1):
-        self._this = new supergrid.Supergrid(cell._this[0], spacing)
+        self._this = new cellgrid.Cellgrid(cell._this[0], spacing)
 
     def __init__(self, celllists.Cell cell, double spacing=1):
         pass
@@ -82,7 +81,7 @@ cdef class Supergrid(object):
                 ('weight', np.double),
                 ('index', np.intc),
             ], align=True)
-            assert dtype.itemsize == sizeof(supergrid.SupergridPoint)
+            assert dtype.itemsize == sizeof(cellgrid.CellgridPoint)
             Py_INCREF(dtype)
             result = PyArray_NewFromDescr(
                 <PyTypeObject*> np.ndarray,
@@ -136,103 +135,6 @@ cdef class Supergrid(object):
         check_array_arg('factor', factor, (-1,))
         self._this.integrate_cutoff(&center[0], cutoff, grid_func._funcptr,
                                     grid_func._extra_arg, &factor[0])
-
-    def create_subgrid(self, np.ndarray[double, ndim=1] center not None, double cutoff):
-        cdef Subgrid result = Subgrid.__new__(Subgrid, initvoid=True)
-        check_array_arg('center', center, (3,))
-        if cutoff <= 0:
-            raise ValueError('The cutoff must be strictly positive.')
-        result._this = self._this.create_subgrid(&center[0], cutoff)
-        return result
-
-    def integrate(self, *factors):
-        tmp = self.weights.copy()
-        for factor in factors:
-            tmp *= factor
-        return tmp.sum()
-
-
-cdef class Subgrid(object):
-    def __cinit__(self, np.ndarray[double, ndim=1] center=None, initvoid=False):
-        if initvoid:
-            self._this = NULL
-        else:
-            check_array_arg('center', center, (3,))
-            self._this = new subgrid.Subgrid(&center[0])
-
-    def __init__(self, np.ndarray[double, ndim=1] center not None):
-        pass
-
-    def __dealloc__(self):
-        if self._this != NULL:
-            del self._this
-
-    property npoint:
-        def __get__(self):
-            return self._this.grid_array().size()
-
-    property center:
-        def __get__(self):
-            cdef np.ndarray[double, ndim=1] center = np.zeros(3, float)
-            memcpy(&center[0], self._this.center(), sizeof(double)*3);
-            return center
-
-    property grid_array:
-        def __get__(self):
-            cdef np.npy_intp dims[1]
-            dims[0] = self._this.grid_array().size()
-            cdef np.dtype dtype = np.dtype([
-                ('cart', np.double, 3),
-                ('distance', np.double),
-                ('weight', np.double),
-                ('index', np.intc),
-            ], align=True)
-            assert dtype.itemsize == sizeof(subgrid.SubgridPoint)
-            Py_INCREF(dtype)
-            result = PyArray_NewFromDescr(
-                <PyTypeObject*> np.ndarray,
-                dtype,
-                1,
-                dims,
-                NULL,
-                <void*> self._this.grid_array().data(),
-                0,
-                None)
-            np.set_array_base(result, self)
-            return result
-
-    property points:
-        def __get__(self):
-            return self.grid_array['cart']
-
-    property distances:
-        def __get__(self):
-            return self.grid_array['distance']
-
-    property weights:
-        def __get__(self):
-            return self.grid_array['weight']
-
-    property indices:
-        def __get__(self):
-            return self.grid_array['index']
-
-    def append(self, np.ndarray[double, ndim=1] cart not None,
-               double distance, double weight, int index):
-        check_array_arg('cart', cart, (3,))
-        self._this.emplace_back(&cart[0], distance, weight, index);
-
-    def iadd_super(self, np.ndarray[double, ndim=1] super_array not None,
-                   np.ndarray[double, ndim=1] sub_array not None):
-        check_array_arg('super_array', super_array, (-1,))
-        check_array_arg('sub_array', sub_array, (-1,))
-        self._this.iadd_super(&super_array[0], &sub_array[0]);
-
-    def take_sub(self, np.ndarray[double, ndim=1] super_array not None,
-                 np.ndarray[double, ndim=1] sub_array not None):
-        check_array_arg('super_array', super_array, (-1,))
-        check_array_arg('sub_array', sub_array, (-1,))
-        self._this.take_sub(&super_array[0], &sub_array[0]);
 
     def integrate(self, *factors):
         tmp = self.weights.copy()
