@@ -31,12 +31,12 @@ include_directories(${PROJECT_SOURCE_DIR})
 
 # Define source files
 set(SOURCE_FILES
-  ${CMAKE_CURRENT_SOURCE_DIR}/supergrid.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/cellgrid.cpp
 )
 
 # Define header files
 set(HEADER_FILES
-  ${CMAKE_CURRENT_SOURCE_DIR}/supergrid.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/cellgrid.h
   ${CMAKE_CURRENT_BINARY_DIR}/config.h
 )
 

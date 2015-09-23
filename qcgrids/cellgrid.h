@@ -20,8 +20,8 @@
 /** @file */
 
 
-#ifndef QCGRIDS_SUPERGRID_H_
-#define QCGRIDS_SUPERGRID_H_
+#ifndef QCGRIDS_CELLGRID_H_
+#define QCGRIDS_CELLGRID_H_
 
 
 #include <memory>
@@ -36,10 +36,10 @@ namespace cl = celllists;
 namespace qcgrids {
 
 
-class SupergridPoint {
+class CellgridPoint {
  public:
-  SupergridPoint(const double* cart, const double weight, const int index);
-  SupergridPoint() : cart_{0.0, 0.0, 0.0}, icell_{0, 0, 0}, weight_(0.0), index_(0) {}
+  CellgridPoint(const double* cart, const double weight, const int index);
+  CellgridPoint() : cart_{0.0, 0.0, 0.0}, icell_{0, 0, 0}, weight_(0.0), index_(0) {}
 
   double cart_[3];
   int icell_[3];
@@ -51,11 +51,11 @@ class SupergridPoint {
 typedef double (*GridFunc) (const double*, const double, const void*);
 
 
-class Supergrid {
+class Cellgrid {
  public:
-  explicit Supergrid(const cl::Cell& cell, double spacing = 1.0);
+  explicit Cellgrid(const cl::Cell& cell, double spacing = 1.0);
 
-  const std::vector<SupergridPoint>& grid_array() const { return grid_array_; }
+  const std::vector<CellgridPoint>& grid_array() const { return grid_array_; }
   const cl::Cell* cell() const { return cell_.get(); }
   const cl::Cell* subcell() const { return subcell_.get(); }
   const int* shape() const { return shape_; }
@@ -71,7 +71,7 @@ class Supergrid {
       const void* extra_arg, const double* factor);
 
  private:
-  std::vector<SupergridPoint> grid_array_;
+  std::vector<CellgridPoint> grid_array_;
   std::unique_ptr<cl::Cell> cell_;
   std::unique_ptr<cl::Cell> subcell_;
   int shape_[3];
@@ -82,6 +82,6 @@ class Supergrid {
 }  // namespace qcgrids
 
 
-#endif  // QCGRIDS_SUPERGRID_H_
+#endif  // QCGRIDS_CELLGRID_H_
 
 // vim: textwidth=90 et ts=2 sw=2

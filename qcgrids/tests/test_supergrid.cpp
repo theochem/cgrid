@@ -27,7 +27,7 @@
 #include <celllists/vec3.h>
 #include <gtest/gtest.h>
 
-#include <qcgrids/supergrid.h>
+#include <qcgrids/cellgrid.h>
 
 #include "common.h"
 
@@ -39,12 +39,12 @@ namespace vec3 = celllists::vec3;
 // Fixtures
 // ========
 
-class SupergridTest : public ::testing::Test {
+class CellgridTest : public ::testing::Test {
  public:
-  qcg::Supergrid* create_case_0(unsigned int seed) {
+  qcg::Cellgrid* create_case_0(unsigned int seed) {
     // Construct the grid
     cl::Cell cell;
-    qcg::Supergrid* supergrid = new qcg::Supergrid(cell);
+    qcg::Cellgrid* cellgrid = new qcg::Cellgrid(cell);
 
     // Add points
     for (int ipoint = 0; ipoint < NPOINT; ipoint++) {
@@ -52,35 +52,35 @@ class SupergridTest : public ::testing::Test {
       double weight;
       seed = fill_random_double(seed, cart, 3, -5, 5);
       seed = fill_random_double(seed, &weight, 1, 1, 2);
-      supergrid->emplace_back(cart, weight);
-      EXPECT_EQ(cart[0], supergrid->grid_array()[ipoint].cart_[0]);
-      EXPECT_EQ(cart[1], supergrid->grid_array()[ipoint].cart_[1]);
-      EXPECT_EQ(cart[2], supergrid->grid_array()[ipoint].cart_[2]);
-      EXPECT_EQ(weight, supergrid->grid_array()[ipoint].weight_);
-      EXPECT_EQ(0, supergrid->grid_array()[ipoint].icell_[0]);
-      EXPECT_EQ(0, supergrid->grid_array()[ipoint].icell_[1]);
-      EXPECT_EQ(0, supergrid->grid_array()[ipoint].icell_[2]);
-      EXPECT_EQ(ipoint, supergrid->grid_array()[ipoint].index_);
+      cellgrid->emplace_back(cart, weight);
+      EXPECT_EQ(cart[0], cellgrid->grid_array()[ipoint].cart_[0]);
+      EXPECT_EQ(cart[1], cellgrid->grid_array()[ipoint].cart_[1]);
+      EXPECT_EQ(cart[2], cellgrid->grid_array()[ipoint].cart_[2]);
+      EXPECT_EQ(weight, cellgrid->grid_array()[ipoint].weight_);
+      EXPECT_EQ(0, cellgrid->grid_array()[ipoint].icell_[0]);
+      EXPECT_EQ(0, cellgrid->grid_array()[ipoint].icell_[1]);
+      EXPECT_EQ(0, cellgrid->grid_array()[ipoint].icell_[2]);
+      EXPECT_EQ(ipoint, cellgrid->grid_array()[ipoint].index_);
     }
 
     // Basic checks on data members
-    EXPECT_EQ(NPOINT, supergrid->grid_array().size());
-    EXPECT_TRUE(std::isnan(supergrid->cell()->volume()));
-    EXPECT_NEAR(1.0, supergrid->subcell()->volume(), EPS);
-    EXPECT_EQ(0, supergrid->shape()[0]);
-    EXPECT_EQ(0, supergrid->shape()[1]);
-    EXPECT_EQ(0, supergrid->shape()[2]);
+    EXPECT_EQ(NPOINT, cellgrid->grid_array().size());
+    EXPECT_TRUE(std::isnan(cellgrid->cell()->volume()));
+    EXPECT_NEAR(1.0, cellgrid->subcell()->volume(), EPS);
+    EXPECT_EQ(0, cellgrid->shape()[0]);
+    EXPECT_EQ(0, cellgrid->shape()[1]);
+    EXPECT_EQ(0, cellgrid->shape()[2]);
 
     // Check for the right exception (sort isn't called yet)
-    EXPECT_THROW(supergrid->cell_map(), std::logic_error);
-    EXPECT_THROW(supergrid->iadd_cutoff(nullptr, 0.0, nullptr, nullptr, nullptr), std::logic_error);
-    EXPECT_THROW(supergrid->integrate_cutoff(nullptr, 0.0, nullptr, nullptr, nullptr), std::logic_error);
+    EXPECT_THROW(cellgrid->cell_map(), std::logic_error);
+    EXPECT_THROW(cellgrid->iadd_cutoff(nullptr, 0.0, nullptr, nullptr, nullptr), std::logic_error);
+    EXPECT_THROW(cellgrid->integrate_cutoff(nullptr, 0.0, nullptr, nullptr, nullptr), std::logic_error);
 
     // Sort the grid_array, assign icell and make cell_map
-    supergrid->sort();
+    cellgrid->sort();
 
     // Test if points are sorted
-    const std::vector<qcg::SupergridPoint>& grid_array(supergrid->grid_array());
+    const std::vector<qcg::CellgridPoint>& grid_array(cellgrid->grid_array());
     size_t ncell = 0;
     for (size_t ipoint = 1; ipoint < NPOINT; ipoint++) {
       EXPECT_LE(grid_array[ipoint - 1].icell_[0], grid_array[ipoint].icell_[0]);
@@ -98,50 +98,50 @@ class SupergridTest : public ::testing::Test {
     ++ncell;
 
     // Basic test of the cell_map
-    EXPECT_EQ(ncell, supergrid->cell_map()->size());
+    EXPECT_EQ(ncell, cellgrid->cell_map()->size());
 
-    return supergrid;
+    return cellgrid;
   }
 
-  qcg::Supergrid* create_case_3(unsigned int seed, const cl::Cell& cell) {
+  qcg::Cellgrid* create_case_3(unsigned int seed, const cl::Cell& cell) {
     // Construct the grid
-    qcg::Supergrid* supergrid = new qcg::Supergrid(cell, 0.55);
+    qcg::Cellgrid* cellgrid = new qcg::Cellgrid(cell, 0.55);
 
     // Add points
     double all_cart[3*NPOINT];
     double all_weight[NPOINT];
     seed = fill_random_double(seed, all_cart, 3*NPOINT, -5, 5);
     seed = fill_random_double(seed, all_weight, NPOINT, 1, 2);
-    supergrid->emplace_back_many(all_cart, all_weight, NPOINT);
+    cellgrid->emplace_back_many(all_cart, all_weight, NPOINT);
     for (int ipoint = 0; ipoint < NPOINT; ipoint++) {
-      EXPECT_EQ(all_cart[3*ipoint], supergrid->grid_array()[ipoint].cart_[0]);
-      EXPECT_EQ(all_cart[3*ipoint + 1], supergrid->grid_array()[ipoint].cart_[1]);
-      EXPECT_EQ(all_cart[3*ipoint + 2], supergrid->grid_array()[ipoint].cart_[2]);
-      EXPECT_EQ(all_weight[ipoint], supergrid->grid_array()[ipoint].weight_);
-      EXPECT_EQ(0, supergrid->grid_array()[ipoint].icell_[0]);
-      EXPECT_EQ(0, supergrid->grid_array()[ipoint].icell_[1]);
-      EXPECT_EQ(0, supergrid->grid_array()[ipoint].icell_[2]);
-      EXPECT_EQ(ipoint, supergrid->grid_array()[ipoint].index_);
+      EXPECT_EQ(all_cart[3*ipoint], cellgrid->grid_array()[ipoint].cart_[0]);
+      EXPECT_EQ(all_cart[3*ipoint + 1], cellgrid->grid_array()[ipoint].cart_[1]);
+      EXPECT_EQ(all_cart[3*ipoint + 2], cellgrid->grid_array()[ipoint].cart_[2]);
+      EXPECT_EQ(all_weight[ipoint], cellgrid->grid_array()[ipoint].weight_);
+      EXPECT_EQ(0, cellgrid->grid_array()[ipoint].icell_[0]);
+      EXPECT_EQ(0, cellgrid->grid_array()[ipoint].icell_[1]);
+      EXPECT_EQ(0, cellgrid->grid_array()[ipoint].icell_[2]);
+      EXPECT_EQ(ipoint, cellgrid->grid_array()[ipoint].index_);
     }
 
     // Basic checks on data members
-    EXPECT_EQ(NPOINT, supergrid->grid_array().size());
-    EXPECT_NEAR(1.0, supergrid->cell()->volume(), EPS);
-    EXPECT_NEAR(0.125, supergrid->subcell()->volume(), EPS);
-    EXPECT_EQ(2, supergrid->shape()[0]);
-    EXPECT_EQ(2, supergrid->shape()[1]);
-    EXPECT_EQ(2, supergrid->shape()[2]);
+    EXPECT_EQ(NPOINT, cellgrid->grid_array().size());
+    EXPECT_NEAR(1.0, cellgrid->cell()->volume(), EPS);
+    EXPECT_NEAR(0.125, cellgrid->subcell()->volume(), EPS);
+    EXPECT_EQ(2, cellgrid->shape()[0]);
+    EXPECT_EQ(2, cellgrid->shape()[1]);
+    EXPECT_EQ(2, cellgrid->shape()[2]);
 
     // Check for the right exception (sort isn't called yet)
-    EXPECT_THROW(supergrid->cell_map(), std::logic_error);
-    EXPECT_THROW(supergrid->iadd_cutoff(nullptr, 0.0, nullptr, nullptr, nullptr), std::logic_error);
-    EXPECT_THROW(supergrid->integrate_cutoff(nullptr, 0.0, nullptr, nullptr, nullptr), std::logic_error);
+    EXPECT_THROW(cellgrid->cell_map(), std::logic_error);
+    EXPECT_THROW(cellgrid->iadd_cutoff(nullptr, 0.0, nullptr, nullptr, nullptr), std::logic_error);
+    EXPECT_THROW(cellgrid->integrate_cutoff(nullptr, 0.0, nullptr, nullptr, nullptr), std::logic_error);
 
     // Sort the grid_array, assign icell and make cell_map
-    supergrid->sort();
+    cellgrid->sort();
 
     // Test if points are sorted
-    const std::vector<qcg::SupergridPoint>& grid_array(supergrid->grid_array());
+    const std::vector<qcg::CellgridPoint>& grid_array(cellgrid->grid_array());
     size_t ncell = 0;
     for (size_t ipoint = 1; ipoint < NPOINT; ipoint++) {
       EXPECT_LE(grid_array[ipoint - 1].icell_[0], grid_array[ipoint].icell_[0]);
@@ -159,9 +159,9 @@ class SupergridTest : public ::testing::Test {
     ++ncell;
 
     // Basic test of the cell_map
-    EXPECT_EQ(ncell, supergrid->cell_map()->size());
+    EXPECT_EQ(ncell, cellgrid->cell_map()->size());
 
-    return supergrid;
+    return cellgrid;
   }
 };
 
@@ -174,12 +174,12 @@ double test_fn(const double* delta, const double d, const void* extra_arg) {
 }
 
 
-TEST_F(SupergridTest, iadd_integrate_cutoff_0) {
+TEST_F(CellgridTest, iadd_integrate_cutoff_0) {
   size_t ncell_total = 0;
   double work[NPOINT];
   for (int irep = 0; irep < NREP; ++irep) {
-    std::unique_ptr<qcg::Supergrid> supergrid(create_case_0(irep));
-    ncell_total += supergrid->cell_map()->size();
+    std::unique_ptr<qcg::Cellgrid> cellgrid(create_case_0(irep));
+    ncell_total += cellgrid->cell_map()->size();
 
     // Select a cutoff sphere
     double center[3];
@@ -193,12 +193,12 @@ TEST_F(SupergridTest, iadd_integrate_cutoff_0) {
 
     // Call iadd
     std::fill(work, work+NPOINT, 0.0);
-    supergrid->iadd_cutoff(center, cutoff, test_fn, extra_arg, work);
+    cellgrid->iadd_cutoff(center, cutoff, test_fn, extra_arg, work);
 
     // Check every point in work, and computing integral
     double expected_integral = 0.0;
     size_t ipoint = 0;
-    for (const qcg::SupergridPoint& point : supergrid->grid_array()) {
+    for (const qcg::CellgridPoint& point : cellgrid->grid_array()) {
       double delta[3];
       vec3::delta(center, point.cart_, delta);
       double distance = vec3::norm(delta);
@@ -216,12 +216,12 @@ TEST_F(SupergridTest, iadd_integrate_cutoff_0) {
     }
 
     // Compute integral in different ways
-    double integral1 = supergrid->integrate_cutoff(center, cutoff, nullptr, nullptr, work);
+    double integral1 = cellgrid->integrate_cutoff(center, cutoff, nullptr, nullptr, work);
     EXPECT_NEAR(expected_integral, integral1, EPS);
-    double integral2 = supergrid->integrate_cutoff(center, cutoff, test_fn, extra_arg, nullptr);
+    double integral2 = cellgrid->integrate_cutoff(center, cutoff, test_fn, extra_arg, nullptr);
     EXPECT_NEAR(expected_integral, integral2, EPS);
     std::fill(work, work+NPOINT, 2.0);
-    double integral3 = supergrid->integrate_cutoff(center, cutoff, test_fn, extra_arg, work);
+    double integral3 = cellgrid->integrate_cutoff(center, cutoff, test_fn, extra_arg, work);
     EXPECT_NEAR(2*expected_integral, integral3, EPS);
   }
 
@@ -230,15 +230,15 @@ TEST_F(SupergridTest, iadd_integrate_cutoff_0) {
 }
 
 
-TEST_F(SupergridTest, iadd_integrate_cutoff_3) {
+TEST_F(CellgridTest, iadd_integrate_cutoff_3) {
   size_t ncell_total = 0;
   size_t nnotvisited = 0;
   double vecs[9]{1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
   cl::Cell cell(vecs, 3);
   double work[NPOINT];
   for (int irep = 0; irep < NREP; ++irep) {
-    std::unique_ptr<qcg::Supergrid> supergrid(create_case_3(irep, cell));
-    ncell_total += supergrid->cell_map()->size();
+    std::unique_ptr<qcg::Cellgrid> cellgrid(create_case_3(irep, cell));
+    ncell_total += cellgrid->cell_map()->size();
 
     // Select a cutoff sphere
     double center[3];
@@ -252,17 +252,17 @@ TEST_F(SupergridTest, iadd_integrate_cutoff_3) {
 
     // Call iadd
     std::fill(work, work+NPOINT, 0.0);
-    supergrid->iadd_cutoff(center, cutoff, test_fn, extra_arg, work);
+    cellgrid->iadd_cutoff(center, cutoff, test_fn, extra_arg, work);
 
     // Check every point in work, and computing integral
     double expected_integral = 0.0;
     size_t ipoint = 0;
-    for (const qcg::SupergridPoint& point : supergrid->grid_array()) {
+    for (const qcg::CellgridPoint& point : cellgrid->grid_array()) {
       double delta0[3];
       vec3::delta(center, point.cart_, delta0);
       int ranges_begin[3];
       int ranges_end[3];
-      supergrid->cell()->ranges_cutoff(center, cutoff, ranges_begin, ranges_end);
+      cellgrid->cell()->ranges_cutoff(center, cutoff, ranges_begin, ranges_end);
       int icell[3];
       double expected = 0.0;
       bool visited = false;
@@ -271,7 +271,7 @@ TEST_F(SupergridTest, iadd_integrate_cutoff_3) {
           for (icell[2] = ranges_begin[2]; icell[2] < ranges_end[2]; ++icell[2]) {
             double delta[3];
             vec3::copy(delta0, delta);
-            supergrid->cell()->iadd_vec(delta, icell);
+            cellgrid->cell()->iadd_vec(delta, icell);
             double distance = vec3::norm(delta);
             if (distance < cutoff) {
               expected += test_fn(delta, distance, extra_arg);
@@ -296,13 +296,13 @@ TEST_F(SupergridTest, iadd_integrate_cutoff_3) {
        already wrapped periodically in work, and the following would again periodically
        repeast that wrapped result. This effectively "double wraps" the integrand, which
        does not make any sense.
-    double integral1 = supergrid->integrate_cutoff(center, cutoff, nullptr, nullptr, work);
+    double integral1 = cellgrid->integrate_cutoff(center, cutoff, nullptr, nullptr, work);
     EXPECT_NEAR(expected_integral, integral1, EPS);
     */
-    double integral2 = supergrid->integrate_cutoff(center, cutoff, test_fn, extra_arg, nullptr);
+    double integral2 = cellgrid->integrate_cutoff(center, cutoff, test_fn, extra_arg, nullptr);
     EXPECT_NEAR(expected_integral, integral2, EPS);
     std::fill(work, work+NPOINT, 2.0);
-    double integral3 = supergrid->integrate_cutoff(center, cutoff, test_fn, extra_arg, work);
+    double integral3 = cellgrid->integrate_cutoff(center, cutoff, test_fn, extra_arg, work);
     EXPECT_NEAR(2*expected_integral, integral3, EPS*10);  // Order-of-operations differs
   }
 
@@ -312,10 +312,10 @@ TEST_F(SupergridTest, iadd_integrate_cutoff_3) {
 }
 
 
-TEST_F(SupergridTest, iadd_integrate_cutoff_errors) {
-    std::unique_ptr<qcg::Supergrid> supergrid(new qcg::Supergrid(cl::Cell()));
-    EXPECT_THROW(supergrid->iadd_cutoff(nullptr, 1.0, nullptr, nullptr, nullptr), std::logic_error);
-    EXPECT_THROW(supergrid->integrate_cutoff(nullptr, 1.0, nullptr, nullptr, nullptr), std::logic_error);
+TEST_F(CellgridTest, iadd_integrate_cutoff_errors) {
+    std::unique_ptr<qcg::Cellgrid> cellgrid(new qcg::Cellgrid(cl::Cell()));
+    EXPECT_THROW(cellgrid->iadd_cutoff(nullptr, 1.0, nullptr, nullptr, nullptr), std::logic_error);
+    EXPECT_THROW(cellgrid->integrate_cutoff(nullptr, 1.0, nullptr, nullptr, nullptr), std::logic_error);
 }
 
 
