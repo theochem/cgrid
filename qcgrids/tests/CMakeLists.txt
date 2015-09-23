@@ -20,8 +20,7 @@
 # Make use of the GTest CMake module
 find_package(GTest)
 
-if (GTest_FOUND)
-
+if(GTEST_FOUND)
     # Make sure the header files are found
     include_directories(${GTEST_INCLUDE_DIRS})
 
@@ -38,7 +37,6 @@ if (GTest_FOUND)
 
     # The testing executable
     add_executable(test_qcgrids EXCLUDE_FROM_ALL ${TEST_SOURCE_FILES})
-    set_property(TARGET test_qcgrids PROPERTY CXX_STANDARD 11)
 
     # How the testing executable has to be linked...
     target_link_libraries(test_qcgrids qcgrids ${CELLLISTS_LIBRARY} ${GTEST_BOTH_LIBRARIES} gcov pthread)
@@ -70,5 +68,4 @@ if (GTest_FOUND)
 
 
     endif()
-
 endif()
