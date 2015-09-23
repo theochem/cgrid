@@ -28,7 +28,6 @@
 #include <gtest/gtest.h>
 
 #include <qcgrids/supergrid.h>
-#include <qcgrids/subgrid.h>
 
 #include "common.h"
 
@@ -74,7 +73,8 @@ class SupergridTest : public ::testing::Test {
 
     // Check for the right exception (sort isn't called yet)
     EXPECT_THROW(supergrid->cell_map(), std::logic_error);
-    EXPECT_THROW(supergrid->create_subgrid(nullptr, 1.0), std::logic_error);
+    EXPECT_THROW(supergrid->iadd_cutoff(nullptr, 0.0, nullptr, nullptr, nullptr), std::logic_error);
+    EXPECT_THROW(supergrid->integrate_cutoff(nullptr, 0.0, nullptr, nullptr, nullptr), std::logic_error);
 
     // Sort the grid_array, assign icell and make cell_map
     supergrid->sort();
@@ -134,7 +134,8 @@ class SupergridTest : public ::testing::Test {
 
     // Check for the right exception (sort isn't called yet)
     EXPECT_THROW(supergrid->cell_map(), std::logic_error);
-    EXPECT_THROW(supergrid->create_subgrid(nullptr, 1.0), std::logic_error);
+    EXPECT_THROW(supergrid->iadd_cutoff(nullptr, 0.0, nullptr, nullptr, nullptr), std::logic_error);
+    EXPECT_THROW(supergrid->integrate_cutoff(nullptr, 0.0, nullptr, nullptr, nullptr), std::logic_error);
 
     // Sort the grid_array, assign icell and make cell_map
     supergrid->sort();
@@ -163,113 +164,6 @@ class SupergridTest : public ::testing::Test {
     return supergrid;
   }
 };
-
-
-TEST_F(SupergridTest, subgrid_example1) {
-  size_t ncell_total = 0;
-  size_t npoint_inside = 0;
-  for (int irep = 0; irep < NREP; ++irep) {
-    std::unique_ptr<qcg::Supergrid> supergrid(create_case_0(irep));
-    ncell_total += supergrid->cell_map()->size();
-
-    // Make a subgrid
-    double center[3];
-    double cutoff;
-    unsigned int seed = fill_random_double(irep + NREP, center, 3, -2, 2);
-    seed = fill_random_double(seed, &cutoff, 1, 3, 15);
-    std::unique_ptr<qcg::Subgrid> subgrid(supergrid->create_subgrid(center, cutoff));
-
-    // Check basics of subgrid
-    EXPECT_EQ(center[0], subgrid->center()[0]);
-    EXPECT_EQ(center[1], subgrid->center()[1]);
-    EXPECT_EQ(center[2], subgrid->center()[2]);
-
-    // Compare all the points in the subgrid with the supergrid
-    for (const qcg::SubgridPoint& point : subgrid->grid_array()) {
-      EXPECT_GT(supergrid->grid_array().size(), point.index_);
-      // Cartesian coordinates must be the same because there are no periodic boundary
-      // conditions.
-      EXPECT_EQ(supergrid->grid_array()[point.index_].cart_[0], point.cart_[0]);
-      EXPECT_EQ(supergrid->grid_array()[point.index_].cart_[1], point.cart_[1]);
-      EXPECT_EQ(supergrid->grid_array()[point.index_].cart_[2], point.cart_[2]);
-      // Weights should always be the same
-      EXPECT_EQ(supergrid->grid_array()[point.index_].weight_, point.weight_);
-      // Check correctness of distance
-      EXPECT_GE(cutoff, point.distance_);
-      EXPECT_NEAR(vec3::distance(center, point.cart_), point.distance_, EPS);
-      ++npoint_inside;
-    }
-
-    // Go over all the points in the supergrid and check that each point within the cutoff
-    // is included in the subgrid.
-    int isuper = 0;
-    for (const qcg::SupergridPoint point0 : supergrid->grid_array()) {
-      const double d(vec3::distance(center, point0.cart_));
-      if (d <= cutoff) {
-        bool found(false);
-        for (const qcg::SubgridPoint point1 : subgrid->grid_array()) {
-          if (point1.index_ == isuper) {
-            found = true;
-            break;
-          }
-        }
-        EXPECT_EQ(true, found);
-      }
-      ++isuper;
-    }
-  }
-
-  // Sufficiency checks
-  EXPECT_LT(3*NREP, ncell_total);
-  EXPECT_LT((NREP*NPOINT)/10, npoint_inside);
-}
-
-
-TEST_F(SupergridTest, subgrid_example2) {
-  size_t ncell_total = 0;
-  size_t npoint_inside = 0;
-  double vecs[9]{1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
-  cl::Cell cell(vecs, 3);
-  for (int irep = 0; irep < NREP; ++irep) {
-    std::unique_ptr<qcg::Supergrid> supergrid(create_case_3(irep, cell));
-    ncell_total += supergrid->cell_map()->size();
-
-    // Make a subgrid
-    double center[3];
-    double cutoff;
-    unsigned int seed = fill_random_double(irep + NREP, center, 3, -2, 2);
-    seed = fill_random_double(seed, &cutoff, 1, 0.5, 2.5);
-    std::unique_ptr<qcg::Subgrid> subgrid(supergrid->create_subgrid(center, cutoff));
-
-    // Check basics of subgrid
-    EXPECT_EQ(center[0], subgrid->center()[0]);
-    EXPECT_EQ(center[1], subgrid->center()[1]);
-    EXPECT_EQ(center[2], subgrid->center()[2]);
-
-    // Compare all the points in the subgrid with the supergrid
-    for (const qcg::SubgridPoint& point : subgrid->grid_array()) {
-      EXPECT_GT(supergrid->grid_array().size(), point.index_);
-      // The cartesian coordinates may differ up to a linear combination of cell vectors.
-      // Hence, only tesing wrapped relative fractional coordinates
-      double delta[3];
-      vec3::delta(supergrid->grid_array()[point.index_].cart_, point.cart_, delta);
-      cell.iwrap_mic(delta);
-      EXPECT_NEAR(0.0, delta[0], EPS);
-      EXPECT_NEAR(0.0, delta[1], EPS);
-      EXPECT_NEAR(0.0, delta[2], EPS);
-      // Weights should always be the same
-      EXPECT_EQ(supergrid->grid_array()[point.index_].weight_, point.weight_);
-      // Check correctness of distance
-      EXPECT_GE(cutoff, point.distance_);
-      EXPECT_NEAR(vec3::distance(center, point.cart_), point.distance_, EPS);
-      ++npoint_inside;
-    }
-  }
-
-  // Sufficiency checks
-  EXPECT_LT(3*NREP, ncell_total);
-  EXPECT_LT((NREP*NPOINT)/10, npoint_inside);
-}
 
 
 double test_fn(const double* delta, const double d, const void* extra_arg) {

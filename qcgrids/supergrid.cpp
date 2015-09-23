@@ -95,23 +95,11 @@ void Supergrid::iadd_cutoff(const double* center, const double cutoff, GridFunc 
   std::vector<int> bars;
   subcell_->bars_cutoff(center, cutoff, &bars);
 
-  // Loop over all cells and call the function for distances below the cutoff.
-  for (cl::BarIterator3D bit(bars, shape_); bit.busy(); ++bit) {
-    auto it = cell_map_->find(bit.icell());
-    if (it != cell_map_->end()) {
-      for (size_t ipoint = it->second[0]; ipoint < it->second[1]; ++ipoint) {
-        double delta[3];
-        std::copy(grid_array_[ipoint].cart_, grid_array_[ipoint].cart_ + 3, delta);
-        // TODO: merge into one call
-        cell_->iadd_vec(delta, bit.coeffs());
-        vec3::iadd(delta, center, -1);
-        double d = vec3::norm(delta);
-        if (d < cutoff)
-          output[ipoint] += grid_func(delta, d, extra_arg);
-      }
-    }
+  // Loop over all relevant points and compute
+  for (cl::DeltaIterator dit(*subcell_, shape_, center, cutoff, grid_array_.data(),
+       grid_array_.size(), sizeof(SupergridPoint), *cell_map_); dit.busy(); ++dit) {
+    output[dit.ipoint()] += grid_func(dit.delta(), dit.distance(), extra_arg);
   }
-
 }
 
 
@@ -124,61 +112,19 @@ double Supergrid::integrate_cutoff(const double* center, const double cutoff, Gr
   std::vector<int> bars;
   subcell_->bars_cutoff(center, cutoff, &bars);
 
-  // Loop over all cells and call the function for distances below the cutoff.
   double result = 0.0;
-  for (cl::BarIterator3D bit(bars, shape_); bit.busy(); ++bit) {
-    auto it = cell_map_->find(bit.icell());
-    if (it != cell_map_->end()) {
-      for (size_t ipoint = it->second[0]; ipoint < it->second[1]; ++ipoint) {
-        double delta[3];
-        std::copy(grid_array_[ipoint].cart_, grid_array_[ipoint].cart_ + 3, delta);
-        // TODO: merge into one call
-        cell_->iadd_vec(delta, bit.coeffs());
-        vec3::iadd(delta, center, -1);
-        double d = vec3::norm(delta);
-        if (d < cutoff) {
-          double term = grid_array_[ipoint].weight_;
-          if (grid_func != nullptr)
-            term *= grid_func(delta, d, extra_arg);
-          if (factor != nullptr)
-            term *= factor[ipoint];
-          result += term;
-        }
-      }
-    }
+  // Loop over all relevant points and compute
+  for (cl::DeltaIterator dit(*subcell_, shape_, center, cutoff, grid_array_.data(),
+       grid_array_.size(), sizeof(SupergridPoint), *cell_map_); dit.busy(); ++dit) {
+    double term = grid_array_[dit.ipoint()].weight_;
+    if (grid_func != nullptr)
+      term *= grid_func(dit.delta(), dit.distance(), extra_arg);
+    if (factor != nullptr)
+      term *= factor[dit.ipoint()];
+    result += term;
   }
   return result;
 }
-
-
-Subgrid* Supergrid::create_subgrid(const double* center, const double cutoff) const {
-  // The sort method must have been called before
-  if (cell_map_.get() == nullptr)
-    throw std::logic_error("sort must be called before calling create_subgrid.");
-
-  // Use domains to to this efficiently
-  std::vector<int> bars;
-  subcell_->bars_cutoff(center, cutoff, &bars);
-  Subgrid* subgrid = new Subgrid(center);
-  for (cl::BarIterator3D bit(bars, shape_); bit.busy(); ++bit) {
-    auto it = cell_map_->find(bit.icell());
-    if (it != cell_map_->end()) {
-      for (size_t ipoint = it->second[0]; ipoint < it->second[1]; ++ipoint) {
-        double cart[3];
-        std::copy(grid_array_[ipoint].cart_, grid_array_[ipoint].cart_ + 3, cart);
-        cell_->iadd_vec(cart, bit.coeffs());
-        double d = vec3::distance(center, cart);
-        if (d < cutoff)
-          subgrid->emplace_back(cart, d, grid_array_[ipoint].weight_, static_cast<int>(ipoint));
-      }
-    }
-  }
-
-  // Sort by distance from the center and return.
-  subgrid->sort();
-  return subgrid;
-}
-
 
 
 }  // namespace qcgrids

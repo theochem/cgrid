@@ -30,8 +30,6 @@
 #include <celllists/cell.h>
 #include <celllists/decomposition.h>
 
-#include "qcgrids/subgrid.h"
-
 
 namespace cl = celllists;
 
@@ -71,8 +69,6 @@ class Supergrid {
       const void* extra_arg, double* output);
   double integrate_cutoff(const double* center, const double cutoff, GridFunc grid_func,
       const void* extra_arg, const double* factor);
-
-  Subgrid* create_subgrid(const double* center, const double cutoff) const;
 
  private:
   std::vector<SupergridPoint> grid_array_;
