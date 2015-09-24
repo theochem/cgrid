@@ -90,10 +90,6 @@ void Cellgrid::iadd_cutoff(const double* center, const double cutoff, GridFunc g
   if (cell_map_.get() == nullptr)
     throw std::logic_error("sort must be called before calling create_subgrid.");
 
-  // Compute the relevant bars for this addition
-  std::vector<int> bars;
-  subcell_->bars_cutoff(center, cutoff, &bars);
-
   // Loop over all relevant points and compute
   for (cl::DeltaIterator dit(*subcell_, shape_, center, cutoff, grid_array_.data(),
        grid_array_.size(), sizeof(CellgridPoint), *cell_map_); dit.busy(); ++dit) {
@@ -107,10 +103,6 @@ double Cellgrid::integrate_cutoff(const double* center, const double cutoff,
   // The sort method must have been called before
   if (cell_map_.get() == nullptr)
     throw std::logic_error("sort must be called before calling create_subgrid.");
-
-  // Compute the relevant bars for this addition
-  std::vector<int> bars;
-  subcell_->bars_cutoff(center, cutoff, &bars);
 
   double result = 0.0;
   // Loop over all relevant points and compute
