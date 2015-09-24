@@ -4,6 +4,8 @@
 build
 tmp
 debug
-install
+release
+relwithdebinfo
+python-qcgrids/qcgrids/qcgrids.so
 python-qcgrids/qcgrids/qcgrids.cpp
 python-qcgrids/build
