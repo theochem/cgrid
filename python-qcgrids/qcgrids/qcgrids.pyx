@@ -71,6 +71,12 @@ cdef class Cellgrid(object):
             memcpy(&vecs[0, 0], self._this.cell().vecs(), sizeof(double)*9);
             return celllists.Cell(vecs)
 
+    property subcell:
+        def __get__(self):
+            cdef np.ndarray[double, ndim=2] vecs = np.zeros((3, 3), float)
+            memcpy(&vecs[0, 0], self._this.subcell().vecs(), sizeof(double)*9);
+            return celllists.Cell(vecs)
+
     property grid_array:
         def __get__(self):
             cdef np.npy_intp dims[1]
