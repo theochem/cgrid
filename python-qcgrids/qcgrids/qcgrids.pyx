@@ -113,6 +113,9 @@ cdef class Cellgrid(object):
         def __get__(self):
             return self.grid_array['index']
 
+    def __len__(self):
+        return self._this.grid_array().size()
+
     def append_many(self, np.ndarray[double, ndim=2] points not None,
                     np.ndarray[double, ndim=1] weights not None):
         cdef size_t npoint = 0;
