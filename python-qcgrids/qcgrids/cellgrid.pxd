@@ -33,6 +33,7 @@ cdef extern from "qcgrids/cellgrid.h" namespace "qcgrids":
         const vector[CellgridPoint]& grid_array();
         const celllists.cell.Cell* cell();
         const celllists.cell.Cell* subcell();
+        const int* shape();
 
         void emplace_back_many(const double* cart, const double* weight, const size_t npoint);
         void sort();
