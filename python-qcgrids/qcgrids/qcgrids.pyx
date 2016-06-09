@@ -146,7 +146,5 @@ cdef class Cellgrid(object):
                                            grid_func._extra_arg, &factor[0])
 
     def integrate(self, *factors):
-        tmp = self.weights.copy()
-        for factor in factors:
-            tmp *= factor
-        return tmp.sum()
+        subscripts = '%s->' % (','.join(['i']*(len(factors)+1)))
+        return np.einsum(subscripts, self.weights, *factors)
