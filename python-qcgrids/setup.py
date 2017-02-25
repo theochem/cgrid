@@ -32,7 +32,7 @@ def parse_cpath():
 
 setup(
     name='python-qcgrids',
-    version='0.0.0',
+    version='0.0.0b1',
     description='QCGrids is a numerical integration library for quantum chemistry.',
     author='Toon Verstraelen',
     author_email='Toon.Verstraelen@UGent.be',
