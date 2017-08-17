@@ -40,9 +40,9 @@ set(HEADER_FILES
   ${CMAKE_CURRENT_BINARY_DIR}/config.h
 )
 
-# Find the celllists library. Let's be nice with manually compiled stuff in
+# Find the cellcutoff library. Let's be nice with manually compiled stuff in
 # LD_LIBRARY_PATH...
-find_library(CELLLISTS_LIBRARY celllists
+find_library(CELLCUTOFF_LIBRARY cellcutoff
              HINTS ENV LD_LIBRARY_PATH)
 
 # Define the shared library
@@ -51,8 +51,8 @@ set_property(TARGET qcgrids PROPERTY VERSION ${QCGRIDS_VERSION})
 set_property(TARGET qcgrids PROPERTY SOVERSION ${QCGRIDS_SOVERSION})
 set_property(TARGET qcgrids PROPERTY CXX_STANDARD 11)
 
-# Link with celllists
-target_link_libraries(qcgrids ${CELLLISTS_LIBRARY})
+# Link with cellcutoff
+target_link_libraries(qcgrids ${CELLCUTOFF_LIBRARY})
 
 # Install include files
 install(FILES ${HEADER_FILES} DESTINATION include/qcgrids)

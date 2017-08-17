@@ -27,11 +27,11 @@
 #include <memory>
 #include <vector>
 
-#include <celllists/cell.h>
-#include <celllists/decomposition.h>
+#include <cellcutoff/cell.h>
+#include <cellcutoff/decomposition.h>
 
 
-namespace cl = celllists;
+namespace cl = cellcutoff;
 
 namespace qcgrids {
 

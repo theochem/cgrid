@@ -24,9 +24,9 @@ if(GTEST_FOUND)
     # Make sure the header files are found
     include_directories(${GTEST_INCLUDE_DIRS})
 
-    # Find the celllists library. Let's be nice with manually compiled stuff in
+    # Find the cellcutoff library. Let's be nice with manually compiled stuff in
     # LD_LIBRARY_PATH...
-    find_library(CELLLISTS_LIBRARY celllists
+    find_library(CELLCUTOFF_LIBRARY cellcutoff
                  HINTS ENV LD_LIBRARY_PATH)
 
     # Define test source files
@@ -39,7 +39,7 @@ if(GTEST_FOUND)
     add_executable(test_qcgrids EXCLUDE_FROM_ALL ${TEST_SOURCE_FILES})
 
     # How the testing executable has to be linked...
-    target_link_libraries(test_qcgrids qcgrids ${CELLLISTS_LIBRARY} ${GTEST_BOTH_LIBRARIES} gcov pthread)
+    target_link_libraries(test_qcgrids qcgrids ${CELLCUTOFF_LIBRARY} ${GTEST_BOTH_LIBRARIES} gcov pthread)
 
     # Use our own test target because ctest hides relevant output.
     if(QCGRIDS_DO_COVERAGE)

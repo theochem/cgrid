@@ -24,14 +24,14 @@
 #include <memory>
 #include <vector>
 
-#include <celllists/cell.h>
-#include <celllists/decomposition.h>
-#include <celllists/iterators.h>
-#include <celllists/vec3.h>
+#include <cellcutoff/cell.h>
+#include <cellcutoff/decomposition.h>
+#include <cellcutoff/iterators.h>
+#include <cellcutoff/vec3.h>
 
 
-namespace cl = celllists;
-namespace vec3 = celllists::vec3;
+namespace cl = cellcutoff;
+namespace vec3 = cellcutoff::vec3;
 
 namespace qcgrids {
 

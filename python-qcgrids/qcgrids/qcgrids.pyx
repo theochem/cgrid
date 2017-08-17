@@ -26,7 +26,7 @@ np.import_array()
 
 cimport cellgrid
 
-cimport celllists.celllists as celllists
+cimport cellcutoff.cellcutoff as cellcutoff
 
 from cpython.ref cimport PyTypeObject
 from libc.string cimport memcpy
@@ -51,10 +51,10 @@ def check_array_arg(name, arg, expected_shape):
 
 
 cdef class Cellgrid(object):
-    def __cinit__(self, celllists.Cell cell, double spacing=1):
+    def __cinit__(self, cellcutoff.Cell cell, double spacing=1):
         self._this = new cellgrid.Cellgrid(cell._this[0], spacing)
 
-    def __init__(self, celllists.Cell cell, double spacing=1):
+    def __init__(self, cellcutoff.Cell cell, double spacing=1):
         pass
 
     def __dealloc__(self):
@@ -69,13 +69,13 @@ cdef class Cellgrid(object):
         def __get__(self):
             cdef np.ndarray[double, ndim=2] vecs = np.zeros((3, 3), float)
             memcpy(&vecs[0, 0], self._this.cell().vecs(), sizeof(double)*9);
-            return celllists.Cell(vecs)
+            return cellcutoff.Cell(vecs)
 
     property subcell:
         def __get__(self):
             cdef np.ndarray[double, ndim=2] vecs = np.zeros((3, 3), float)
             memcpy(&vecs[0, 0], self._this.subcell().vecs(), sizeof(double)*9);
-            return celllists.Cell(vecs)
+            return cellcutoff.Cell(vecs)
 
     property shape:
         def __get__(self):

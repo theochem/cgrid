@@ -18,7 +18,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #--
 
-cimport celllists.cell
+cimport cellcutoff.cell
 from libcpp.vector cimport vector
 
 cdef extern from "qcgrids/cellgrid.h" namespace "qcgrids":
@@ -28,11 +28,11 @@ cdef extern from "qcgrids/cellgrid.h" namespace "qcgrids":
     ctypedef double (*GridFunc) (const double*, const double, const void*);
 
     cdef cppclass Cellgrid:
-        Cellgrid(const celllists.cell.Cell& cell, double spacing);
+        Cellgrid(const cellcutoff.cell.Cell& cell, double spacing);
 
         const vector[CellgridPoint]& grid_array();
-        const celllists.cell.Cell* cell();
-        const celllists.cell.Cell* subcell();
+        const cellcutoff.cell.Cell* cell();
+        const cellcutoff.cell.Cell* subcell();
         const int* shape();
 
         void emplace_back_many(const double* cart, const double* weight, const size_t npoint);

@@ -23,8 +23,8 @@
 #include <stdexcept>
 #include <vector>
 
-#include <celllists/cell.h>
-#include <celllists/vec3.h>
+#include <cellcutoff/cell.h>
+#include <cellcutoff/vec3.h>
 #include <gtest/gtest.h>
 
 #include <qcgrids/cellgrid.h>
@@ -33,7 +33,7 @@
 
 
 namespace qcg = qcgrids;
-namespace vec3 = celllists::vec3;
+namespace vec3 = cellcutoff::vec3;
 
 
 // Fixtures
