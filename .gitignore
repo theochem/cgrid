@@ -11,3 +11,4 @@ tmp
 dist
 cpplint.py
 CMakeListsVersion.txt.in
+.idea
