@@ -36,10 +36,13 @@ if(GTEST_FOUND)
     )
 
     # The testing executable
-    add_executable(test_qcgrids EXCLUDE_FROM_ALL ${TEST_SOURCE_FILES})
+    add_executable(test_qcgrids ${TEST_SOURCE_FILES})
 
     # How the testing executable has to be linked...
     target_link_libraries(test_qcgrids qcgrids ${CELLCUTOFF_LIBRARY} ${GTEST_BOTH_LIBRARIES} gcov pthread)
+
+    # Install the test in libexec
+    install (TARGETS test_qcgrids DESTINATION libexec/qcgrids)
 
     # Use our own test target because ctest hides relevant output.
     if(QCGRIDS_DO_COVERAGE)
