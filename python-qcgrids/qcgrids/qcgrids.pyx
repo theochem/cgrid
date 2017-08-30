@@ -26,7 +26,7 @@ np.import_array()
 
 cimport cellgrid
 
-cimport cellcutoff.cellcutoff as cellcutoff
+cimport cellcutoff.ext as cellcutoff
 
 from cpython.ref cimport PyTypeObject
 from libc.string cimport memcpy

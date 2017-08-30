@@ -1,11 +1,13 @@
 *.o
 *.so*
 *.pyc
+*.gcov
 build
-tmp
 debug
 release
 relwithdebinfo
-python-qcgrids/qcgrids/qcgrids.so
-python-qcgrids/qcgrids/qcgrids.cpp
-python-qcgrids/build
+tmp
+*.egg-info
+dist
+cpplint.py
+CMakeListsVersion.txt.in

@@ -1,0 +1,10 @@
+pre_filefilter: ['- python-qcgrids', '+ *']
+
+linters:
+- cppcheck:
+- cpplint:
+    script: ./cpplint.py
+- doxygen:
+    root: qcgrids
+- header:
+- whitespace:

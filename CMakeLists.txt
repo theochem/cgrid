@@ -19,17 +19,13 @@
 
 #set(CMAKE_VERBOSE_MAKEFILE "ON")
 
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.1)
 project(QCGrids CXX)
 
 # Version information
-set(QCGRIDS_MAJOR 0)
-set(QCGRIDS_MINOR 0)
-set(QCGRIDS_PATCH 0b1)
-
-set(QCGRIDS_VERSION ${QCGRIDS_MAJOR}.${QCGRIDS_MINOR}.${QCGRIDS_PATCH})
-set(QCGRIDS_SOVERSION ${QCGRIDS_MAJOR}.${QCGRIDS_MINOR})
-set(PROJECT_BRIEF "A 3D domain decomposition library")
+set(QCGRIDS_VERSION ${GIT_TAG_VERSION})
+set(QCGRIDS_SOVERSION ${GIT_TAG_SOVERSION})
+set(PROJECT_BRIEF "A numerical integration library for quantum chemistry.")
 
 # General compiler flags
 set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wconversion -Wextra")
@@ -49,3 +45,12 @@ endif()
 
 # Compilation of qcgrids according to qcgrids/CMakeLists.txt
 add_subdirectory(qcgrids)
+
+find_package(Doxygen)
+if(DOXYGEN_FOUND)
+    configure_file(${PROJECT_SOURCE_DIR}/doxygen.conf.in ${PROJECT_BINARY_DIR}/doxygen.conf @ONLY)
+    add_custom_target(doc ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/doxygen.conf
+    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+    COMMENT "Generating API documentation with Doxygen" VERBATIM
+)
+endif(DOXYGEN_FOUND)

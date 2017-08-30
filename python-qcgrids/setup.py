@@ -25,6 +25,17 @@ from distutils.extension import Extension
 from Cython.Distutils import build_ext
 
 
+def get_version():
+    """Load the version from version.py, without importing it.
+
+    This function assumes that the last line in the file contains a variable defining the
+    version string with single quotes.
+
+    """
+    with open('qcgrids/version.py', 'r') as f:
+        return f.read().split('=')[-1].replace('\'', '').strip()
+
+
 def parse_cpath():
     import os
     return [s for s in os.getenv('CPATH').split(':') if len(s) > 0]
@@ -32,7 +43,7 @@ def parse_cpath():
 
 setup(
     name='python-qcgrids',
-    version='0.0.0b1',
+    version=get_version(),
     description='QCGrids is a numerical integration library for quantum chemistry.',
     author='Toon Verstraelen',
     author_email='Toon.Verstraelen@UGent.be',
@@ -46,7 +57,7 @@ setup(
             sources=['qcgrids/qcgrids.pyx'],
             depends=['qcgrids/qcgrids.pxd', 'qcgrids/cellgrid.pxd'],
             libraries=['qcgrids'],
-            include_dirs=[np.get_include()] + parse_cpath(),
+            include_dirs=[np.get_include()], 
             extra_compile_args=['-std=c++11', '-Wall'],
             language="c++")],
 )
