@@ -54,3 +54,11 @@ if(DOXYGEN_FOUND)
     COMMENT "Generating API documentation with Doxygen" VERBATIM
 )
 endif(DOXYGEN_FOUND)
+
+set(CPACK_SOURCE_GENERATOR "TGZ")
+set(CPACK_SOURCE_PACKAGE_FILE_NAME
+  "cellcutoff-${CELLCUTOFF_VERSION}")
+set(CPACK_SOURCE_IGNORE_FILES
+  "/build/;/release/;/debug/;/.git/;/python-cellcutoff/;/HEADER/;${CPACK_SOURCE_IGNORE_FILES}")
+include(CPack)
+add_custom_target(sdist COMMAND ${CMAKE_MAKE_PROGRAM} package_source)
