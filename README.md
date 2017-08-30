@@ -3,7 +3,7 @@ QCGrids is a numerical integration library for quantum chemistry.
 Dependencies
 ============
 
-* celllists, python-celllists
+*  celllists, python-celllists
 * C++11 compiler (tested: GNU and Intel)
 * Python, >=2.7.x, <3.x
 * Numpy, >1.9
