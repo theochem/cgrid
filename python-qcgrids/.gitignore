@@ -1,6 +1,6 @@
-cellcutoff/ext.cpp
+qcgrids/ext.cpp
 build
 MANIFEST
 coverage.xml
 .coverage
-cellcutoff/version.py
+qcgrids/version.py
