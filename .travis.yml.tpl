@@ -4,15 +4,8 @@ env:
   #- MYCONDAPY=3.5
   #- MYCONDAPY=3.6
   global:
-    # ANACONDA_TOKEN
     - secure: "${TPL_ANACONDA_TOKEN}"
-    # GITHUB_TOKEN
     - secure: "${TPL_GITHUB_TOKEN}"
-    - PROJECT_NAME=${TPL_PROJECT_NAME}
-    - PYDIR=python-${PROJECT_NAME}
-    - CONDA_PKG_NAME_CPP=${PROJECT_NAME}
-    - CONDA_PKG_NAME_PY=python-${PROJECT_NAME}
-    - GITHUB_REPO_NAME=${TPL_GITHUB_REPO_NAME}
 
 # Do not use Travis Python to save some time.
 language: generic

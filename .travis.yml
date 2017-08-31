@@ -7,15 +7,8 @@ env:
   #- MYCONDAPY=3.5
   #- MYCONDAPY=3.6
   global:
-    # ANACONDA_TOKEN
     - secure: "k4XK37vv/8HySKJXZmGIXRX+DRt1ZBRSc8M7pYCH3nrYuuO65o6Hziphe1JB/mxp8499aNe008dDPsRSvSHGA/IaNjHfNetok13navlSdfKABzQfENJbRtuFlKq/zC6/pAIAUqqm3LCcMs7kM+2cqIUVv4QIhPhq/HK6TneUWqi0wA9Rg3DavUbAinh1BnxA/f+8he2vZNgsRUfuB4nHpZ3mAPzuwGepQwGpi7eM5CApYfTG7ovlwFXAtaZiyQUxyIuq8E5l2X7RSWlzZ2w+xVJYPFF5B5g/p73U8C2xBxaid3VfXULKxLhXeDRHgpeOVxDZjscekH1Cac+53PDNcIamXPXzgNg4cIWr7OvL/KiWvnIIXO5nsrEUjCWrLiqXyzgbLZZBcBRySQ9CUe5jLNhxI6se1J3Qo7BWnFkPcNELxkUcZyTvZ96DBo7QiDYodE3SDVAtLRxTfpCqea/L3kTvNGlF9bNc5dA8427gAB5sb8FuhEliXArrtet3EK9fYfiaXoiIMJKwxVb7ydu43W/9f986TglGN0pk3tLX0Qg2jsHsyArshSZQJCiNH99KHJnkTwDmYiL2KnBHePHEkILNWpXE4pbwkW9JymQnwVhhmAseXDT+MKC3yyohfkP4wfbzmiNpQ5AKjEpDqx6cI51dh+PL4jfOW3Yct1MSrC4="
-    # GITHUB_TOKEN
     - secure: "XlRLGJwV1vIaoLRxkd+ISQIKT4+PAPA4Pt8qVlvZ6pNM5v4PpS1t/xoPS0SH+LfPuB+EwjH/yLksM48DA/ZZwsFIUKd6bEjCroaIYwq0xf1d4TirT6n+wjq8HAD8zmO/GA8R6CAjbqBD35ORKxgviVe9j70DtE+aNdnPPYgBz8uJ5EY4MxOW7swTamIV7YAtu+pXKmVT375eB5Kg33Wd16kF9nRSnOS3UuDnK3dovMTPXtQ1dVSiUM37CcJXqXEFYsKXtvxVXJe96XBkj9lkCEVrGV7MWnUtnJKFdXRwuQf2BsdvGrtZWBiJq3XwK6B0nQv8hFYaXeg0PQcnJs/51MrXrVacXWkqs8fFkil0gf9XSAovkEVXn/s/WHKj/JDRnNU6kM7MeIRSY38Rt9VM9K/UzYj8BlkkdCMqWxdDu60a9H6AKmbrz+loWQqB6OAmP/wdsAlG2GH57e3BRY4wno1l4zED3/MmswNOaregy0SEWvtspUzi6foiqw4jh5TM7+wCfe32i2YpLwjIIzJMhNDph2VWch2I9Gcz/i8aQG3Ee7O9miU8Uvcrf8IgBoTtsBf4LiN8JM/ng8jLnGQHWcouwDClziivJs3IOwIVqotqoScbVTaU1NjZuY5cawAS9t/pZ6/h/KLtjMVOnFtYbZA+dz3KnFZtj9BZXLLw7vs="
-    - PROJECT_NAME=qcgrids
-    - PYDIR=python-${PROJECT_NAME}
-    - CONDA_PKG_NAME_CPP=${PROJECT_NAME}
-    - CONDA_PKG_NAME_PY=python-${PROJECT_NAME}
-    - GITHUB_REPO_NAME=theochem/qcgrids
 
 # Do not use Travis Python to save some time.
 language: generic
@@ -76,7 +69,7 @@ install:
 # Set the version info from the git tag
 - git fetch origin --tags
 - export PROJECT_VERSION=$(python tools/gitversion.py)
-- python tools/gitversion.py python > ${PYDIR}/${PROJECT_NAME}/version.py
+- python tools/gitversion.py python > python-qcgrids/qcgrids/version.py
 - python tools/gitversion.py cmake > CMakeListsVersion.txt.in
 
 script:
@@ -84,7 +77,7 @@ script:
 # ~~~~~~~~~~~~~~
 - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
     cardboardlinter --refspec $TRAVIS_BRANCH -f static &&
-    (cd ${PYDIR}; cardboardlinter --refspec $TRAVIS_BRANCH -f static);
+    (cd python-qcgrids; cardboardlinter --refspec $TRAVIS_BRANCH -f static);
   fi
 
 # Conda-based tests
@@ -95,12 +88,12 @@ script:
 
 # Build the conda packages
 - conda build -q tools/conda.recipe
-- (cd ${PYDIR}; ./setup.py; conda build -q tools/conda.recipe)
+- (cd python-qcgrids; ./setup.py; conda build -q tools/conda.recipe)
 # Install Conda packages
-- conda install --use-local ${CONDA_PKG_NAME_CPP} ${CONDA_PKG_NAME_PY}
+- conda install --use-local qcgrids python-qcgrids
 # Run the unittests, using the installed package
-- ${CONDA_PREFIX}/libexec/${PROJECT_NAME}/test_${PROJECT_NAME}
-- (cd; nosetests ${PROJECT_NAME} -v --detailed-errors)
+- ${CONDA_PREFIX}/libexec/qcgrids/test_qcgrids
+- (cd; nosetests qcgrids -v --detailed-errors)
 
 # In-place building and testing
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -114,26 +107,26 @@ script:
 
 # PY project
 # Uninstall conda package, to be sure. The conda cpp package is still used.
-- conda uninstall ${CONDA_PKG_NAME_PY}
-- (cd ${PYDIR}; python setup.py build_ext -i --define CYTHON_TRACE_NOGIL)
+- conda uninstall python-qcgrids
+- (cd python-qcgrids; python setup.py build_ext -i --define CYTHON_TRACE_NOGIL)
 # Run nosetests without coverage.xml output. That file is broken by nosetests (pyx files
 # not include) and gets priority over .coverage, which contains everything.
-- (cd ${PYDIR}; nosetests ${PROJECT_NAME} -v --detailed-errors --with-coverage --cover-package=${PROJECT_NAME} --cover-tests --cover-erase --cover-inclusive --cover-branches; coverage xml -i)
+- (cd python-qcgrids; nosetests qcgrids -v --detailed-errors --with-coverage --cover-package=qcgrids --cover-tests --cover-erase --cover-inclusive --cover-branches; coverage xml -i)
 
 - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
-    (cd ${PYDIR}; cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic');
+    (cd python-qcgrids; cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic');
   fi
 
 # CPP project
 # Uninstall conda package, to be sure.
-- conda uninstall ${CONDA_PKG_NAME_CPP}
+- conda uninstall qcgrids
 
 # Install dependencies
 - conda install -c theochem cellcutoff python-cellcutoff
 - (mkdir debug; cd debug; cmake cmake -DCMAKE_BUILD_TYPE=debug ..; make)
 # DYLD_LIBRARY_PATH is needed on OSX to let it find the shared libraries in
 # ${CONDA_PREFIX}/lib. It should not have any effect on Linux.
-- (cd debug; DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${CONDA_PREFIX}/lib/ ./${PROJECT_NAME}/tests/test_${PROJECT_NAME})
+- (cd debug; DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${CONDA_PREFIX}/lib/ ./qcgrids/tests/test_qcgrids)
 
 - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
     cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic';
@@ -145,11 +138,11 @@ script:
 # Make CPP source package for github deployment
 - (cd debug; make sdist)
 # Build PY source package for github deployment.
-- (cd ${PYDIR}; python setup.py sdist)
+- (cd python-qcgrids; python setup.py sdist)
 
 after_success:
 # Upload the coverage analysis
-- codecov --file ${PYDIR}/coverage.xml
+- codecov --file python-qcgrids/coverage.xml
 - codecov
 
 # In deployment, the env var TRAVIS_TAG contains the name of the current tag, if any.
@@ -158,10 +151,10 @@ deploy:
   skip_cleanup: true
   api_key: ${GITHUB_TOKEN}
   file:
-  - debug/${CONDA_PKG_NAME_CPP}-${TRAVIS_TAG}.tar.gz
-  - ${PYDIR}/dist/${CONDA_PKG_NAME_PY}-${TRAVIS_TAG}.tar.gz
+  - debug/qcgrids-${TRAVIS_TAG}.tar.gz
+  - python-qcgrids/dist/python-qcgrids-${TRAVIS_TAG}.tar.gz
   on:
-    repo: ${GITHUB_REPO_NAME}
+    repo: theochem/qcgrids
     tags: true
     condition: "$TRAVIS_TAG != *[ab]* && $MYCONDAPY == 2.7 && $TRAVIS_OS_NAME == linux"
   prerelease: false
@@ -170,34 +163,34 @@ deploy:
   skip_cleanup: true
   api_key: ${GITHUB_TOKEN}
   file:
-  - debug/${CONDA_PKG_NAME_CPP}-${TRAVIS_TAG}.tar.gz
-  - ${PYDIR}/dist/${CONDA_PKG_NAME_PY}-${TRAVIS_TAG}.tar.gz
+  - debug/qcgrids-${TRAVIS_TAG}.tar.gz
+  - python-qcgrids/dist/python-qcgrids-${TRAVIS_TAG}.tar.gz
   on:
-    repo: ${GITHUB_REPO_NAME}
+    repo: theochem/qcgrids
     tags: true
     condition: "$TRAVIS_TAG == *[ab]* && $MYCONDAPY == 2.7 && $TRAVIS_OS_NAME == linux"
   prerelease: true
 
 - provider: script
   skip_cleanup: true
-  script: anaconda -t $ANACONDA_TOKEN upload --force -l alpha ${HOME}/miniconda/conda-bld/*/${CONDA_PKG_NAME_CPP}-*.tar.bz2 ${HOME}/miniconda/conda-bld/*/${CONDA_PKG_NAME_PY}-*.tar.bz2
+  script: anaconda -t $ANACONDA_TOKEN upload --force -l alpha ${HOME}/miniconda/conda-bld/*/qcgrids-*.tar.bz2 ${HOME}/miniconda/conda-bld/*/python-qcgrids-*.tar.bz2
   on:
-    repo: ${GITHUB_REPO_NAME}
+    repo: theochem/qcgrids
     tags: true
     condition: "$TRAVIS_TAG == *a*"
 
 - provider: script
   skip_cleanup: true
-  script: anaconda -t $ANACONDA_TOKEN upload --force -l beta ${HOME}/miniconda/conda-bld/*/${CONDA_PKG_NAME_CPP}-*.tar.bz2 ${HOME}/miniconda/conda-bld/*/${CONDA_PKG_NAME_PY}-*.tar.bz2
+  script: anaconda -t $ANACONDA_TOKEN upload --force -l beta ${HOME}/miniconda/conda-bld/*/qcgrids-*.tar.bz2 ${HOME}/miniconda/conda-bld/*/python-qcgrids-*.tar.bz2
   on:
-    repo: ${GITHUB_REPO_NAME}
+    repo: theochem/qcgrids
     tags: true
     condition: "$TRAVIS_TAG == *b*"
 
 - provider: script
   skip_cleanup: true
-  script: anaconda -t $ANACONDA_TOKEN upload --force -l main ${HOME}/miniconda/conda-bld/*/${CONDA_PKG_NAME_CPP}-*.tar.bz2 ${HOME}/miniconda/conda-bld/*/${CONDA_PKG_NAME_PY}-*.tar.bz2
+  script: anaconda -t $ANACONDA_TOKEN upload --force -l main ${HOME}/miniconda/conda-bld/*/qcgrids-*.tar.bz2 ${HOME}/miniconda/conda-bld/*/python-qcgrids-*.tar.bz2
   on:
-    repo: ${GITHUB_REPO_NAME}
+    repo: theochem/qcgrids
     tags: true
     condition: "$TRAVIS_TAG != *[ab]*"
