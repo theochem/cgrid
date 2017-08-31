@@ -10,8 +10,11 @@ template_dict = {"TPL_ANACONDA_TOKEN":"k4XK37vv/8HySKJXZmGIXRX+DRt1ZBRSc8M7pYCH3
 "TPL_DEPENDENCIES" : "-c theochem cellcutoff python-cellcutoff"}
 
 from string import Template
+import sys
 
-with open(".travis.yml.tpl") as fh:
+template_fn = sys.argv[1]
+
+with open(template_fn) as fh:
     l = fh.read()
 
 t = Template(l)
