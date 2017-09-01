@@ -26,9 +26,9 @@ fi
 (cd ${PYDIR}; python setup.py build_ext -i --define CYTHON_TRACE_NOGIL)
 # Run nosetests without coverage.xml output. That file is broken by nosetests (pyx files
 # not include) and gets priority over .coverage, which contains everything.
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./debug/qcgrids
-(cd ${PYDIR}; nosetests ${PROJECT_NAME} -v --detailed-errors --with-coverage --cover-package=${PROJECT_NAME} --cover-tests --cover-erase --cover-inclusive --cover-branches; coverage xml -i)
+
+(cd ${PYDIR}; LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../debug/qcgrids nosetests ${PROJECT_NAME} -v --detailed-errors --with-coverage --cover-package=${PROJECT_NAME} --cover-tests --cover-erase --cover-inclusive --cover-branches; coverage xml -i)
 
 if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
-  (cd ${PYDIR}; cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic');
+  (cd ${PYDIR}; LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../debug/qcgrids cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic');
 fi
