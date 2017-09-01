@@ -27,7 +27,7 @@ fi
 conda uninstall ${CONDA_PKG_NAME_CPP}
 
 # Install dependencies
-conda install ${DEPENDENCIES}
+${DEPENDENCIES}
 (mkdir debug; cd debug; cmake cmake -DCMAKE_BUILD_TYPE=debug ..; make)
 # DYLD_LIBRARY_PATH is needed on OSX to let it find the shared libraries in
 # ${CONDA_PREFIX}/lib. It should not have any effect on Linux.

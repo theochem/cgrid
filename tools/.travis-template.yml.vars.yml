@@ -12,4 +12,4 @@ PYDIR: python-qcgrids
 CONDA_PKG_NAME_CPP: qcgrids
 CONDA_PKG_NAME_PY: python-qcgrids
 GITHUB_REPO_NAME: theochem/qcgrids
-DEPENDENCIES: "-c theochem cellcutoff python-cellcutoff"
+DEPENDENCIES: "conda install -c theochem cellcutoff python-cellcutoff"

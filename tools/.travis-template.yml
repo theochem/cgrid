@@ -11,6 +11,7 @@ env:
     - CONDA_PKG_NAME_PY: ${CONDA_PKG_NAME_PY}
     - CONDA_PKG_NAME_CPP: ${CONDA_PKG_NAME_CPP}
     - PROJECT_NAME: ${PROJECT_NAME}
+    - DEPENDENCIES: ${DEPENDENCIES}
 
 
 # Do not use Travis Python to save some time.
