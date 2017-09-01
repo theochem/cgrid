@@ -94,7 +94,7 @@ script:
     conda uninstall qcgrids;
   else
     conda install -c theochem cellcutoff python-cellcutoff;
-    (mkdir debug; cd debug; cmake cmake -DCMAKE_BUILD_TYPE=debug ..; make; make install);
+    (mkdir debug; cd debug; cmake cmake -DCMAKE_BUILD_TYPE=debug ..; make);
     (cd debug; DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${CONDA_PREFIX}/lib/ ./qcgrids/tests/test_qcgrids);
 
     if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
@@ -102,10 +102,10 @@ script:
     fi
 
     (cd python-qcgrids; python setup.py build_ext -i --define CYTHON_TRACE_NOGIL);
-    (cd python-qcgrids; nosetests qcgrids -v --detailed-errors --with-coverage --cover-package=qcgrids --cover-tests --cover-erase --cover-inclusive --cover-branches; coverage xml -i);
+    (cd python-qcgrids; LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../debug/qcgrids nosetests qcgrids -v --detailed-errors --with-coverage --cover-package=qcgrids --cover-tests --cover-erase --cover-inclusive --cover-branches; coverage xml -i);
 
     if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
-      (cd python-qcgrids; cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic');
+      (cd python-qcgrids; LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../debug/qcgrids cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic');
     fi
   fi
 
