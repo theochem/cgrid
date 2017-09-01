@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # QCGrids is a numerical integration library for quantum chemistry.
-# Copyright (C) 2011-2015 Toon Verstraelen
+# Copyright (C) 2011-2017 The QCGrids developers
 #
 # This file is part of QCGrids.
 #
@@ -16,7 +16,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>
-#--
+# --
 '''Python wrapper for the QCGrids library'''
 
 
