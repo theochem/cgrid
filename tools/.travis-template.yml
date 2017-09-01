@@ -7,12 +7,6 @@ env:
   global:
     - secure: "${TPL_ANACONDA_TOKEN}"
     - secure: "${TPL_GITHUB_TOKEN}"
-    - PYDIR: ${PYDIR}
-    - CONDA_PKG_NAME_PY: ${CONDA_PKG_NAME_PY}
-    - CONDA_PKG_NAME_CPP: ${CONDA_PKG_NAME_CPP}
-    - PROJECT_NAME: ${PROJECT_NAME}
-    - DEPENDENCIES: "${DEPENDENCIES}"
-
 
 # Do not use Travis Python to save some time.
 language: generic
@@ -85,9 +79,28 @@ script:
   fi
 
 - if [[ $TRAVIS_TAG ]]; then
-    tools/travis_conda_build.sh;
+    conda build -q tools/conda.recipe;
+    (cd ${PYDIR}; conda build -q tools/conda.recipe);
+    conda install --use-local ${CONDA_PKG_NAME_CPP} ${CONDA_PKG_NAME_PY};
+    ${CONDA_PREFIX}/libexec/${PROJECT_NAME}/test_${PROJECT_NAME};
+    (cd; nosetests ${PROJECT_NAME} -v --detailed-errors);
+    conda uninstall ${CONDA_PKG_NAME_PY};
+    conda uninstall ${CONDA_PKG_NAME_CPP};
   else
-    tools/travis_inplace_build.sh;
+    ${DEPENDENCIES};
+    (mkdir debug; cd debug; cmake cmake -DCMAKE_BUILD_TYPE=debug ..; make; make install);
+    (cd debug; DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${CONDA_PREFIX}/lib/ ./${PROJECT_NAME}/tests/test_${PROJECT_NAME});
+
+    if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
+      cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic';
+    fi
+
+    (cd ${PYDIR}; python setup.py build_ext -i --define CYTHON_TRACE_NOGIL);
+    (cd ${PYDIR}; nosetests ${PROJECT_NAME} -v --detailed-errors --with-coverage --cover-package=${PROJECT_NAME} --cover-tests --cover-erase --cover-inclusive --cover-branches; coverage xml -i);
+
+    if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
+      (cd ${PYDIR}; cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic');
+    fi
   fi
 
 # Make CPP and PY source package for github deployment
