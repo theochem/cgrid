@@ -23,28 +23,26 @@ osx_image: xcode6.4
 dist: trusty
 sudo: false
 
+cache:
+  directories:
+    - $HOME/.cache/pip
+    - $HOME/download # Sufficient to add miniconda.sh to TRAVIS cache.
+    - $HOME/miniconda # Add the installation to TRAVIS cache.
+
+before_cache:
+- rm -rf $HOME/miniconda/conda-bld $HOME/miniconda/locks $HOME/miniconda/pkgs $HOME/miniconda/var
+
 branches:
   only:
     - master
     - /^[0-9]+\.[0-9]+(\.[0-9]+)?([ab][0-9]+)?$/
 
+before_install:
+# Get miniconda. Take the right version, so re-installing python is hopefully not needed.
+- ./tools/travis_before_install.sh
+
 
 install:
-# Get miniconda. Take the right version, so re-installing python is only needed for 3.5.
-- if [[ "$MYCONDAPY" == "2.7" ]]; then
-    if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-      wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
-    else
-      wget https://repo.continuum.io/miniconda/Miniconda2-latest-MacOSX-x86_64.sh -O miniconda.sh;
-    fi;
-  else
-    if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-    else
-      wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh;
-    fi;
-  fi
-- bash miniconda.sh -b -p $HOME/miniconda
 - source $HOME/miniconda/bin/activate
 - hash -r
 
