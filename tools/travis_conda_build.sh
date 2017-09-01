@@ -8,7 +8,7 @@ set -ev
 
 # Build the conda packages
 conda build -q tools/conda.recipe
-(cd ${PYDIR}; ./setup.py; conda build -q tools/conda.recipe)
+(cd ${PYDIR}; conda build -q tools/conda.recipe)
 # Install Conda packages
 conda install --use-local ${CONDA_PKG_NAME_CPP} ${CONDA_PKG_NAME_PY}
 # Run the unittests, using the installed package
