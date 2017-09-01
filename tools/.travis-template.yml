@@ -78,22 +78,22 @@ script:
   fi
 
 - if [[ $TRAVIS_TAG ]]; then
-    tools/travis_conda_build.sh
+    tools/travis_conda_build.sh;
   else
-    tools/travis_conda_build.sh
+    tools/travis_conda_build.sh;
   fi
 
 # Make CPP and PY source package for github deployment
 - if [[ $TRAVIS_TAG ]]; then
-    (cd debug; make sdist)
-    (cd ${PYDIR}; python setup.py sdist)
+    (cd debug; make sdist);
+    (cd ${PYDIR}; python setup.py sdist);
   fi
 
 after_success:
 # Upload the coverage analysis
 - if ! [[ $TRAVIS_TAG ]]; then
-    codecov --file ${PYDIR}/coverage.xml
-    codecov
+    codecov --file ${PYDIR}/coverage.xml;
+    codecov;
   fi
 
 # In deployment, the env var TRAVIS_TAG contains the name of the current tag, if any.
