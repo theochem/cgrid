@@ -11,8 +11,6 @@ set -ev
 conda install gcc libgcc;
 
 # PY project
-# Uninstall conda package, to be sure. The conda cpp package is still used.
-conda uninstall ${CONDA_PKG_NAME_PY}
 (cd ${PYDIR}; python setup.py build_ext -i --define CYTHON_TRACE_NOGIL)
 # Run nosetests without coverage.xml output. That file is broken by nosetests (pyx files
 # not include) and gets priority over .coverage, which contains everything.
@@ -23,9 +21,6 @@ if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
 fi
 
 # CPP project
-# Uninstall conda package, to be sure.
-conda uninstall ${CONDA_PKG_NAME_CPP}
-
 # Install dependencies
 ${DEPENDENCIES}
 (mkdir debug; cd debug; cmake cmake -DCMAKE_BUILD_TYPE=debug ..; make)
