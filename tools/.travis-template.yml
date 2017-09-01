@@ -85,7 +85,7 @@ script:
 - if [[ $TRAVIS_TAG ]]; then
     tools/travis_conda_build.sh;
   else
-    tools/travis_conda_build.sh;
+    tools/travis_inplace_build.sh;
   fi
 
 # Make CPP and PY source package for github deployment
