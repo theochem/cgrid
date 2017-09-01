@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # QCGrids is a numerical integration library for quantum chemistry.
-# Copyright (C) 2011-2015 Toon Verstraelen
+# Copyright (C) 2011-2017 The QCGrids developers
 #
 # This file is part of QCGrids.
 #
@@ -17,7 +17,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>
-#--
+# --
 
 import numpy as np
 from distutils.core import setup
@@ -57,7 +57,7 @@ setup(
             sources=['qcgrids/qcgrids.pyx'],
             depends=['qcgrids/qcgrids.pxd', 'qcgrids/cellgrid.pxd'],
             libraries=['qcgrids'],
-            include_dirs=[np.get_include()], 
+            include_dirs=[np.get_include()],
             extra_compile_args=['-std=c++11', '-Wall'],
             language="c++")],
 )
