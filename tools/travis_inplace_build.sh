@@ -12,8 +12,9 @@ conda install gcc libgcc;
 
 # CPP project
 # Install dependencies
+echo ${DEPENDENCIES}
 ${DEPENDENCIES}
-(mkdir debug; cd debug; cmake cmake -DCMAKE_BUILD_TYPE=debug ..; make)
+(mkdir debug; cd debug; cmake cmake -DCMAKE_BUILD_TYPE=debug ..; make; make install)
 # DYLD_LIBRARY_PATH is needed on OSX to let it find the shared libraries in
 # ${CONDA_PREFIX}/lib. It should not have any effect on Linux.
 (cd debug; DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${CONDA_PREFIX}/lib/ ./${PROJECT_NAME}/tests/test_${PROJECT_NAME})
@@ -27,8 +28,8 @@ fi
 # Run nosetests without coverage.xml output. That file is broken by nosetests (pyx files
 # not include) and gets priority over .coverage, which contains everything.
 
-(cd ${PYDIR}; LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../debug/qcgrids nosetests ${PROJECT_NAME} -v --detailed-errors --with-coverage --cover-package=${PROJECT_NAME} --cover-tests --cover-erase --cover-inclusive --cover-branches; coverage xml -i)
+(cd ${PYDIR}; nosetests ${PROJECT_NAME} -v --detailed-errors --with-coverage --cover-package=${PROJECT_NAME} --cover-tests --cover-erase --cover-inclusive --cover-branches; coverage xml -i)
 
 if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
-  (cd ${PYDIR}; LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../debug/qcgrids cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic');
+  (cd ${PYDIR}; cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic');
 fi
