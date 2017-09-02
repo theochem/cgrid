@@ -123,7 +123,6 @@ script:
     (cd python-qcgrids; cardboardlinter --refspec $TRAVIS_BRANCH -f static);
   fi
 
-
 - if [[ $TRAVIS_TAG ]]; then
     BUILD_TYPE="release" conda build -q tools/conda.recipe;
     (cd python-qcgrids; BUILD_TYPE="release" conda build -q tools/conda.recipe);
