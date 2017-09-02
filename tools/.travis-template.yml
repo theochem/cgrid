@@ -118,26 +118,23 @@ script:
   fi
 
 - if [[ $TRAVIS_TAG ]]; then
-    BUILD_TYPE="release" conda build -q tools/conda.recipe;
-    (cd ${PYDIR}; BUILD_TYPE="release" conda build -q tools/conda.recipe);
-    conda install --use-local ${CONDA_PKG_NAME_CPP} ${CONDA_PKG_NAME_PY};
-    ${CONDA_PREFIX}/libexec/${PROJECT_NAME}/test_${PROJECT_NAME};
-
+    BUILD_TYPE="release" conda build -q tools/conda.recipe &&
+    (cd ${PYDIR}; BUILD_TYPE="release" conda build -q tools/conda.recipe) &&
+    conda install --use-local ${CONDA_PKG_NAME_CPP} ${CONDA_PKG_NAME_PY} &&
+    ${CONDA_PREFIX}/libexec/${PROJECT_NAME}/test_${PROJECT_NAME} &&
     (cd; nosetests ${PROJECT_NAME} -v --detailed-errors);
   else
-    BUILD_TYPE="debug" conda build -q tools/conda.recipe;
-    (cd ${PYDIR}; BUILD_TYPE="debug" conda build -q tools/conda.recipe);
-    conda install --use-local ${CONDA_PKG_NAME_CPP} ${CONDA_PKG_NAME_PY};
-    ${CONDA_PREFIX}/libexec/${PROJECT_NAME}/test_${PROJECT_NAME};
-
+    BUILD_TYPE="debug" conda build -q tools/conda.recipe &&
+    (cd ${PYDIR}; BUILD_TYPE="debug" conda build -q tools/conda.recipe) &&
+    conda install --use-local ${CONDA_PKG_NAME_CPP} ${CONDA_PKG_NAME_PY} &&
+    ${CONDA_PREFIX}/libexec/${PROJECT_NAME}/test_${PROJECT_NAME} &&
     (cd;
      nosetests ${PROJECT_NAME} -v --detailed-errors --with-coverage
      --cover-package=${PROJECT_NAME} --cover-tests --cover-erase --cover-inclusive
-     --cover-branches;
-     coverage xml -i);
-
+     --cover-branches &&
+     coverage xml -i) &&
     if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
-      cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic';
+      cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic' &&
       (cd ${PYDIR}; cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic');
     fi
   fi
@@ -147,14 +144,14 @@ script:
 
 # Make CPP and PY source package for github deployment
 - if [[ $TRAVIS_TAG ]]; then
-    (cd debug; make sdist);
+    (cd debug; make sdist) &&
     (cd ${PYDIR}; python setup.py sdist);
   fi
 
 after_success:
 # Upload the coverage analysis
 - if ! [[ $TRAVIS_TAG ]]; then
-    codecov --file ~/coverage.xml;
+    codecov --file ~/coverage.xml &&
     codecov;
   fi
 
