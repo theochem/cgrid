@@ -42,7 +42,7 @@ matrix:
   - os: osx
 
 cache:
-  - pip
+  pip: true
   directories:
     - $HOME/download
     - $HOME/miniconda
