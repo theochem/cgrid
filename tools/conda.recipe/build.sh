@@ -12,4 +12,4 @@ cmake \
   -DCMAKE_INSTALL_PREFIX=${PREFIX} \
   -DCMAKE_BUILD_TYPE=${BTYPE} \
   ..
-make install
+make install VERBOSE=1
