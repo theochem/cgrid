@@ -149,8 +149,9 @@ script:
     cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic';
   fi
 
-# Python dynamic cardboard linter
+# Python dynamic cardboard linter, with super ugly hack
 - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
+    cp ~/miniconda/lib/python*/site-packages/${PROJECT_NAME}/*.so ${PYDIR}/${PROJECT_NAME};
     (cd ${PYDIR}; cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic');
   fi
 

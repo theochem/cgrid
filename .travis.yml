@@ -155,8 +155,9 @@ script:
     cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic';
   fi
 
-# Python dynamic cardboard linter
+# Python dynamic cardboard linter, with super ugly hack
 - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
+    cp ~/miniconda/lib/python*/site-packages/qcgrids/*.so python-qcgrids/qcgrids;
     (cd python-qcgrids; cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic');
   fi
 
