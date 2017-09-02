@@ -5,6 +5,5 @@ linters:
 - cpplint:
     script: ./cpplint.py
 - doxygen:
-    root: qcgrids
 - header:
 - whitespace:

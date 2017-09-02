@@ -20,11 +20,12 @@ sudo: false
 cache:
   directories:
     - $HOME/.cache/pip
-    - $HOME/download # Sufficient to add miniconda.sh to TRAVIS cache.
-    - $HOME/miniconda # Add the installation to TRAVIS cache.
+    - $HOME/download
+    - $HOME/miniconda
 
 before_cache:
 - rm -rf $HOME/miniconda/conda-bld $HOME/miniconda/locks $HOME/miniconda/pkgs $HOME/miniconda/var $HOME/miniconda/conda-meta/history
+- pip uninstall -y cardboardlint # Cardboardlint always installs even if no changes are made.
 
 branches:
   only:
@@ -53,8 +54,8 @@ install:
 # Install more recent stuff with pip
 - pip install pylint codecov coverage pycodestyle pydocstyle flake8
 # Get the latest cpplint
-- wget https://raw.githubusercontent.com/google/styleguide/gh-pages/cpplint/cpplint.py
-- chmod +x cpplint.py
+- wget https://raw.githubusercontent.com/google/styleguide/gh-pages/cpplint/cpplint.py &&
+  chmod +x cpplint.py
 # Show conda info for debugging
 - conda info -a
 
@@ -64,10 +65,10 @@ install:
   fi
 
 # Set the version info from the git tag
-- git fetch origin --tags
-- export PROJECT_VERSION=$(python tools/gitversion.py)
-- python tools/gitversion.py python > ${PYDIR}/${PROJECT_NAME}/version.py
-- python tools/gitversion.py cmake > CMakeListsVersion.txt.in
+- git fetch origin --tags &&
+  export PROJECT_VERSION=$(python tools/gitversion.py) &&
+  python tools/gitversion.py python > ${PYDIR}/${PROJECT_NAME}/version.py &&
+  python tools/gitversion.py cmake > CMakeListsVersion.txt.in
 
 script:
 # Static linting
@@ -77,70 +78,43 @@ script:
     (cd ${PYDIR}; cardboardlinter --refspec $TRAVIS_BRANCH -f static);
   fi
 
-# Conda-based tests
-# ~~~~~~~~~~~~~~~~~
+- if [[ $TRAVIS_TAG ]]; then
+    conda build -q tools/conda.recipe;
+    (cd ${PYDIR}; conda build -q tools/conda.recipe);
+    conda install --use-local ${CONDA_PKG_NAME_CPP} ${CONDA_PKG_NAME_PY};
+    ${CONDA_PREFIX}/libexec/${PROJECT_NAME}/test_${PROJECT_NAME};
+    (cd; nosetests ${PROJECT_NAME} -v --detailed-errors);
+    conda uninstall ${CONDA_PKG_NAME_PY};
+    conda uninstall ${CONDA_PKG_NAME_CPP};
+  else
+    ${DEPENDENCIES};
+    (mkdir debug; cd debug; cmake cmake -DCMAKE_BUILD_TYPE=debug ..; make);
+    (cd debug; DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${CONDA_PREFIX}/lib/ ./${PROJECT_NAME}/tests/test_${PROJECT_NAME});
 
-# This is needed to simulate the end-user situation, and it also creates packages for a
-# conda release.
+    if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
+      cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic';
+    fi
 
-# Build the conda packages
-- conda build -q tools/conda.recipe
-- (cd ${PYDIR}; ./setup.py; conda build -q tools/conda.recipe)
-# Install Conda packages
-- conda install --use-local ${CONDA_PKG_NAME_CPP} ${CONDA_PKG_NAME_PY}
-# Run the unittests, using the installed package
-- ${CONDA_PREFIX}/libexec/${PROJECT_NAME}/test_${PROJECT_NAME}
-- (cd; nosetests ${PROJECT_NAME} -v --detailed-errors)
+    (cd ${PYDIR}; python setup.py build_ext -i --define CYTHON_TRACE_NOGIL);
+    (cd ${PYDIR}; LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../debug/${PROJECT_NAME} nosetests ${PROJECT_NAME} -v --detailed-errors --with-coverage --cover-package=${PROJECT_NAME} --cover-tests --cover-erase --cover-inclusive --cover-branches; coverage xml -i);
 
-# In-place building and testing
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-# This is allows for coverage analysis and dynamic linting. The compiler settings used
-# here are not suitable for releases, so we need to recompile and rerun the tests.
-
-# Install GCC compilers for in-place builds, even on OSX because clang does not manage to
-# compiler our C++ code.
-- conda install gcc libgcc;
-
-# PY project
-# Uninstall conda package, to be sure. The conda cpp package is still used.
-- conda uninstall ${CONDA_PKG_NAME_PY}
-- (cd ${PYDIR}; python setup.py build_ext -i --define CYTHON_TRACE_NOGIL)
-# Run nosetests without coverage.xml output. That file is broken by nosetests (pyx files
-# not include) and gets priority over .coverage, which contains everything.
-- (cd ${PYDIR}; nosetests ${PROJECT_NAME} -v --detailed-errors --with-coverage --cover-package=${PROJECT_NAME} --cover-tests --cover-erase --cover-inclusive --cover-branches; coverage xml -i)
-
-- if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
-    (cd ${PYDIR}; cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic');
+    if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
+      (cd ${PYDIR}; LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../debug/${PROJECT_NAME} cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic');
+    fi
   fi
 
-# CPP project
-# Uninstall conda package, to be sure.
-- conda uninstall ${CONDA_PKG_NAME_CPP}
-
-# Install dependencies
-- conda install ${DEPENDENCIES}
-- (mkdir debug; cd debug; cmake cmake -DCMAKE_BUILD_TYPE=debug ..; make)
-# DYLD_LIBRARY_PATH is needed on OSX to let it find the shared libraries in
-# ${CONDA_PREFIX}/lib. It should not have any effect on Linux.
-- (cd debug; DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${CONDA_PREFIX}/lib/ ./${PROJECT_NAME}/tests/test_${PROJECT_NAME})
-
-- if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
-    cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic';
+# Make CPP and PY source package for github deployment
+- if [[ $TRAVIS_TAG ]]; then
+    (cd debug; make sdist);
+    (cd ${PYDIR}; python setup.py sdist);
   fi
-
-# Some other stuff
-# ----------------
-
-# Make CPP source package for github deployment
-- (cd debug; make sdist)
-# Build PY source package for github deployment.
-- (cd ${PYDIR}; python setup.py sdist)
 
 after_success:
 # Upload the coverage analysis
-- codecov --file ${PYDIR}/coverage.xml
-- codecov
+- if ! [[ $TRAVIS_TAG ]]; then
+    codecov --file ${PYDIR}/coverage.xml;
+    codecov;
+  fi
 
 # In deployment, the env var TRAVIS_TAG contains the name of the current tag, if any.
 deploy:
