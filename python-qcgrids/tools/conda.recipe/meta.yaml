@@ -10,8 +10,8 @@ build:
    - PROJECT_VERSION
   number: 0
   string: py{{ CONDA_PY }}_0
-  script: 
-   - if [[ ${BUILD_TYPE} == "debug" ]]; then 
+  script:
+   - if [[ ${BUILD_TYPE} == "debug" ]]; then
        python setup.py install --define CYTHON_TRACE_NOGIL;
      else
        python setup.py install;
