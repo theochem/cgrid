@@ -43,7 +43,6 @@ matrix:
 
 cache:
   directories:
-    - $HOME/.cache/pip
     - $HOME/download
     - $HOME/miniconda
 
@@ -82,6 +81,7 @@ before_install:
     bash $HOME/download/miniconda.sh -b -p $HOME/miniconda;
   fi
 
+
 install:
 - source $HOME/miniconda/bin/activate
 - hash -r
@@ -94,7 +94,7 @@ install:
 # Install extra package needed to make things work. Most things can be listed as
 # dependencies on metal.yaml and setup.py, unless setup.py already imports them.
 # Install conda tools for packaging and uploading
-- conda install python=${MYCONDAPY} numpy cython cppcheck doxygen nose conda-build anaconda-client gtest cmake
+- conda install python=${MYCONDAPY} numpy cython cppcheck doxygen nose conda-build anaconda-client gtest cmake gcc libgcc
 # Install more recent stuff with pip
 - pip install pylint codecov coverage pycodestyle pydocstyle flake8
 # Get the latest cpplint
@@ -123,23 +123,23 @@ script:
   fi
 
 - if [[ $TRAVIS_TAG ]]; then
-    conda build -q tools/conda.recipe;
-    (cd python-qcgrids; conda build -q tools/conda.recipe);
-    conda install --use-local qcgrids python-qcgrids;
-    ${CONDA_PREFIX}/libexec/qcgrids/test_qcgrids;
-    (cd; nosetests qcgrids -v --detailed-errors);
-    conda uninstall python-qcgrids;
+    conda build -q tools/conda.recipe &&
+    (cd python-qcgrids; conda build -q tools/conda.recipe) &&
+    conda install --use-local qcgrids python-qcgrids &&
+    ${CONDA_PREFIX}/libexec/qcgrids/test_qcgrids &&
+    (cd; nosetests qcgrids -v --detailed-errors) &&
+    conda uninstall python-qcgrids &&
     conda uninstall qcgrids;
   else
     conda install -c theochem cellcutoff python-cellcutoff;
-    (mkdir debug; cd debug; cmake cmake -DCMAKE_BUILD_TYPE=debug ..; make);
+    (mkdir debug; cd debug; cmake cmake -DCMAKE_BUILD_TYPE=debug ..; make) &&
     (cd debug; DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${CONDA_PREFIX}/lib/ ./qcgrids/tests/test_qcgrids);
 
     if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
       cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic';
     fi
 
-    (cd python-qcgrids; python setup.py build_ext -i --define CYTHON_TRACE_NOGIL);
+    (cd python-qcgrids; python setup.py build_ext -i --define CYTHON_TRACE_NOGIL) &&
     (cd python-qcgrids; LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../debug/qcgrids nosetests qcgrids -v --detailed-errors --with-coverage --cover-package=qcgrids --cover-tests --cover-erase --cover-inclusive --cover-branches; coverage xml -i);
 
     if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
