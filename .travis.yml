@@ -147,12 +147,12 @@ script:
      nosetests qcgrids -v --detailed-errors --with-coverage
      --cover-package=qcgrids --cover-tests --cover-erase --cover-inclusive
      --cover-branches &&
-     coverage xml -i) &&
+     coverage xml -i);
   fi
 
 # CPP dynamic cardboard linter
 - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
-    cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic'
+    cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic';
   fi
 
 # Python dynamic cardboard linter
