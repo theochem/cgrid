@@ -124,28 +124,27 @@ script:
   fi
 
 - if [[ $TRAVIS_TAG ]]; then
-    BUILD_TYPE="release" conda build -q tools/conda.recipe;
-    (cd python-qcgrids; BUILD_TYPE="release" conda build -q tools/conda.recipe);
-    conda install --use-local qcgrids python-qcgrids;
-    ${CONDA_PREFIX}/libexec/qcgrids/test_qcgrids;
-
+    BUILD_TYPE="release" conda build -q tools/conda.recipe &&
+    (cd python-qcgrids; BUILD_TYPE="release" conda build -q tools/conda.recipe) &&
+    conda install --use-local qcgrids python-qcgrids &&
+    ${CONDA_PREFIX}/libexec/qcgrids/test_qcgrids &&
     (cd; nosetests qcgrids -v --detailed-errors);
   else
-    BUILD_TYPE="debug" conda build -q tools/conda.recipe;
-    (cd python-qcgrids; BUILD_TYPE="debug" conda build -q tools/conda.recipe);
-    conda install --use-local qcgrids python-qcgrids;
-    ${CONDA_PREFIX}/libexec/qcgrids/test_qcgrids;
-
+    BUILD_TYPE="debug" conda build -q tools/conda.recipe &&
+    (cd python-qcgrids; BUILD_TYPE="debug" conda build -q tools/conda.recipe) &&
+    conda install --use-local qcgrids python-qcgrids &&
+    ${CONDA_PREFIX}/libexec/qcgrids/test_qcgrids &&
+    cp python-qcgrids/.coveragerc ~/ &&
     (cd;
      nosetests qcgrids -v --detailed-errors --with-coverage
      --cover-package=qcgrids --cover-tests --cover-erase --cover-inclusive
-     --cover-branches;
-     coverage xml -i);
-
+     --cover-branches &&
+     coverage xml -i) &&
     if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
-      cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic';
+      cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic' &&
       (cd python-qcgrids; cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic');
     fi
+    (cd; find | grep gcno$);
   fi
 
 # Keep conda cache clean
@@ -153,14 +152,14 @@ script:
 
 # Make CPP and PY source package for github deployment
 - if [[ $TRAVIS_TAG ]]; then
-    (cd debug; make sdist);
+    (cd debug; make sdist) &&
     (cd python-qcgrids; python setup.py sdist);
   fi
 
 after_success:
 # Upload the coverage analysis
 - if ! [[ $TRAVIS_TAG ]]; then
-    codecov --file ~/coverage.xml;
+    codecov --file ~/coverage.xml &&
     codecov;
   fi
 
