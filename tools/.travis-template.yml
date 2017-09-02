@@ -125,32 +125,34 @@ script:
     conda uninstall ${CONDA_PKG_NAME_PY} &&
     conda uninstall ${CONDA_PKG_NAME_CPP};
   else
-    ${DEPENDENCIES};
-    (mkdir debug; cd debug; cmake cmake -DCMAKE_BUILD_TYPE=debug ..; make) &&
-    (cd debug; DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${CONDA_PREFIX}/lib/ ./${PROJECT_NAME}/tests/test_${PROJECT_NAME});
-
+    ${DEPENDENCIES} &&
+    (mkdir debug; cd debug; cmake -DCMAKE_BUILD_TYPE=debug ..; make) &&
+    (cd debug; ./${PROJECT_NAME}/tests/test_${PROJECT_NAME}) &&
     if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
       cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic';
-    fi
+    fi &&
 
     (cd ${PYDIR}; python setup.py build_ext -i --define CYTHON_TRACE_NOGIL) &&
-    (cd ${PYDIR}; LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../debug/${PROJECT_NAME} nosetests ${PROJECT_NAME} -v --detailed-errors --with-coverage --cover-package=${PROJECT_NAME} --cover-tests --cover-erase --cover-inclusive --cover-branches; coverage xml -i);
+    (cd ${PYDIR};
+     LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../debug/${PROJECT_NAME} nosetests ${PROJECT_NAME} -v --detailed-errors --with-coverage --cover-package=${PROJECT_NAME} --cover-tests --cover-erase --cover-inclusive --cover-branches;
+     coverage xml -i) &&
 
     if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
-      (cd ${PYDIR}; LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../debug/${PROJECT_NAME} cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic');
+      (cd ${PYDIR}; LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../debug/${PROJECT_NAME}
+       cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic');
     fi
   fi
 
 # Make CPP and PY source package for github deployment
 - if [[ $TRAVIS_TAG ]]; then
-    (cd debug; make sdist);
+    (cd debug; make sdist) &&
     (cd ${PYDIR}; python setup.py sdist);
   fi
 
 after_success:
 # Upload the coverage analysis
 - if ! [[ $TRAVIS_TAG ]]; then
-    codecov --file ${PYDIR}/coverage.xml;
+    codecov --file ${PYDIR}/coverage.xml &&
     codecov;
   fi
 

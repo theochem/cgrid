@@ -19,5 +19,13 @@
 # --
 
 
-from qcgrids import *
+from cellcutoff import Cell
+from qcgrids import Cellgrid
 import numpy as np
+
+
+def test_something():
+    cell = Cell(np.identity(3)*5.0)
+    grid = Cellgrid(cell)
+    grid.append_many(np.random.uniform(0, 10, (2, 3)), np.random.uniform(0, 1, 2))
+    assert grid.npoint == 2
