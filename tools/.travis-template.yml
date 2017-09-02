@@ -36,8 +36,8 @@ matrix:
   - os: osx
 
 cache:
+  pip: true
   directories:
-    - $HOME/.cache/pip
     - $HOME/download
     - $HOME/miniconda
 
@@ -109,50 +109,61 @@ install:
   python tools/gitversion.py python > ${PYDIR}/${PROJECT_NAME}/version.py &&
   python tools/gitversion.py cmake > CMakeListsVersion.txt.in
 
+# Set the build type
+- if [[ $TRAVIS_TAG ]]; then
+    export BUILD_TYPE="release";
+  else
+    export BUILD_TYPE="debug";
+  fi
+
 script:
 # Static linting
-# ~~~~~~~~~~~~~~
 - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
     cardboardlinter --refspec $TRAVIS_BRANCH -f static &&
     (cd ${PYDIR}; cardboardlinter --refspec $TRAVIS_BRANCH -f static);
   fi
 
-- if [[ $TRAVIS_TAG ]]; then
-    conda build -q tools/conda.recipe;
-    (cd ${PYDIR}; conda build -q tools/conda.recipe);
-    conda install --use-local ${CONDA_PKG_NAME_CPP} ${CONDA_PKG_NAME_PY};
-    ${CONDA_PREFIX}/libexec/${PROJECT_NAME}/test_${PROJECT_NAME};
+# Build and install package, keep work directory
+- conda build -q --dirty tools/conda.recipe
+- (cd ${PYDIR}; conda build -q tools/conda.recipe)
+- conda install --use-local ${CONDA_PKG_NAME_CPP} ${CONDA_PKG_NAME_PY}
+
+# Run cpp unit tests
+- ${CONDA_PREFIX}/libexec/${PROJECT_NAME}/test_${PROJECT_NAME}
+- (cd; find | grep gcno$)
+
+# Run python unit tests
+- if [[ $BUILD_TYPE == "release" ]]; then
     (cd; nosetests ${PROJECT_NAME} -v --detailed-errors);
-    conda uninstall ${CONDA_PKG_NAME_PY};
-    conda uninstall ${CONDA_PKG_NAME_CPP};
   else
-    ${DEPENDENCIES};
-    (mkdir debug; cd debug; cmake cmake -DCMAKE_BUILD_TYPE=debug ..; make);
-    (cd debug; DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:${CONDA_PREFIX}/lib/ ./${PROJECT_NAME}/tests/test_${PROJECT_NAME});
-
-    if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
-      cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic';
-    fi
-
-    (cd ${PYDIR}; python setup.py build_ext -i --define CYTHON_TRACE_NOGIL);
-    (cd ${PYDIR}; LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../debug/${PROJECT_NAME} nosetests ${PROJECT_NAME} -v --detailed-errors --with-coverage --cover-package=${PROJECT_NAME} --cover-tests --cover-erase --cover-inclusive --cover-branches; coverage xml -i);
-
-    if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
-      (cd ${PYDIR}; LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../debug/${PROJECT_NAME} cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic');
-    fi
+    cp ${PYDIR}/.coveragerc ~/ &&
+    (cd;
+     nosetests ${PROJECT_NAME} -v --detailed-errors --with-coverage
+     --cover-package=${PROJECT_NAME} --cover-tests --cover-erase --cover-inclusive
+     --cover-branches &&
+     coverage xml -i);
   fi
+
+# Python dynamic cardboard linter, with super ugly hack
+- if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
+    cp ~/miniconda/lib/python*/site-packages/${PROJECT_NAME}/*.so ${PYDIR}/${PROJECT_NAME};
+    (cd ${PYDIR}; cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic');
+  fi
+
+# Keep conda cache clean
+- conda uninstall ${CONDA_PKG_NAME_PY} ${CONDA_PKG_NAME_CPP}
 
 # Make CPP and PY source package for github deployment
 - if [[ $TRAVIS_TAG ]]; then
-    (cd debug; make sdist);
+    (cd debug; make sdist) &&
     (cd ${PYDIR}; python setup.py sdist);
   fi
 
 after_success:
 # Upload the coverage analysis
 - if ! [[ $TRAVIS_TAG ]]; then
-    codecov --file ${PYDIR}/coverage.xml;
-    codecov;
+    codecov --file ~/coverage.xml &&
+    (cd ~/miniconda/conda-bld/{CONDA_PKG_NAME_CPP}_*/work; codecov);
   fi
 
 before_deploy:

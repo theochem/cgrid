@@ -8,9 +8,14 @@ source:
 build:
   script_env:
    - PROJECT_VERSION
+   - BUILD_TYPE
   number: 0
   string: py{{ CONDA_PY }}_0
-  script: python setup.py install
+  script:
+   - if [[ ${BUILD_TYPE} == "debug" ]]; then
+       python setup.py build_ext --define CYTHON_TRACE_NOGIL;
+     fi;
+     python setup.py install
 
 requirements:
   build:

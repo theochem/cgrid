@@ -8,6 +8,7 @@ source:
 build:
   script_env:
    - PROJECT_VERSION
+   - BUILD_TYPE
   number: 0
   string: 0
 
