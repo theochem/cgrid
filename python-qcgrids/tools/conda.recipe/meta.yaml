@@ -13,7 +13,7 @@ build:
   string: py{{ CONDA_PY }}_0
   script:
    - if [[ ${BUILD_TYPE} == "debug" ]]; then
-       python setup.py build --define CYTHON_TRACE_NOGIL;
+       python setup.py build_ext --define CYTHON_TRACE_NOGIL;
      fi;
      python setup.py install
 

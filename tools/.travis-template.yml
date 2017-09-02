@@ -123,8 +123,8 @@ script:
     (cd ${PYDIR}; cardboardlinter --refspec $TRAVIS_BRANCH -f static);
   fi
 
-# Build and install package
-- conda build -q tools/conda.recipe
+# Build and install package, keep work directory
+- conda build -q --dirty tools/conda.recipe
 - (cd ${PYDIR}; conda build -q tools/conda.recipe)
 - conda install --use-local ${CONDA_PKG_NAME_CPP} ${CONDA_PKG_NAME_PY}
 
@@ -142,11 +142,6 @@ script:
      --cover-package=${PROJECT_NAME} --cover-tests --cover-erase --cover-inclusive
      --cover-branches &&
      coverage xml -i);
-  fi
-
-# CPP dynamic cardboard linter
-- if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
-    cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic';
   fi
 
 # Python dynamic cardboard linter, with super ugly hack
@@ -168,7 +163,7 @@ after_success:
 # Upload the coverage analysis
 - if ! [[ $TRAVIS_TAG ]]; then
     codecov --file ~/coverage.xml &&
-    codecov;
+    (cd ~/miniconda/conda-bld/{CONDA_PKG_NAME_CPP}_*/work; codecov);
   fi
 
 before_deploy:
