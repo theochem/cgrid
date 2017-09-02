@@ -145,8 +145,7 @@ script:
   fi
 
 # Keep conda cache clean
-- conda uninstall python-qcgrids;
-- conda uninstall qcgrids;
+- conda uninstall python-qcgrids qcgrids
 
 # Make CPP and PY source package for github deployment
 - if [[ $TRAVIS_TAG ]]; then

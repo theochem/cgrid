@@ -139,8 +139,7 @@ script:
   fi
 
 # Keep conda cache clean
-- conda uninstall ${CONDA_PKG_NAME_PY};
-- conda uninstall ${CONDA_PKG_NAME_CPP};
+- conda uninstall ${CONDA_PKG_NAME_PY} ${CONDA_PKG_NAME_CPP}
 
 # Make CPP and PY source package for github deployment
 - if [[ $TRAVIS_TAG ]]; then
