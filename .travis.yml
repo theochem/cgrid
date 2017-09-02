@@ -23,6 +23,24 @@ osx_image: xcode6.4
 dist: trusty
 sudo: false
 
+matrix:
+  # We only test on Linux with one specific Python version, unless we make a release. All
+  # other cases are allowed to fail and will exit early. With the fast_finish option,
+  # travis will send a status update to github as soon as the non-allowed-to-fail has
+  # finished. This speeds up testing in PRs.
+  #
+  # This is not ideal. It would be better to run just one item from the build matrix when
+  # not preparing a release. This is not possible on Travis. There are several tickets on
+  # travis-ci related to this limitation.
+  #
+  #    https://github.com/travis-ci/travis-ci/issues/7451
+  #    https://github.com/travis-ci/travis-ci/issues/7149
+  #    https://github.com/travis-ci/travis-ci/issues/2778
+  #    ...
+  fast_finish: true
+  allow_failures:
+  - os: osx
+
 cache:
   directories:
     - $HOME/.cache/pip
