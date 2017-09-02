@@ -20,7 +20,7 @@
 
 
 from cellcutoff import Cell
-from qcgrids import Cellgrid
+from qcgrids.ext import Cellgrid
 import numpy as np
 
 
