@@ -109,36 +109,49 @@ install:
   python tools/gitversion.py python > ${PYDIR}/${PROJECT_NAME}/version.py &&
   python tools/gitversion.py cmake > CMakeListsVersion.txt.in
 
+# Set the build type
+- if [[ $TRAVIS_TAG ]]; then
+    export BUILD_TYPE="release";
+  else
+    export BUILD_TYPE="debug";
+  fi
+
 script:
 # Static linting
-# ~~~~~~~~~~~~~~
 - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
     cardboardlinter --refspec $TRAVIS_BRANCH -f static &&
     (cd ${PYDIR}; cardboardlinter --refspec $TRAVIS_BRANCH -f static);
   fi
 
-- if [[ $TRAVIS_TAG ]]; then
-    BUILD_TYPE="release" conda build -q tools/conda.recipe &&
-    (cd ${PYDIR}; BUILD_TYPE="release" conda build -q tools/conda.recipe) &&
-    conda install --use-local ${CONDA_PKG_NAME_CPP} ${CONDA_PKG_NAME_PY} &&
-    ${CONDA_PREFIX}/libexec/${PROJECT_NAME}/test_${PROJECT_NAME} &&
+# Build and install package
+- conda build -q tools/conda.recipe
+- (cd ${PYDIR}; conda build -q tools/conda.recipe)
+- conda install --use-local ${CONDA_PKG_NAME_CPP} ${CONDA_PKG_NAME_PY}
+
+# Run cpp unit tests
+- ${CONDA_PREFIX}/libexec/${PROJECT_NAME}/test_${PROJECT_NAME}
+- (cd; find | grep gcno$)
+
+# Run python unit tests
+- if [[ $BUILD_TYPE == "release" ]]; then
     (cd; nosetests ${PROJECT_NAME} -v --detailed-errors);
   else
-    BUILD_TYPE="debug" conda build -q tools/conda.recipe &&
-    (cd ${PYDIR}; BUILD_TYPE="debug" conda build -q tools/conda.recipe) &&
-    conda install --use-local ${CONDA_PKG_NAME_CPP} ${CONDA_PKG_NAME_PY} &&
-    ${CONDA_PREFIX}/libexec/${PROJECT_NAME}/test_${PROJECT_NAME} &&
     cp ${PYDIR}/.coveragerc ~/ &&
     (cd;
      nosetests ${PROJECT_NAME} -v --detailed-errors --with-coverage
      --cover-package=${PROJECT_NAME} --cover-tests --cover-erase --cover-inclusive
      --cover-branches &&
      coverage xml -i) &&
-    if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
-      cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic' &&
-      (cd ${PYDIR}; cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic');
-    fi
-    (cd; find | grep gcno$);
+  fi
+
+# CPP dynamic cardboard linter
+- if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
+    cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic'
+  fi
+
+# Python dynamic cardboard linter
+- if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
+    (cd ${PYDIR}; cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic');
   fi
 
 # Keep conda cache clean

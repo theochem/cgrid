@@ -115,36 +115,49 @@ install:
   python tools/gitversion.py python > python-qcgrids/qcgrids/version.py &&
   python tools/gitversion.py cmake > CMakeListsVersion.txt.in
 
+# Set the build type
+- if [[ $TRAVIS_TAG ]]; then
+    export BUILD_TYPE="release";
+  else
+    export BUILD_TYPE="debug";
+  fi
+
 script:
 # Static linting
-# ~~~~~~~~~~~~~~
 - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
     cardboardlinter --refspec $TRAVIS_BRANCH -f static &&
     (cd python-qcgrids; cardboardlinter --refspec $TRAVIS_BRANCH -f static);
   fi
 
-- if [[ $TRAVIS_TAG ]]; then
-    BUILD_TYPE="release" conda build -q tools/conda.recipe &&
-    (cd python-qcgrids; BUILD_TYPE="release" conda build -q tools/conda.recipe) &&
-    conda install --use-local qcgrids python-qcgrids &&
-    ${CONDA_PREFIX}/libexec/qcgrids/test_qcgrids &&
+# Build and install package
+- conda build -q tools/conda.recipe
+- (cd python-qcgrids; conda build -q tools/conda.recipe)
+- conda install --use-local qcgrids python-qcgrids
+
+# Run cpp unit tests
+- ${CONDA_PREFIX}/libexec/qcgrids/test_qcgrids
+- (cd; find | grep gcno$)
+
+# Run python unit tests
+- if [[ $BUILD_TYPE == "release" ]]; then
     (cd; nosetests qcgrids -v --detailed-errors);
   else
-    BUILD_TYPE="debug" conda build -q tools/conda.recipe &&
-    (cd python-qcgrids; BUILD_TYPE="debug" conda build -q tools/conda.recipe) &&
-    conda install --use-local qcgrids python-qcgrids &&
-    ${CONDA_PREFIX}/libexec/qcgrids/test_qcgrids &&
     cp python-qcgrids/.coveragerc ~/ &&
     (cd;
      nosetests qcgrids -v --detailed-errors --with-coverage
      --cover-package=qcgrids --cover-tests --cover-erase --cover-inclusive
      --cover-branches &&
      coverage xml -i) &&
-    if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
-      cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic' &&
-      (cd python-qcgrids; cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic');
-    fi
-    (cd; find | grep gcno$);
+  fi
+
+# CPP dynamic cardboard linter
+- if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
+    cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic'
+  fi
+
+# Python dynamic cardboard linter
+- if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
+    (cd python-qcgrids; cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic');
   fi
 
 # Keep conda cache clean
