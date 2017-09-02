@@ -1,9 +1,14 @@
 pre_filefilter: ['- python-qcgrids', '+ *']
 
 linters:
-- cppcheck:
-- cpplint:
-    script: ./cpplint.py
-- doxygen:
-- header:
-- whitespace:
+  - cppcheck:
+  - cpplint:
+      script: ./cpplint.py
+  - doxygen:
+  - header:
+  - header:
+      filefilter: ['+ *.cpp', '+ *.h', '+ *.h.in']
+      comment: '// '
+      shebang:
+      extra: []
+  - whitespace:
