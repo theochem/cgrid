@@ -128,6 +128,7 @@ script:
     (cd ${PYDIR}; BUILD_TYPE="debug" conda build -q tools/conda.recipe) &&
     conda install --use-local ${CONDA_PKG_NAME_CPP} ${CONDA_PKG_NAME_PY} &&
     ${CONDA_PREFIX}/libexec/${PROJECT_NAME}/test_${PROJECT_NAME} &&
+    cp ${PYDIR}/.coveragerc ~/ &&
     (cd;
      nosetests ${PROJECT_NAME} -v --detailed-errors --with-coverage
      --cover-package=${PROJECT_NAME} --cover-tests --cover-erase --cover-inclusive
@@ -137,6 +138,7 @@ script:
       cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic' &&
       (cd ${PYDIR}; cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic');
     fi
+    (cd; find | grep gcno$);
   fi
 
 # Keep conda cache clean
