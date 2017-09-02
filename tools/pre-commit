@@ -19,6 +19,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
+
 """Check commits for bad habits. Can be used as pre-commit when no arguments are given."""
 
 import argparse
