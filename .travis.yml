@@ -60,8 +60,8 @@ install:
 # Install more recent stuff with pip
 - pip install pylint codecov coverage pycodestyle pydocstyle flake8
 # Get the latest cpplint
-- wget https://raw.githubusercontent.com/google/styleguide/gh-pages/cpplint/cpplint.py
-- chmod +x cpplint.py
+- wget https://raw.githubusercontent.com/google/styleguide/gh-pages/cpplint/cpplint.py &&
+  chmod +x cpplint.py
 # Show conda info for debugging
 - conda info -a
 
@@ -71,10 +71,10 @@ install:
   fi
 
 # Set the version info from the git tag
-- git fetch origin --tags
-- export PROJECT_VERSION=$(python tools/gitversion.py)
-- python tools/gitversion.py python > python-qcgrids/qcgrids/version.py
-- python tools/gitversion.py cmake > CMakeListsVersion.txt.in
+- git fetch origin --tags &&
+  export PROJECT_VERSION=$(python tools/gitversion.py) &&
+  python tools/gitversion.py python > python-qcgrids/qcgrids/version.py &&
+  python tools/gitversion.py cmake > CMakeListsVersion.txt.in
 
 script:
 # Static linting
