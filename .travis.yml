@@ -136,6 +136,8 @@ script:
     (cd ${PYDIR}; cardboardlinter --refspec $TRAVIS_BRANCH -f static);
   fi
 
+# Unit tests and dynamic linting
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 - if [[ $TRAVIS_TAG ]]; then
     conda build -q tools/conda.recipe &&
     (cd ${PYDIR}; conda build -q tools/conda.recipe) &&
