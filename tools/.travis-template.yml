@@ -85,6 +85,13 @@ install:
 - conda config --add channels theochem
 - conda update -q conda
 
+
+# Set the version info from the git tag
+- git fetch origin --tags &&
+  export PROJECT_VERSION=$(python tools/gitversion.py) &&
+  python tools/gitversion.py python > ${PYDIR}/${PROJECT_NAME}/version.py &&
+  python tools/gitversion.py cmake > CMakeListsVersion.txt.in
+
 # Get a list of all build and runtime dependencies
 - conda render tools/conda.recipe > tools/conda.recipe/rendered.yaml
 - conda render ${PYDIR}/tools/conda.recipe > ${PYDIR}/tools/conda.recipe/rendered.yaml
@@ -111,12 +118,6 @@ install:
 - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
     pip install --upgrade git+https://github.com/theochem/cardboardlint.git@master#egg=cardboardlint;
   fi
-
-# Set the version info from the git tag
-- git fetch origin --tags &&
-  export PROJECT_VERSION=$(python tools/gitversion.py) &&
-  python tools/gitversion.py python > ${PYDIR}/${PROJECT_NAME}/version.py &&
-  python tools/gitversion.py cmake > CMakeListsVersion.txt.in
 
 script:
 # Static linting
