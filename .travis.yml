@@ -98,14 +98,17 @@ install:
   python tools/gitversion.py python > python-qcgrids/qcgrids/version.py &&
   python tools/gitversion.py cmake > CMakeListsVersion.txt.in
 
-# Get a list of all build and runtime dependencies
+# Get a list of all build and runtime dependencies.
+# This should become easier, without the copy to conda.recipe.ugly.
 - conda render tools/conda.recipe > tools/conda.recipe/rendered.yaml
-- conda render python-qcgrids/tools/conda.recipe > python-qcgrids/tools/conda.recipe/rendered.yaml
+- cp -r python-qcgrids/tools/conda.recipe python-qcgrids/tools/conda.recipe.ugly
+- grep -v -- '- qcgrids' python-qcgrids/tools/conda.recipe/meta.yaml > python-qcgrids/tools/conda.recipe.ugly/meta.yaml
+- conda render python-qcgrids/tools/conda.recipe.ugly > python-qcgrids/tools/conda.recipe.ugly/rendered.yaml
 - python -c "from yaml import load;
     req1 = load(open('tools/conda.recipe/rendered.yaml'))['requirements'];
-    req2 = load(open('python-qcgrids/tools/conda.recipe/rendered.yaml'))['requirements'];
+    req2 = load(open('python-qcgrids/tools/conda.recipe.ugly/rendered.yaml'))['requirements'];
     deps = req1['build'] + req1['run'] + req2['build'] + req2['run'];
-    print(' '.join(set(dep.split()[0] for dep in deps)))" > ${CONDA_DEPENDENCIES}
+    print(' '.join(set(dep.split()[0] for dep in deps if not dep.startswith('qcgrids'))))" > ${CONDA_DEPENDENCIES}
 
 # Get the right python version for building. This only does something for 3.5.
 # Install extra package needed to make things work. Most things can be listed as
