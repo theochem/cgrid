@@ -33,12 +33,14 @@ include_directories(${PROJECT_SOURCE_DIR})
 # Define source files
 set(SOURCE_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/cellgrid.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/scalarfns.cpp
 )
 
 # Define header files
 set(HEADER_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/cellgrid.h
   ${CMAKE_CURRENT_BINARY_DIR}/config.h
+  ${CMAKE_CURRENT_BINARY_DIR}/scalarfns.h
 )
 
 # Find the cellcutoff library. Let's be nice with manually compiled stuff in
