@@ -108,16 +108,20 @@ TEST_P(ScalarFunctionTest, basics) {
 
 
 
-qcg::Exponential exponential1(0.5, 1.5);
-qcg::Exponential exponential2(0.1, 2.5);
+qcg::Exp exp_case1(0.5, 1.5);
+qcg::Exp exp_case2(0.1, 2.5);
+qcg::Ln ln_case1(0.5, 0.2);
+qcg::Ln ln_case2(0.1, 1.2);
 const double spline_input1[3] = {0.0, 1.0, 2.0};
 const double spline_input2[3] = {0.0, 1.0, 2.0};
 qcg::UniformCubicSpline spline3(3, spline_input1, spline_input2);
 
 INSTANTIATE_TEST_CASE_P(Examples, ScalarFunctionTest, ::testing::Values(
-  SFTestParams(&exponential1, 1.2, 0.75971, 0.5*exp(1.5*1.2)),
-  SFTestParams(&exponential2, 0.2, 0.8, 0.1*exp(2.5*0.2)),
-  SFTestParams(&spline3, 0.2, 0.8, 0.072)
+  SFTestParams(&exp_case1, 1.2, 0.75971, 0.5*exp(1.5*1.2)),
+  SFTestParams(&exp_case2, 0.2, 0.8, 0.1*exp(2.5*0.2)),
+  SFTestParams(&ln_case1, 1.2, 0.75971, 0.5*log(0.2*1.2)),
+  SFTestParams(&ln_case2, 0.2, 0.6, 0.1*log(1.2*0.2)),
+  SFTestParams(&spline3, 0.2, 0.3, 0.072)
 ));
 
 // vim: textwidth=90 et ts=2 sw=2

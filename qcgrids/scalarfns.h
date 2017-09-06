@@ -149,17 +149,40 @@ class ScalarFunction {
 };
 
 
-//! An exponential function with a fixed exponent.
-class Exponential : public ScalarFunction {
+//! An exponential function.
+class Exp : public ScalarFunction {
  public:
-  const double amplitude;  //!< The amplitude, A in y=A*exp(alpha*x)
-  const double exponent;   //!< The exponent, alpha in y=A*exp(alpha*x)
+  const double prefac;  //!< prefac in y=prefac*exp(alpha*x)
+  const double alpha;   //!< alpha in y=prefac*exp(alpha*x)
 
-  Exponential() = delete;
-  //! Create an instance of Exponential with given exponent.
-  explicit Exponential(double amplitude, double exponent) : ScalarFunction(true),
-      amplitude(amplitude), exponent(exponent) {}
-  virtual ~Exponential() {}
+  Exp() = delete;
+  //! Create an instance of Exp.
+  explicit Exp(double prefac, double alpha) : ScalarFunction(true), prefac(prefac),
+      alpha(alpha) {}
+  virtual ~Exp() {}
+
+  void calc(const double x, const int nderiv, double* const output) const;
+  void calc_inv(const double y, const int nderiv, double* const output) const;
+  virtual double value(const double x) const;
+  virtual double value_inv(const double y) const;
+  virtual double deriv(const double x) const;
+  virtual double deriv_inv(const double x) const;
+  virtual double deriv2(const double x) const;
+  virtual double deriv2_inv(const double x) const;
+};
+
+
+//! A logarithmic function.
+class Ln : public ScalarFunction {
+ public:
+  const double prefac;  //!< The prefac, A in y=A*ln(alpha*x)
+  const double alpha;   //!< The alpha, alpha in y=A*ln(alpha*x)
+
+  Ln() = delete;
+  //! Create an instance of Exp with given alpha.
+  explicit Ln(double prefac, double alpha) : ScalarFunction(true), prefac(prefac),
+    alpha(alpha) {}
+  virtual ~Ln() {}
 
   void calc(const double x, const int nderiv, double* const output) const;
   void calc_inv(const double y, const int nderiv, double* const output) const;

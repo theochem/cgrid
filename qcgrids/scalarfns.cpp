@@ -73,51 +73,99 @@ double ScalarFunction::deriv2_inv(const double y) const {
 }
 
 
-void Exponential::calc(const double x, const int nderiv, double* const output) const {
+void Exp::calc(const double x, const int nderiv, double* const output) const {
   if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
-  output[0] = amplitude*exp(exponent*x);
-  if (nderiv > 0) output[1] = output[0]*exponent;
-  if (nderiv > 1) output[2] = output[1]*exponent;
+  output[0] = prefac*exp(alpha*x);
+  if (nderiv > 0) output[1] = output[0]*alpha;
+  if (nderiv > 1) output[2] = output[1]*alpha;
   if (nderiv > 2) throw std::domain_error("nderiv cannot be larger than two.");
 }
 
 
-void Exponential::calc_inv(const double y, const int nderiv, double* const output) const {
+void Exp::calc_inv(const double y, const int nderiv, double* const output) const {
   if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
-  output[0] = log(y/amplitude)/exponent;
-  if (nderiv > 0) output[1] = 1.0/(y*exponent);
+  output[0] = log(y/prefac)/alpha;
+  if (nderiv > 0) output[1] = 1.0/(y*alpha);
   if (nderiv > 1) output[2] = -output[1]/y;
   if (nderiv > 2) throw std::domain_error("nderiv cannot be larger than two.");
 }
 
 
-double Exponential::value(const double x) const {
-  return amplitude*exp(exponent*x);
+double Exp::value(const double x) const {
+  return prefac*exp(alpha*x);
 }
 
 
-double Exponential::value_inv(const double y) const {
-  return log(y/amplitude)/exponent;
+double Exp::value_inv(const double y) const {
+  return log(y/prefac)/alpha;
 }
 
 
-double Exponential::deriv(const double x) const {
-  return amplitude*exponent*exp(exponent*x);
+double Exp::deriv(const double x) const {
+  return prefac*alpha*exp(alpha*x);
 }
 
 
-double Exponential::deriv_inv(const double y) const {
-  return 1.0/(y*exponent);
+double Exp::deriv_inv(const double y) const {
+  return 1.0/(y*alpha);
 }
 
 
-double Exponential::deriv2(const double x) const {
-  return amplitude*exponent*exponent*exp(exponent*x);
+double Exp::deriv2(const double x) const {
+  return prefac*alpha*alpha*exp(alpha*x);
 }
 
 
-double Exponential::deriv2_inv(const double y) const {
-  return -1.0/(y*y*exponent);
+double Exp::deriv2_inv(const double y) const {
+  return -1.0/(y*y*alpha);
+}
+
+
+void Ln::calc(const double x, const int nderiv, double* const output) const {
+  if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
+  output[0] = prefac*log(alpha*x);
+  if (nderiv > 0) output[1] = prefac/x;
+  if (nderiv > 1) output[2] = -output[1]/x;
+  if (nderiv > 2) throw std::domain_error("nderiv cannot be larger than two.");
+}
+
+
+void Ln::calc_inv(const double y, const int nderiv, double* const output) const {
+  if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
+  output[0] = exp(y/prefac)/alpha;
+  if (nderiv > 0) output[1] = output[0]/prefac;
+  if (nderiv > 1) output[2] = output[1]/prefac;
+  if (nderiv > 2) throw std::domain_error("nderiv cannot be larger than two.");
+}
+
+
+double Ln::value(const double x) const {
+  return prefac*log(alpha*x);
+}
+
+
+double Ln::value_inv(const double y) const {
+  return exp(y/prefac)/alpha;
+}
+
+
+double Ln::deriv(const double x) const {
+  return prefac/x;
+}
+
+
+double Ln::deriv_inv(const double y) const {
+  return exp(y/prefac)/(alpha*prefac);
+}
+
+
+double Ln::deriv2(const double x) const {
+  return -prefac/(x*x);
+}
+
+
+double Ln::deriv2_inv(const double y) const {
+  return exp(y/prefac)/(alpha*prefac*prefac);
 }
 
 
