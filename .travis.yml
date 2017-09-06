@@ -1,4 +1,4 @@
-env:
+ env:
   matrix:
   - MYCONDAPY=2.7
   #- MYCONDAPY=3.5
@@ -21,7 +21,7 @@ language: generic
 os:
 - linux
 - osx
-osx_image: xcode8.3
+osx_image: xcode6.4
 dist: trusty
 sudo: false
 
