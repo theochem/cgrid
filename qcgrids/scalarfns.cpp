@@ -114,6 +114,12 @@ void Ln::calc_inv(const double y, const int nderiv, double* const output) const 
 }
 
 
+Linear::Linear(double slope, double offset) : ScalarFunction(true), slope(slope),
+      offset(offset) {
+  if (slope == 0) throw std::domain_error("slope cannot be zero in Linear function.");
+}
+
+
 void Linear::calc(const double x, const int nderiv, double* const output) const {
   if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
   output[0] = slope*x + offset;
@@ -155,6 +161,88 @@ void Constant::calc(const double x, const int nderiv, double* const output) cons
   output[0] = offset;
   if (nderiv > 0) output[1] = 0.0;
   if (nderiv > 1) output[2] = 0.0;
+  if (nderiv > 2) throw std::domain_error("nderiv cannot be larger than two.");
+}
+
+
+Power::Power(double prefac, double power) : ScalarFunction(true), prefac(prefac),
+    power(power) {
+  if (power == 0) throw std::domain_error("The power cannot be zero in the Power function.");
+}
+
+
+void Power::calc(const double x, const int nderiv, double* const output) const {
+  if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
+  output[0] = prefac*pow(x, power);
+  if (nderiv > 0) output[1] = prefac*power*pow(x, power - 1);
+  if (nderiv > 1) {
+    // Avoid risk for division by zero;
+    if (power == 1) {
+      output[2] = 0.0;
+    } else {
+      output[2] = prefac*power*(power-1)*pow(x, power - 2);
+    }
+  }
+  if (nderiv > 2) throw std::domain_error("nderiv cannot be larger than two.");
+}
+
+
+void Power::calc_inv(const double y, const int nderiv, double* const output) const {
+  if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
+  output[0] = pow(y/prefac, 1.0/power);
+  if (nderiv > 0) output[1] = pow(y/prefac, 1.0/power - 1.0)/(power*prefac);
+  if (nderiv > 1) {
+    // Avoid risk for division by zero;
+    if (power == 1) {
+      output[2] = 0.0;
+    } else {
+      output[2] = pow(y/prefac, 1.0/power - 2.0)/(power*prefac*prefac)*(1.0/power - 1.0);
+    }
+  }
+  if (nderiv > 2) throw std::domain_error("nderiv cannot be larger than two.");
+}
+
+
+double Power::deriv2(const double x) const {
+  if (power == 1) {
+    return 0.0;
+  } else {
+    return prefac*power*(power-1)*pow(x, power - 2);
+  }
+}
+
+
+double Power::deriv2_inv(const double y) const {
+  if (power == 1) {
+    return 0.0;
+  } else {
+    return pow(y/prefac, 1.0/power - 2.0)/(power*prefac*prefac)*(1.0/power - 1.0);
+  }
+}
+
+
+Rational::Rational(double prefac, double root) : ScalarFunction(true), prefac(prefac),
+    root(root) {
+  if (root == 0) throw std::domain_error("The root cannot be zero in the Rational function.");
+}
+
+
+void Rational::calc(const double x, const int nderiv, double* const output) const {
+  if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
+  double t = 1 - x/root;
+  output[0] = prefac*x/t;
+  if (nderiv > 0) output[1] = prefac/(t*t);
+  if (nderiv > 1) output[2] = 2*output[1]/(root*t);
+  if (nderiv > 2) throw std::domain_error("nderiv cannot be larger than two.");
+}
+
+
+void Rational::calc_inv(const double y, const int nderiv, double* const output) const {
+  if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
+  double t = prefac + y/root;
+  output[0] = y/t;
+  if (nderiv > 0) output[1] = prefac/(t*t);
+  if (nderiv > 1) output[2] = -2*output[1]/(root*t);
   if (nderiv > 2) throw std::domain_error("nderiv cannot be larger than two.");
 }
 

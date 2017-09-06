@@ -205,8 +205,7 @@ class Linear : public ScalarFunction {
 
   Linear() = delete;
   //! Create an instance of Ln.
-  explicit Linear(double slope, double offset) : ScalarFunction(slope != 0), slope(slope),
-      offset(offset) {}
+  explicit Linear(double slope, double offset);
   virtual ~Linear() {}
 
   void calc(const double x, const int nderiv, double* const output) const;
@@ -252,6 +251,60 @@ class Constant : public ScalarFunction {
   double value(const double x) const { return offset; }
   double deriv(const double x) const { return 0.0; }
   double deriv2(const double x) const { return 0.0; }
+};
+
+
+//! A Power function, only for x > 0.
+class Power : public ScalarFunction {
+ public:
+  const double prefac;  //!< prefac in y = prefac*(x**power)
+  const double power;   //!< power in y = prefac*(x**power)
+
+  Power() = delete;
+  /** @brief
+        Create an instance of Power.
+
+      Note: The function is marked as invertible but this only true when the function is
+      restricted to positive x. This is what we need in practice, so we'll imply this
+      limitation. (No strict checking.)
+  */
+  explicit Power(double prefac, double power);
+  virtual ~Power() {}
+
+  void calc(const double x, const int nderiv, double* const output) const;
+  void calc_inv(const double y, const int nderiv, double* const output) const;
+  double value(const double x) const { return prefac*pow(x, power); }
+  double value_inv(const double y) const { return pow(y/prefac, 1.0/power); }
+  double deriv(const double x) const { return prefac*power*pow(x, power - 1); }
+  double deriv_inv(const double y) const { return pow(y/prefac, 1.0/power - 1.0)/(power*prefac); }
+  double deriv2(const double x) const;
+  double deriv2_inv(const double y) const;
+};
+
+
+//! A basic rational function: y(x) = prefac*x/(1 - x/root), not for x == root.
+class Rational : public ScalarFunction {
+ public:
+  const double prefac;  //!< prefac in prefac*x/(1 - x/root)
+  const double root;    //!< root in prefac*x/(1 - x/root)
+
+  Rational() = delete;
+  //! Create an instance of Rational.
+  explicit Rational(double prefac, double root);
+  virtual ~Rational() {}
+
+  void calc(const double x, const int nderiv, double* const output) const;
+  void calc_inv(const double y, const int nderiv, double* const output) const;
+  double value(const double x) const { return prefac*x/(1 - x/root); }
+  double value_inv(const double y) const { return y/(prefac + y/root); }
+  double deriv(const double x) const
+    { double t = 1 - x/root; return prefac/(t*t);  }
+  double deriv_inv(const double y) const
+    { double t = prefac + y/root; return prefac/(t*t); }
+  double deriv2(const double x) const
+    { double t = 1 - x/root; return 2*prefac/(root*t*t*t); }
+  double deriv2_inv(const double y) const
+    { double t = prefac + y/root; return -2*prefac/(root*t*t*t); }
 };
 
 

@@ -115,9 +115,13 @@ qcg::Ln ln_case2(0.1, 1.2);
 qcg::Linear linear_case(0.4, 1.2);
 qcg::Identity identity_case;
 qcg::Constant constant_case(0.88);
+qcg::Power power_case1(0.3, 2.3);
+qcg::Power power_case2(1.1, -2);
+qcg::Rational rational_case(20.0, 33.0);
 const double spline_input1[3] = {0.0, 1.0, 2.0};
 const double spline_input2[3] = {0.0, 1.0, 2.0};
 qcg::UniformCubicSpline spline3(3, spline_input1, spline_input2);
+
 
 INSTANTIATE_TEST_CASE_P(Examples, ScalarFunctionTest, ::testing::Values(
   SFTestParams(&exp_case1, 1.2, 0.75971, 0.5*exp(1.5*1.2)),
@@ -127,7 +131,25 @@ INSTANTIATE_TEST_CASE_P(Examples, ScalarFunctionTest, ::testing::Values(
   SFTestParams(&linear_case, 0.2, 0.6, 0.4*0.2 + 1.2),
   SFTestParams(&identity_case, 0.2, 0.6, 0.2),
   SFTestParams(&constant_case, 0.2, 0.6, 0.88),
+  SFTestParams(&power_case1, 0.5, 0.6, 0.3*pow(0.5, 2.3)),
+  SFTestParams(&power_case2, 0.7, 1.3, 1.1*pow(0.7, -2)),
+  SFTestParams(&rational_case, 11.0, 1.3, 20.0*11.0/(1 - 11.0/33.0)),
   SFTestParams(&spline3, 0.2, 0.3, 0.072)
 ));
+
+
+TEST(ScalarFunctionTest, corner_cases) {
+  EXPECT_NEAR(power_case1.value(0.0), 0.0, EPS);
+  EXPECT_NEAR(power_case1.value_inv(0.0), 0.0, EPS);
+  EXPECT_NEAR(power_case1.deriv(0.0), 0.0, EPS);
+  EXPECT_NEAR(power_case1.deriv2(0.0), 0.0, EPS);
+}
+
+
+TEST(ScalarFunctionTest, corner_exceptions) {
+  EXPECT_THROW(qcg::Linear(0.0, 1.0), std::domain_error);
+  EXPECT_THROW(qcg::Power(1.0, 0.0), std::domain_error);
+  EXPECT_THROW(qcg::Rational(1.0, 0.0), std::domain_error);
+}
 
 // vim: textwidth=90 et ts=2 sw=2
