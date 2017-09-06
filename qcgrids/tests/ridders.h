@@ -18,10 +18,13 @@
 // --
 
 
+#ifndef QCGRIDS_TESTS_RIDDERS_H_
+#define QCGRIDS_TESTS_RIDDERS_H_
+
+
 #include <algorithm>
 #include <stdexcept>
 #include <vector>
-
 
 /** @brief
       Approximate the derivative of a scalar function with Ridders' method.
@@ -121,5 +124,9 @@ FLT diff_ridders(
     *outerror = error;
   return estimate;
 }
+
+
+#endif  // QCGRIDS_TESTS_RIDDERS_H_
+
 
 // vim: textwidth=90 et ts=2 sw=2
