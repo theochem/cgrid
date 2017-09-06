@@ -31,6 +31,11 @@
 namespace qcgrids {
 
 
+void ScalarFunction::calc_inv(const double y, const int nderiv, double* const output) const {
+  throw std::logic_error("calc_inv is not implemented for splines.");
+}
+
+
 double ScalarFunction::value(const double x) const {
   double result;
   calc(x, 0, &result);
@@ -91,36 +96,6 @@ void Exp::calc_inv(const double y, const int nderiv, double* const output) const
 }
 
 
-double Exp::value(const double x) const {
-  return prefac*exp(alpha*x);
-}
-
-
-double Exp::value_inv(const double y) const {
-  return log(y/prefac)/alpha;
-}
-
-
-double Exp::deriv(const double x) const {
-  return prefac*alpha*exp(alpha*x);
-}
-
-
-double Exp::deriv_inv(const double y) const {
-  return 1.0/(y*alpha);
-}
-
-
-double Exp::deriv2(const double x) const {
-  return prefac*alpha*alpha*exp(alpha*x);
-}
-
-
-double Exp::deriv2_inv(const double y) const {
-  return -1.0/(y*y*alpha);
-}
-
-
 void Ln::calc(const double x, const int nderiv, double* const output) const {
   if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
   output[0] = prefac*log(alpha*x);
@@ -139,38 +114,48 @@ void Ln::calc_inv(const double y, const int nderiv, double* const output) const 
 }
 
 
-double Ln::value(const double x) const {
-  return prefac*log(alpha*x);
+void Linear::calc(const double x, const int nderiv, double* const output) const {
+  if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
+  output[0] = slope*x + offset;
+  if (nderiv > 0) output[1] = slope;
+  if (nderiv > 1) output[2] = 0.0;
+  if (nderiv > 2) throw std::domain_error("nderiv cannot be larger than two.");
 }
 
 
-double Ln::value_inv(const double y) const {
-  return exp(y/prefac)/alpha;
+void Linear::calc_inv(const double y, const int nderiv, double* const output) const {
+  if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
+  output[0] = (y - offset)/slope;
+  if (nderiv > 0) output[1] = 1.0/slope;
+  if (nderiv > 1) output[2] = 0.0;
+  if (nderiv > 2) throw std::domain_error("nderiv cannot be larger than two.");
 }
 
 
-double Ln::deriv(const double x) const {
-  return prefac/x;
+void Identity::calc(const double x, const int nderiv, double* const output) const {
+  if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
+  output[0] = x;
+  if (nderiv > 0) output[1] = 1.0;
+  if (nderiv > 1) output[2] = 0.0;
+  if (nderiv > 2) throw std::domain_error("nderiv cannot be larger than two.");
 }
 
 
-double Ln::deriv_inv(const double y) const {
-  return exp(y/prefac)/(alpha*prefac);
+void Identity::calc_inv(const double y, const int nderiv, double* const output) const {
+  if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
+  output[0] = y;
+  if (nderiv > 0) output[1] = 1.0;
+  if (nderiv > 1) output[2] = 0.0;
+  if (nderiv > 2) throw std::domain_error("nderiv cannot be larger than two.");
 }
 
 
-double Ln::deriv2(const double x) const {
-  return -prefac/(x*x);
-}
-
-
-double Ln::deriv2_inv(const double y) const {
-  return exp(y/prefac)/(alpha*prefac*prefac);
-}
-
-
-void Spline::calc_inv(const double y, const int nderiv, double* const output) const {
-  throw std::logic_error("calc_inv is not implemented for splines.");
+void Constant::calc(const double x, const int nderiv, double* const output) const {
+  if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
+  output[0] = offset;
+  if (nderiv > 0) output[1] = 0.0;
+  if (nderiv > 1) output[2] = 0.0;
+  if (nderiv > 2) throw std::domain_error("nderiv cannot be larger than two.");
 }
 
 

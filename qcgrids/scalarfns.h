@@ -22,6 +22,8 @@
 
 #include <memory>
 
+#include <cmath>
+
 
 #ifndef QCGRIDS_SCALARFNS_H_
 #define QCGRIDS_SCALARFNS_H_
@@ -76,7 +78,7 @@ class ScalarFunction {
         Pointer to an output array of sufficient size to store the inverse function value
         and all requested derivatives.
   */
-  virtual void calc_inv(const double y, const int nderiv, double* const output) const = 0;
+  virtual void calc_inv(const double y, const int nderiv, double* const output) const;
 
 
   // Convenience functions
@@ -163,35 +165,93 @@ class Exp : public ScalarFunction {
 
   void calc(const double x, const int nderiv, double* const output) const;
   void calc_inv(const double y, const int nderiv, double* const output) const;
-  virtual double value(const double x) const;
-  virtual double value_inv(const double y) const;
-  virtual double deriv(const double x) const;
-  virtual double deriv_inv(const double x) const;
-  virtual double deriv2(const double x) const;
-  virtual double deriv2_inv(const double x) const;
+  double value(const double x) const { return prefac*exp(alpha*x); }
+  double value_inv(const double y) const { return log(y/prefac)/alpha; }
+  double deriv(const double x) const { return prefac*alpha*exp(alpha*x); }
+  double deriv_inv(const double y) const { return 1.0/(y*alpha); }
+  double deriv2(const double x) const { return prefac*alpha*alpha*exp(alpha*x); }
+  double deriv2_inv(const double y) const { return -1.0/(y*y*alpha); }
 };
 
 
 //! A logarithmic function.
 class Ln : public ScalarFunction {
  public:
-  const double prefac;  //!< The prefac, A in y=A*ln(alpha*x)
-  const double alpha;   //!< The alpha, alpha in y=A*ln(alpha*x)
+  const double prefac;  //!< prefac in y=prefac*ln(alpha*x)
+  const double alpha;   //!< alpha in y=prefac*ln(alpha*x)
 
   Ln() = delete;
-  //! Create an instance of Exp with given alpha.
+  //! Create an instance of Ln.
   explicit Ln(double prefac, double alpha) : ScalarFunction(true), prefac(prefac),
     alpha(alpha) {}
   virtual ~Ln() {}
 
   void calc(const double x, const int nderiv, double* const output) const;
   void calc_inv(const double y, const int nderiv, double* const output) const;
-  virtual double value(const double x) const;
-  virtual double value_inv(const double y) const;
-  virtual double deriv(const double x) const;
-  virtual double deriv_inv(const double x) const;
-  virtual double deriv2(const double x) const;
-  virtual double deriv2_inv(const double x) const;
+  double value(const double x) const { return prefac*log(alpha*x); }
+  double value_inv(const double y) const { return exp(y/prefac)/alpha; }
+  double deriv(const double x) const { return prefac/x; }
+  double deriv_inv(const double y) const { return exp(y/prefac)/(alpha*prefac); }
+  double deriv2(const double x) const { return -prefac/(x*x); }
+  double deriv2_inv(const double y) const { return exp(y/prefac)/(alpha*prefac*prefac); }
+};
+
+
+//! A linear function.
+class Linear : public ScalarFunction {
+ public:
+  const double slope;    //!< slope in y = slope*x + offset
+  const double offset;   //!< offset in y = slope*x + offset
+
+  Linear() = delete;
+  //! Create an instance of Ln.
+  explicit Linear(double slope, double offset) : ScalarFunction(slope != 0), slope(slope),
+      offset(offset) {}
+  virtual ~Linear() {}
+
+  void calc(const double x, const int nderiv, double* const output) const;
+  void calc_inv(const double y, const int nderiv, double* const output) const;
+  double value(const double x) const { return slope*x + offset; }
+  double value_inv(const double y) const { return (y - offset)/slope; }
+  double deriv(const double x) const { return slope; }
+  double deriv_inv(const double y) const { return 1.0/slope; }
+  double deriv2(const double x) const { return 0.0; }
+  double deriv2_inv(const double y) const { return 0.0; }
+};
+
+
+//! Identity function.
+class Identity : public ScalarFunction {
+ public:
+  //! Create an instance of Identity.
+  Identity() : ScalarFunction(true) {}
+  virtual ~Identity() {}
+
+  void calc(const double x, const int nderiv, double* const output) const;
+  void calc_inv(const double y, const int nderiv, double* const output) const;
+  double value(const double x) const { return x; }
+  double value_inv(const double y) const { return y; }
+  double deriv(const double x) const { return 1.0; }
+  double deriv_inv(const double y) const { return 1.0; }
+  double deriv2(const double x) const { return 0.0; }
+  double deriv2_inv(const double y) const { return 0.0; }
+};
+
+
+//! Constant function.
+class Constant : public ScalarFunction {
+ public:
+  const double offset;  //!< Value of the constant function.
+
+  Constant() = delete;
+  //! Create an instance of Identity.
+  explicit Constant(double offset) : ScalarFunction(false), offset(offset) {}
+  virtual ~Constant() {}
+
+  void calc(const double x, const int nderiv, double* const output) const;
+  double value(const double x) const { return offset; }
+  double deriv(const double x) const { return 0.0; }
+  double deriv2(const double x) const { return 0.0; }
 };
 
 
@@ -213,8 +273,6 @@ class Spline : public ScalarFunction {
   virtual double right() const = 0;
   //! Return position on x-axis of point with given index.
   virtual double x(const size_t index) const = 0;
-
-  void calc_inv(const double y, const int nderiv, double* const output) const;
 };
 
 

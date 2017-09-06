@@ -112,6 +112,9 @@ qcg::Exp exp_case1(0.5, 1.5);
 qcg::Exp exp_case2(0.1, 2.5);
 qcg::Ln ln_case1(0.5, 0.2);
 qcg::Ln ln_case2(0.1, 1.2);
+qcg::Linear linear_case(0.4, 1.2);
+qcg::Identity identity_case;
+qcg::Constant constant_case(0.88);
 const double spline_input1[3] = {0.0, 1.0, 2.0};
 const double spline_input2[3] = {0.0, 1.0, 2.0};
 qcg::UniformCubicSpline spline3(3, spline_input1, spline_input2);
@@ -121,6 +124,9 @@ INSTANTIATE_TEST_CASE_P(Examples, ScalarFunctionTest, ::testing::Values(
   SFTestParams(&exp_case2, 0.2, 0.8, 0.1*exp(2.5*0.2)),
   SFTestParams(&ln_case1, 1.2, 0.75971, 0.5*log(0.2*1.2)),
   SFTestParams(&ln_case2, 0.2, 0.6, 0.1*log(1.2*0.2)),
+  SFTestParams(&linear_case, 0.2, 0.6, 0.4*0.2 + 1.2),
+  SFTestParams(&identity_case, 0.2, 0.6, 0.2),
+  SFTestParams(&constant_case, 0.2, 0.6, 0.88),
   SFTestParams(&spline3, 0.2, 0.3, 0.072)
 ));
 
