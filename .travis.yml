@@ -220,4 +220,3 @@ deploy:
     repo: ${GITHUB_REPO_NAME}
     tags: true
     condition: "$TRAVIS_TAG == *a*"
-
