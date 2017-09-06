@@ -152,11 +152,13 @@ class ScalarFunction {
 //! An exponential function with a fixed exponent.
 class Exponential : public ScalarFunction {
  public:
-  const double exponent;  //!< The exponent, alpha in y=A*exp(alpha*x)
+  const double amplitude;  //!< The amplitude, A in y=A*exp(alpha*x)
+  const double exponent;   //!< The exponent, alpha in y=A*exp(alpha*x)
 
   Exponential() = delete;
   //! Create an instance of Exponential with given exponent.
-  explicit Exponential(double exponent) : ScalarFunction(true), exponent(exponent) {}
+  explicit Exponential(double amplitude, double exponent) : ScalarFunction(true),
+      amplitude(amplitude), exponent(exponent) {}
   virtual ~Exponential() {}
 
   void calc(const double x, const int nderiv, double* const output) const;

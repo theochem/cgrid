@@ -75,7 +75,7 @@ double ScalarFunction::deriv2_inv(const double y) const {
 
 void Exponential::calc(const double x, const int nderiv, double* const output) const {
   if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
-  output[0] = exp(exponent*x);
+  output[0] = amplitude*exp(exponent*x);
   if (nderiv > 0) output[1] = output[0]*exponent;
   if (nderiv > 1) output[2] = output[1]*exponent;
   if (nderiv > 2) throw std::domain_error("nderiv cannot be larger than two.");
@@ -84,7 +84,7 @@ void Exponential::calc(const double x, const int nderiv, double* const output) c
 
 void Exponential::calc_inv(const double y, const int nderiv, double* const output) const {
   if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
-  output[0] = log(y)/exponent;
+  output[0] = log(y/amplitude)/exponent;
   if (nderiv > 0) output[1] = 1.0/(y*exponent);
   if (nderiv > 1) output[2] = -output[1]/y;
   if (nderiv > 2) throw std::domain_error("nderiv cannot be larger than two.");
@@ -92,17 +92,17 @@ void Exponential::calc_inv(const double y, const int nderiv, double* const outpu
 
 
 double Exponential::value(const double x) const {
-  return exp(exponent*x);
+  return amplitude*exp(exponent*x);
 }
 
 
 double Exponential::value_inv(const double y) const {
-  return log(y)/exponent;
+  return log(y/amplitude)/exponent;
 }
 
 
 double Exponential::deriv(const double x) const {
-  return exponent*exp(exponent*x);
+  return amplitude*exponent*exp(exponent*x);
 }
 
 
@@ -112,7 +112,7 @@ double Exponential::deriv_inv(const double y) const {
 
 
 double Exponential::deriv2(const double x) const {
-  return exponent*exponent*exp(exponent*x);
+  return amplitude*exponent*exponent*exp(exponent*x);
 }
 
 
