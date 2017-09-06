@@ -101,6 +101,8 @@ TEST_P(ScalarFunctionTest, basics) {
     EXPECT_NEAR(output[1], deriv_inv, EPS);
     double deriv2_inv = diff_ridders(sfn, &qcg::ScalarFunction::deriv_inv, y, 0.1);
     EXPECT_NEAR(output[2], deriv2_inv, EPS);
+  } else {
+    EXPECT_THROW(sfn->value_inv(y), std::logic_error);
   }
 }
 
