@@ -81,6 +81,9 @@ TEST_P(ScalarFunctionTest, basics) {
     EXPECT_NEAR(output[1], deriv, EPS);
     double deriv2 = diff_ridders(sfn, &qcg::ScalarFunction::deriv, x, 0.1);
     EXPECT_NEAR(output[2], deriv2, EPS);
+    // Test some exceptions
+    EXPECT_THROW(sfn->calc(x, -1, output), std::domain_error);
+    EXPECT_THROW(sfn->calc(x, 3, output), std::domain_error);
   }
   if (sfn->invertible()) {
     // Test consistency of function and its inverse.
@@ -101,6 +104,9 @@ TEST_P(ScalarFunctionTest, basics) {
     EXPECT_NEAR(output[1], deriv_inv, EPS);
     double deriv2_inv = diff_ridders(sfn, &qcg::ScalarFunction::deriv_inv, y, 0.1);
     EXPECT_NEAR(output[2], deriv2_inv, EPS);
+    // Test some exceptions
+    EXPECT_THROW(sfn->calc_inv(x, -1, output), std::domain_error);
+    EXPECT_THROW(sfn->calc_inv(x, 3, output), std::domain_error);
   } else {
     EXPECT_THROW(sfn->value_inv(y), std::logic_error);
   }
@@ -117,9 +123,10 @@ qcg::Identity identity_case;
 qcg::Constant constant_case(0.88);
 qcg::Power power_case1(0.3, 2.3);
 qcg::Power power_case2(1.1, -2);
+qcg::Power power_case3(0.7, 1.0);
 qcg::Rational rational_case(20.0, 33.0);
-const double spline_input1[3] = {0.0, 1.0, 2.0};
-const double spline_input2[3] = {0.0, 1.0, 2.0};
+const double spline_input1[3] = {0.5, 1.0, 2.3};
+const double spline_input2[3] = {-0.1, 1.2, 2.0};
 qcg::UniformCubicSpline spline3(3, spline_input1, spline_input2);
 
 
@@ -133,8 +140,9 @@ INSTANTIATE_TEST_CASE_P(Examples, ScalarFunctionTest, ::testing::Values(
   SFTestParams(&constant_case, 0.2, 0.6, 0.88),
   SFTestParams(&power_case1, 0.5, 0.6, 0.3*pow(0.5, 2.3)),
   SFTestParams(&power_case2, 0.7, 1.3, 1.1*pow(0.7, -2)),
+  SFTestParams(&power_case3, 0.5, 0.9, 0.7*0.5),
   SFTestParams(&rational_case, 11.0, 1.3, 20.0*11.0/(1 - 11.0/33.0)),
-  SFTestParams(&spline3, 0.2, 0.3, 0.072)
+  SFTestParams(&spline3, 0.2, 0.3, 0.5008)
 ));
 
 
@@ -146,7 +154,7 @@ TEST(ScalarFunctionTest, corner_cases) {
 }
 
 
-TEST(ScalarFunctionTest, corner_exceptions) {
+TEST(ScalarFunctionTest, exceptions) {
   EXPECT_THROW(qcg::Exp(0.0, 1.0), std::domain_error);
   EXPECT_THROW(qcg::Exp(1.0, 0.0), std::domain_error);
   EXPECT_THROW(qcg::Ln(0.0, 1.0), std::domain_error);
@@ -158,6 +166,21 @@ TEST(ScalarFunctionTest, corner_exceptions) {
   EXPECT_THROW(qcg::Rational(0.0, 1.0), std::domain_error);
   EXPECT_THROW(qcg::UniformCubicSpline(0), std::domain_error);
   EXPECT_THROW(qcg::UniformCubicSpline(1), std::domain_error);
+}
+
+TEST(ScalarFunctionTest, uniform_cubic_spline_basics) {
+  EXPECT_EQ(spline3.npoint(), 3);
+  EXPECT_EQ(spline3.left(), 0.0);
+  EXPECT_EQ(spline3.right(), 2.0);
+  EXPECT_EQ(spline3.x(0), 0.0);
+  EXPECT_EQ(spline3.x(1), 1.0);
+  EXPECT_EQ(spline3.x(2), 2.0);
+  EXPECT_EQ(spline3.values()[0], 0.5);
+  EXPECT_EQ(spline3.values()[1], 1.0);
+  EXPECT_EQ(spline3.values()[2], 2.3);
+  EXPECT_EQ(spline3.derivs()[0], -0.1);
+  EXPECT_EQ(spline3.derivs()[1], 1.2);
+  EXPECT_EQ(spline3.derivs()[2], 2.0);
 }
 
 // vim: textwidth=90 et ts=2 sw=2
