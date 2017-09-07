@@ -31,7 +31,7 @@
 namespace qcgrids {
 
 
-void ScalarFunction::calc_inv(const double y, const int nderiv, double* const output) const {
+void ScalarFunction::calc_inv(const double, const int, double* const) const {
   throw std::logic_error("calc_inv is not implemented for splines.");
 }
 
@@ -78,28 +78,42 @@ double ScalarFunction::deriv2_inv(const double y) const {
 }
 
 
+Exp::Exp(double prefac, double alpha) : ScalarFunction(true), prefac_(prefac), alpha_(alpha) {
+  // Some checks to assure invertibility.
+  if (prefac == 0) throw std::domain_error("prefac cannot be zero in Exp function.");
+  if (alpha == 0) throw std::domain_error("alpha cannot be zero in Exp function.");
+}
+
+
 void Exp::calc(const double x, const int nderiv, double* const output) const {
   if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
-  output[0] = prefac*exp(alpha*x);
-  if (nderiv > 0) output[1] = output[0]*alpha;
-  if (nderiv > 1) output[2] = output[1]*alpha;
+  output[0] = prefac_*exp(alpha_*x);
+  if (nderiv > 0) output[1] = output[0]*alpha_;
+  if (nderiv > 1) output[2] = output[1]*alpha_;
   if (nderiv > 2) throw std::domain_error("nderiv cannot be larger than two.");
 }
 
 
 void Exp::calc_inv(const double y, const int nderiv, double* const output) const {
   if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
-  output[0] = log(y/prefac)/alpha;
-  if (nderiv > 0) output[1] = 1.0/(y*alpha);
+  output[0] = log(y/prefac_)/alpha_;
+  if (nderiv > 0) output[1] = 1.0/(y*alpha_);
   if (nderiv > 1) output[2] = -output[1]/y;
   if (nderiv > 2) throw std::domain_error("nderiv cannot be larger than two.");
 }
 
 
+Ln::Ln(double prefac, double alpha) : ScalarFunction(true), prefac_(prefac), alpha_(alpha) {
+  // Some checks to assure invertibility.
+  if (prefac == 0) throw std::domain_error("prefac cannot be zero in Ln function.");
+  if (alpha == 0) throw std::domain_error("alpha cannot be zero in Ln function.");
+}
+
+
 void Ln::calc(const double x, const int nderiv, double* const output) const {
   if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
-  output[0] = prefac*log(alpha*x);
-  if (nderiv > 0) output[1] = prefac/x;
+  output[0] = prefac_*log(alpha_*x);
+  if (nderiv > 0) output[1] = prefac_/x;
   if (nderiv > 1) output[2] = -output[1]/x;
   if (nderiv > 2) throw std::domain_error("nderiv cannot be larger than two.");
 }
@@ -107,23 +121,24 @@ void Ln::calc(const double x, const int nderiv, double* const output) const {
 
 void Ln::calc_inv(const double y, const int nderiv, double* const output) const {
   if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
-  output[0] = exp(y/prefac)/alpha;
-  if (nderiv > 0) output[1] = output[0]/prefac;
-  if (nderiv > 1) output[2] = output[1]/prefac;
+  output[0] = exp(y/prefac_)/alpha_;
+  if (nderiv > 0) output[1] = output[0]/prefac_;
+  if (nderiv > 1) output[2] = output[1]/prefac_;
   if (nderiv > 2) throw std::domain_error("nderiv cannot be larger than two.");
 }
 
 
-Linear::Linear(double slope, double offset) : ScalarFunction(true), slope(slope),
-      offset(offset) {
+Linear::Linear(double slope, double offset) : ScalarFunction(true), slope_(slope),
+      offset_(offset) {
+  // Some checks to assure invertibility.
   if (slope == 0) throw std::domain_error("slope cannot be zero in Linear function.");
 }
 
 
 void Linear::calc(const double x, const int nderiv, double* const output) const {
   if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
-  output[0] = slope*x + offset;
-  if (nderiv > 0) output[1] = slope;
+  output[0] = slope_*x + offset_;
+  if (nderiv > 0) output[1] = slope_;
   if (nderiv > 1) output[2] = 0.0;
   if (nderiv > 2) throw std::domain_error("nderiv cannot be larger than two.");
 }
@@ -131,8 +146,8 @@ void Linear::calc(const double x, const int nderiv, double* const output) const 
 
 void Linear::calc_inv(const double y, const int nderiv, double* const output) const {
   if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
-  output[0] = (y - offset)/slope;
-  if (nderiv > 0) output[1] = 1.0/slope;
+  output[0] = (y - offset_)/slope_;
+  if (nderiv > 0) output[1] = 1.0/slope_;
   if (nderiv > 1) output[2] = 0.0;
   if (nderiv > 2) throw std::domain_error("nderiv cannot be larger than two.");
 }
@@ -156,31 +171,33 @@ void Identity::calc_inv(const double y, const int nderiv, double* const output) 
 }
 
 
-void Constant::calc(const double x, const int nderiv, double* const output) const {
+void Constant::calc(const double, const int nderiv, double* const output) const {
   if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
-  output[0] = offset;
+  output[0] = offset_;
   if (nderiv > 0) output[1] = 0.0;
   if (nderiv > 1) output[2] = 0.0;
   if (nderiv > 2) throw std::domain_error("nderiv cannot be larger than two.");
 }
 
 
-Power::Power(double prefac, double power) : ScalarFunction(true), prefac(prefac),
-    power(power) {
+Power::Power(double prefac, double power) : ScalarFunction(true), prefac_(prefac),
+    power_(power) {
+  // Some checks to assure invertibility.
+  if (prefac == 0) throw std::domain_error("prefac cannot be zero in Power function.");
   if (power == 0) throw std::domain_error("The power cannot be zero in the Power function.");
 }
 
 
 void Power::calc(const double x, const int nderiv, double* const output) const {
   if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
-  output[0] = prefac*pow(x, power);
-  if (nderiv > 0) output[1] = prefac*power*pow(x, power - 1);
+  output[0] = prefac_*pow(x, power_);
+  if (nderiv > 0) output[1] = prefac_*power_*pow(x, power_ - 1);
   if (nderiv > 1) {
     // Avoid risk for division by zero;
-    if (power == 1) {
+    if (power_ == 1) {
       output[2] = 0.0;
     } else {
-      output[2] = prefac*power*(power-1)*pow(x, power - 2);
+      output[2] = prefac_*power_*(power_-1)*pow(x, power_ - 2);
     }
   }
   if (nderiv > 2) throw std::domain_error("nderiv cannot be larger than two.");
@@ -189,14 +206,14 @@ void Power::calc(const double x, const int nderiv, double* const output) const {
 
 void Power::calc_inv(const double y, const int nderiv, double* const output) const {
   if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
-  output[0] = pow(y/prefac, 1.0/power);
-  if (nderiv > 0) output[1] = pow(y/prefac, 1.0/power - 1.0)/(power*prefac);
+  output[0] = pow(y/prefac_, 1.0/power_);
+  if (nderiv > 0) output[1] = pow(y/prefac_, 1.0/power_ - 1.0)/(power_*prefac_);
   if (nderiv > 1) {
     // Avoid risk for division by zero;
-    if (power == 1) {
+    if (power_ == 1) {
       output[2] = 0.0;
     } else {
-      output[2] = pow(y/prefac, 1.0/power - 2.0)/(power*prefac*prefac)*(1.0/power - 1.0);
+      output[2] = pow(y/prefac_, 1.0/power_ - 2.0)/(power_*prefac_*prefac_)*(1.0/power_ - 1.0);
     }
   }
   if (nderiv > 2) throw std::domain_error("nderiv cannot be larger than two.");
@@ -204,46 +221,53 @@ void Power::calc_inv(const double y, const int nderiv, double* const output) con
 
 
 double Power::deriv2(const double x) const {
-  if (power == 1) {
+  if (power_ == 1) {
     return 0.0;
   } else {
-    return prefac*power*(power-1)*pow(x, power - 2);
+    return prefac_*power_*(power_-1)*pow(x, power_ - 2);
   }
 }
 
 
 double Power::deriv2_inv(const double y) const {
-  if (power == 1) {
+  if (power_ == 1) {
     return 0.0;
   } else {
-    return pow(y/prefac, 1.0/power - 2.0)/(power*prefac*prefac)*(1.0/power - 1.0);
+    return pow(y/prefac_, 1.0/power_ - 2.0)/(power_*prefac_*prefac_)*(1.0/power_ - 1.0);
   }
 }
 
 
-Rational::Rational(double prefac, double root) : ScalarFunction(true), prefac(prefac),
-    root(root) {
-  if (root == 0) throw std::domain_error("The root cannot be zero in the Rational function.");
+Rational::Rational(double prefac, double root) : ScalarFunction(true), prefac_(prefac),
+    root_(root) {
+  // Some checks to assure invertibility and to avoid division be zero.
+  if (prefac == 0) throw std::domain_error("prefac cannot be zero in Rational function.");
+  if (root == 0) throw std::domain_error("The root cannot be zero in Rational function.");
 }
 
 
 void Rational::calc(const double x, const int nderiv, double* const output) const {
   if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
-  double t = 1 - x/root;
-  output[0] = prefac*x/t;
-  if (nderiv > 0) output[1] = prefac/(t*t);
-  if (nderiv > 1) output[2] = 2*output[1]/(root*t);
+  double t = 1 - x/root_;
+  output[0] = prefac_*x/t;
+  if (nderiv > 0) output[1] = prefac_/(t*t);
+  if (nderiv > 1) output[2] = 2*output[1]/(root_*t);
   if (nderiv > 2) throw std::domain_error("nderiv cannot be larger than two.");
 }
 
 
 void Rational::calc_inv(const double y, const int nderiv, double* const output) const {
   if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
-  double t = prefac + y/root;
+  double t = prefac_ + y/root_;
   output[0] = y/t;
-  if (nderiv > 0) output[1] = prefac/(t*t);
-  if (nderiv > 1) output[2] = -2*output[1]/(root*t);
+  if (nderiv > 0) output[1] = prefac_/(t*t);
+  if (nderiv > 1) output[2] = -2*output[1]/(root_*t);
   if (nderiv > 2) throw std::domain_error("nderiv cannot be larger than two.");
+}
+
+
+Spline::Spline(size_t npoint) : ScalarFunction(false), npoint_(npoint) {
+  if (npoint < 2) throw std::domain_error("A spline should have at least two points.");
 }
 
 
@@ -270,47 +294,47 @@ void tridiagsym_solve(double* diag1, double* diag2, double* rhs, double* solutio
 }
 
 
-UniformCubicSpline::UniformCubicSpline(size_t npoint, const double* const _values,
-    const double* const _derivs) : UniformCubicSpline(npoint) {
-  std::copy(_values, _values + npoint, values);
-  std::copy(_derivs, _derivs + npoint, derivs);
+UniformCubicSpline::UniformCubicSpline(size_t npoint, const double* const values,
+    const double* const derivs) : UniformCubicSpline(npoint) {
+  std::copy(values, values + npoint_, values_);
+  std::copy(derivs, derivs + npoint_, derivs_);
 }
 
 
-UniformCubicSpline::UniformCubicSpline(size_t npoint, const double* const _values)
+UniformCubicSpline::UniformCubicSpline(size_t npoint, const double* const values)
     : UniformCubicSpline(npoint) {
-  std::copy(_values, _values + npoint, values);
+  std::copy(values, values + npoint_, values_);
   fit_derivs();
 }
 
 
 UniformCubicSpline::UniformCubicSpline(const UniformCubicSpline &obj)
-    : UniformCubicSpline(obj.npoint) {
-  std::copy(obj.values, obj.values + npoint, values);
-  std::copy(obj.derivs, obj.derivs + npoint, derivs);
+    : UniformCubicSpline(obj.npoint()) {
+  std::copy(obj.values(), obj.values() + npoint_, values_);
+  std::copy(obj.derivs(), obj.derivs() + npoint_, derivs_);
 }
 
 
 UniformCubicSpline::~UniformCubicSpline() {
-  delete[] values;
-  delete[] derivs;
+  delete[] values_;
+  delete[] derivs_;
 }
 
 
 void UniformCubicSpline::calc(const double x, const int nderiv, double* const output) const {
   if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
-  if ((x < 0) || (x > npoint - 1)) {
+  if ((x < 0) || (x > static_cast<double>(npoint_ - 1))) {
     output[0] = 0.0;
     if (nderiv > 0) output[1] = 0.0;
     if (nderiv > 1) output[2] = 0.0;
   } else {
     size_t j = static_cast<size_t>(floor(x));
     double u = x - static_cast<double>(j);
-    double z = values[j+1] - values[j];
-    double c0 = values[j];
-    double c1 = derivs[j];
-    double c2 = 3.0*z - 2.0*derivs[j] - derivs[j+1];
-    double c3 = -2.0*z + derivs[j] + derivs[j+1];
+    double z = values_[j+1] - values_[j];
+    double c0 = values_[j];
+    double c1 = derivs_[j];
+    double c2 = 3.0*z - 2.0*derivs_[j] - derivs_[j+1];
+    double c3 = -2.0*z + derivs_[j] + derivs_[j+1];
     output[0] = c0 + u*(c1 + u*(c2 + u*c3));
     if (nderiv > 0) output[1] = c1 + u*(2.0*c2 + u*3.0*c3);
     if (nderiv > 1) output[2] = 2.0*c2 + u*6.0*c3;
@@ -320,23 +344,23 @@ void UniformCubicSpline::calc(const double x, const int nderiv, double* const ou
 
 
 void UniformCubicSpline::fit_derivs() {
-  std::unique_ptr<double[]> diag1(new double[npoint]);
-  std::unique_ptr<double[]> diag2(new double[npoint - 1]);
-  std::unique_ptr<double[]> rhs(new double[npoint]);
+  std::unique_ptr<double[]> diag1(new double[npoint_]);
+  std::unique_ptr<double[]> diag2(new double[npoint_ - 1]);
+  std::unique_ptr<double[]> rhs(new double[npoint_]);
 
   // Setup the tri-diagonal system
   diag1[0] = 2.0;
   diag2[0] = 1.0;
-  rhs[0] = 3.0*(values[1] - values[0]);
-  for (size_t i = 1; i < npoint - 1; i++) {
+  rhs[0] = 3.0*(values_[1] - values_[0]);
+  for (size_t i = 1; i < npoint_ - 1; i++) {
     diag1[i] = 4.0;
     diag2[i] = 1.0;
-    rhs[i] = 3.0*(values[i + 1] - values[i - 1]);
+    rhs[i] = 3.0*(values_[i + 1] - values_[i - 1]);
   }
-  diag1[npoint-1] = 2.0;
-  rhs[npoint-1] = 3.0*(values[npoint - 1] - values[npoint - 2]);
+  diag1[npoint_ - 1] = 2.0;
+  rhs[npoint_ - 1] = 3.0*(values_[npoint_ - 1] - values_[npoint_ - 2]);
 
-  tridiagsym_solve(diag1.get(), diag2.get(), rhs.get(), derivs, npoint);
+  tridiagsym_solve(diag1.get(), diag2.get(), rhs.get(), derivs_, npoint_);
 }
 
 

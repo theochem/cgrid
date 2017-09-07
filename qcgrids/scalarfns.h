@@ -44,11 +44,12 @@ namespace qcgrids {
 */
 class ScalarFunction {
  public:
-  const bool invertible;  //!< Flag for invertible functions.
-
   //! Create a ScalarFunction object
-  explicit ScalarFunction(bool invertible) : invertible(invertible) {}
+  explicit ScalarFunction(bool invertible) : invertible_(invertible) {}
   virtual ~ScalarFunction() {}
+
+  //! Return the invertible flag. Only true when function is guaranteed to be invertible.
+  bool invertible() const { return invertible_; }
 
   /** @brief
         Compute the value of the function and optionally some derivatives.
@@ -148,74 +149,87 @@ class ScalarFunction {
         The inverse function value.
   */
   virtual double deriv2_inv(const double y) const;
+
+ private:
+  const bool invertible_;  //!< Flag for invertible functions.
 };
 
 
 //! An exponential function.
 class Exp : public ScalarFunction {
  public:
-  const double prefac;  //!< prefac in y=prefac*exp(alpha*x)
-  const double alpha;   //!< alpha in y=prefac*exp(alpha*x)
-
   Exp() = delete;
   //! Create an instance of Exp.
-  explicit Exp(double prefac, double alpha) : ScalarFunction(true), prefac(prefac),
-      alpha(alpha) {}
+  explicit Exp(double prefac, double alpha);
   virtual ~Exp() {}
+
+  double prefac() const { return prefac_; }  //!< prefac in y = prefac*exp(alpha*x)
+  double alpha() const { return alpha_; }    //!< alpha in y = prefac*exp(alpha*x)
 
   void calc(const double x, const int nderiv, double* const output) const;
   void calc_inv(const double y, const int nderiv, double* const output) const;
-  double value(const double x) const { return prefac*exp(alpha*x); }
-  double value_inv(const double y) const { return log(y/prefac)/alpha; }
-  double deriv(const double x) const { return prefac*alpha*exp(alpha*x); }
-  double deriv_inv(const double y) const { return 1.0/(y*alpha); }
-  double deriv2(const double x) const { return prefac*alpha*alpha*exp(alpha*x); }
-  double deriv2_inv(const double y) const { return -1.0/(y*y*alpha); }
+  double value(const double x) const { return prefac_*exp(alpha_*x); }
+  double value_inv(const double y) const { return log(y/prefac_)/alpha_; }
+  double deriv(const double x) const { return prefac_*alpha_*exp(alpha_*x); }
+  double deriv_inv(const double y) const { return 1.0/(y*alpha_); }
+  double deriv2(const double x) const { return prefac_*alpha_*alpha_*exp(alpha_*x); }
+  double deriv2_inv(const double y) const { return -1.0/(y*y*alpha_); }
+
+ private:
+  const double prefac_;  //!< prefac in y = prefac*exp(alpha*x)
+  const double alpha_;   //!< alpha in y = prefac*exp(alpha*x)
 };
 
 
 //! A logarithmic function.
 class Ln : public ScalarFunction {
  public:
-  const double prefac;  //!< prefac in y=prefac*ln(alpha*x)
-  const double alpha;   //!< alpha in y=prefac*ln(alpha*x)
-
   Ln() = delete;
   //! Create an instance of Ln.
-  explicit Ln(double prefac, double alpha) : ScalarFunction(true), prefac(prefac),
-    alpha(alpha) {}
+  explicit Ln(double prefac, double alpha);
   virtual ~Ln() {}
+
+  double prefac() const { return prefac_; }  //!< prefac in y = prefac*ln(alpha*x)
+  double alpha() const { return alpha_; }    //!< alpha in y = prefac*ln(alpha*x)
 
   void calc(const double x, const int nderiv, double* const output) const;
   void calc_inv(const double y, const int nderiv, double* const output) const;
-  double value(const double x) const { return prefac*log(alpha*x); }
-  double value_inv(const double y) const { return exp(y/prefac)/alpha; }
-  double deriv(const double x) const { return prefac/x; }
-  double deriv_inv(const double y) const { return exp(y/prefac)/(alpha*prefac); }
-  double deriv2(const double x) const { return -prefac/(x*x); }
-  double deriv2_inv(const double y) const { return exp(y/prefac)/(alpha*prefac*prefac); }
+  double value(const double x) const { return prefac_*log(alpha_*x); }
+  double value_inv(const double y) const { return exp(y/prefac_)/alpha_; }
+  double deriv(const double x) const { return prefac_/x; }
+  double deriv_inv(const double y) const { return exp(y/prefac_)/(alpha_*prefac_); }
+  double deriv2(const double x) const { return -prefac_/(x*x); }
+  double deriv2_inv(const double y) const { return exp(y/prefac_)/(alpha_*prefac_*prefac_); }
+
+ private:
+  const double prefac_;  //!< prefac in y = prefac*ln(alpha*x)
+  const double alpha_;   //!< alpha in y = prefac*ln(alpha*x)
 };
 
 
 //! A linear function.
 class Linear : public ScalarFunction {
  public:
-  const double slope;    //!< slope in y = slope*x + offset
-  const double offset;   //!< offset in y = slope*x + offset
-
   Linear() = delete;
   //! Create an instance of Ln.
   explicit Linear(double slope, double offset);
   virtual ~Linear() {}
 
+  double slope() const { return slope_; }     //!< slope in y = slope*x + offset
+  double offset() const { return offset_; }   //!< offset in y = slope*x + offset
+
   void calc(const double x, const int nderiv, double* const output) const;
   void calc_inv(const double y, const int nderiv, double* const output) const;
-  double value(const double x) const { return slope*x + offset; }
-  double value_inv(const double y) const { return (y - offset)/slope; }
-  double deriv(const double x) const { return slope; }
-  double deriv_inv(const double y) const { return 1.0/slope; }
-  double deriv2(const double x) const { return 0.0; }
-  double deriv2_inv(const double y) const { return 0.0; }
+  double value(const double x) const { return slope_*x + offset_; }
+  double value_inv(const double y) const { return (y - offset_)/slope_; }
+  double deriv(const double) const { return slope_; }
+  double deriv_inv(const double) const { return 1.0/slope_; }
+  double deriv2(const double) const { return 0.0; }
+  double deriv2_inv(const double) const { return 0.0; }
+
+ private:
+  const double slope_;    //!< slope in y = slope*x + offset
+  const double offset_;   //!< offset in y = slope*x + offset
 };
 
 
@@ -230,36 +244,36 @@ class Identity : public ScalarFunction {
   void calc_inv(const double y, const int nderiv, double* const output) const;
   double value(const double x) const { return x; }
   double value_inv(const double y) const { return y; }
-  double deriv(const double x) const { return 1.0; }
-  double deriv_inv(const double y) const { return 1.0; }
-  double deriv2(const double x) const { return 0.0; }
-  double deriv2_inv(const double y) const { return 0.0; }
+  double deriv(const double) const { return 1.0; }
+  double deriv_inv(const double) const { return 1.0; }
+  double deriv2(const double) const { return 0.0; }
+  double deriv2_inv(const double) const { return 0.0; }
 };
 
 
 //! Constant function.
 class Constant : public ScalarFunction {
  public:
-  const double offset;  //!< Value of the constant function.
-
   Constant() = delete;
   //! Create an instance of Identity.
-  explicit Constant(double offset) : ScalarFunction(false), offset(offset) {}
+  explicit Constant(double offset) : ScalarFunction(false), offset_(offset) {}
   virtual ~Constant() {}
 
+  double offset() const { return offset_; }  //!< Value of the constant function.
+
   void calc(const double x, const int nderiv, double* const output) const;
-  double value(const double x) const { return offset; }
-  double deriv(const double x) const { return 0.0; }
-  double deriv2(const double x) const { return 0.0; }
+  double value(const double) const { return offset_; }
+  double deriv(const double) const { return 0.0; }
+  double deriv2(const double) const { return 0.0; }
+
+ private:
+  const double offset_;  //!< Value of the constant function.
 };
 
 
 //! A Power function, only for x > 0.
 class Power : public ScalarFunction {
  public:
-  const double prefac;  //!< prefac in y = prefac*(x**power)
-  const double power;   //!< power in y = prefac*(x**power)
-
   Power() = delete;
   /** @brief
         Create an instance of Power.
@@ -271,40 +285,52 @@ class Power : public ScalarFunction {
   explicit Power(double prefac, double power);
   virtual ~Power() {}
 
+  double prefac() const { return prefac_; }  //!< prefac in y = prefac*(x**power)
+  double power() const { return power_; }    //!< power in y = prefac*(x**power)
+
   void calc(const double x, const int nderiv, double* const output) const;
   void calc_inv(const double y, const int nderiv, double* const output) const;
-  double value(const double x) const { return prefac*pow(x, power); }
-  double value_inv(const double y) const { return pow(y/prefac, 1.0/power); }
-  double deriv(const double x) const { return prefac*power*pow(x, power - 1); }
-  double deriv_inv(const double y) const { return pow(y/prefac, 1.0/power - 1.0)/(power*prefac); }
+  double value(const double x) const { return prefac_*pow(x, power_); }
+  double value_inv(const double y) const { return pow(y/prefac_, 1.0/power_); }
+  double deriv(const double x) const { return prefac_*power_*pow(x, power_ - 1); }
+  double deriv_inv(const double y) const
+    { return pow(y/prefac_, 1.0/power_ - 1.0)/(power_*prefac_); }
   double deriv2(const double x) const;
   double deriv2_inv(const double y) const;
+
+ private:
+  const double prefac_;  //!< prefac in y = prefac*(x**power)
+  const double power_;   //!< power in y = prefac*(x**power)
 };
 
 
 //! A basic rational function: y(x) = prefac*x/(1 - x/root), not for x == root.
 class Rational : public ScalarFunction {
  public:
-  const double prefac;  //!< prefac in prefac*x/(1 - x/root)
-  const double root;    //!< root in prefac*x/(1 - x/root)
-
   Rational() = delete;
   //! Create an instance of Rational.
   explicit Rational(double prefac, double root);
   virtual ~Rational() {}
 
+  double prefac() const { return prefac_; }  //!< prefac in prefac*x/(1 - x/root)
+  double root() const { return root_; }      //!< root in prefac*x/(1 - x/root)
+
   void calc(const double x, const int nderiv, double* const output) const;
   void calc_inv(const double y, const int nderiv, double* const output) const;
-  double value(const double x) const { return prefac*x/(1 - x/root); }
-  double value_inv(const double y) const { return y/(prefac + y/root); }
+  double value(const double x) const { return prefac_*x/(1 - x/root_); }
+  double value_inv(const double y) const { return y/(prefac_ + y/root_); }
   double deriv(const double x) const
-    { double t = 1 - x/root; return prefac/(t*t);  }
+    { double t = 1 - x/root_; return prefac_/(t*t);  }
   double deriv_inv(const double y) const
-    { double t = prefac + y/root; return prefac/(t*t); }
+    { double t = prefac_ + y/root_; return prefac_/(t*t); }
   double deriv2(const double x) const
-    { double t = 1 - x/root; return 2*prefac/(root*t*t*t); }
+    { double t = 1 - x/root_; return 2*prefac_/(root_*t*t*t); }
   double deriv2_inv(const double y) const
-    { double t = prefac + y/root; return -2*prefac/(root*t*t*t); }
+    { double t = prefac_ + y/root_; return -2*prefac_/(root_*t*t*t); }
+
+ private:
+  const double prefac_;  //!< prefac in prefac*x/(1 - x/root)
+  const double root_;    //!< root in prefac*x/(1 - x/root)
 };
 
 
@@ -314,11 +340,11 @@ class Rational : public ScalarFunction {
 */
 class Spline : public ScalarFunction {
  public:
-  const size_t npoint;  //!< The number of points in the spline.
-
   Spline() = delete;
   //! Create a splin with npoint points.
-  explicit Spline(size_t npoint) : ScalarFunction(false), npoint(npoint) {}
+  explicit Spline(size_t npoint);
+
+  size_t npoint() const { return npoint_; }  //!< The number of points in the spline.
 
   //! The position of the left-most grid point.
   virtual double left() const = 0;
@@ -326,6 +352,9 @@ class Spline : public ScalarFunction {
   virtual double right() const = 0;
   //! Return position on x-axis of point with given index.
   virtual double x(const size_t index) const = 0;
+
+ protected:
+  const size_t npoint_;  //!< The number of points in the spline.
 };
 
 
@@ -358,13 +387,9 @@ void tridiagsym_solve(double* diag1, double* diag2, double* rhs, double* solutio
 */
 class UniformCubicSpline : public Spline {
  public:
-  // Not using std::vector to keep things simple: constant pointer to non-constant data.
-  double * const values;  //!< Array with the function value at the grid points.
-  double * const derivs;  //!< Array with the derivative at the grid points.
-
   //! Construct new spline with npoints, zeroing values and derivs.
-  explicit UniformCubicSpline(size_t npoint) : Spline(npoint), values(new double[npoint]),
-      derivs(new double[npoint]) {}
+  explicit UniformCubicSpline(size_t npoint) : Spline(npoint), values_(new double[npoint]),
+      derivs_(new double[npoint]) {}
   //! Create new spline using function values at grid point. Derivatives are fitted.
   explicit UniformCubicSpline(size_t npoint, const double* const values);
   //! Create new spline using function values and derivatives at grid point.
@@ -377,8 +402,11 @@ class UniformCubicSpline : public Spline {
 
   virtual ~UniformCubicSpline();
 
+  double* values() const { return values_; }  //!< Array with the function value at the grid points.
+  double* derivs() const { return derivs_; }  //!< Array with the derivative at the grid points.
+
   double left() const { return 0.0; }
-  double right() const { return static_cast<double>(npoint) - 1.0; }
+  double right() const { return static_cast<double>(npoint_) - 1.0; }
   double x(const size_t index) const { return static_cast<double>(index); }
 
   void calc(const double x, const int nderiv, double* const output) const;
@@ -390,6 +418,11 @@ class UniformCubicSpline : public Spline {
       second derivatives at all other points.
   */
   void fit_derivs();
+
+ private:
+  // Not using std::vector to keep things simple: constant pointer to non-constant data.
+  double * const values_;  //!< Array with the function value at the grid points.
+  double * const derivs_;  //!< Array with the derivative at the grid points.
 };
 
 

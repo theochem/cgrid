@@ -82,7 +82,7 @@ TEST_P(ScalarFunctionTest, basics) {
     double deriv2 = diff_ridders(sfn, &qcg::ScalarFunction::deriv, x, 0.1);
     EXPECT_NEAR(output[2], deriv2, EPS);
   }
-  if (sfn->invertible) {
+  if (sfn->invertible()) {
     // Test consistency of function and its inverse.
     EXPECT_NEAR(sfn->value_inv(sfn->value(x)), x, EPS);
     EXPECT_NEAR(sfn->value(sfn->value_inv(y)), y, EPS);
@@ -147,9 +147,17 @@ TEST(ScalarFunctionTest, corner_cases) {
 
 
 TEST(ScalarFunctionTest, corner_exceptions) {
+  EXPECT_THROW(qcg::Exp(0.0, 1.0), std::domain_error);
+  EXPECT_THROW(qcg::Exp(1.0, 0.0), std::domain_error);
+  EXPECT_THROW(qcg::Ln(0.0, 1.0), std::domain_error);
+  EXPECT_THROW(qcg::Ln(1.0, 0.0), std::domain_error);
   EXPECT_THROW(qcg::Linear(0.0, 1.0), std::domain_error);
+  EXPECT_THROW(qcg::Power(0.0, 1.0), std::domain_error);
   EXPECT_THROW(qcg::Power(1.0, 0.0), std::domain_error);
   EXPECT_THROW(qcg::Rational(1.0, 0.0), std::domain_error);
+  EXPECT_THROW(qcg::Rational(0.0, 1.0), std::domain_error);
+  EXPECT_THROW(qcg::UniformCubicSpline(0), std::domain_error);
+  EXPECT_THROW(qcg::UniformCubicSpline(1), std::domain_error);
 }
 
 // vim: textwidth=90 et ts=2 sw=2
