@@ -40,7 +40,7 @@ set(SOURCE_FILES
 set(HEADER_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/cellgrid.h
   ${CMAKE_CURRENT_BINARY_DIR}/config.h
-  ${CMAKE_CURRENT_BINARY_DIR}/scalarfns.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/scalarfns.h
 )
 
 # Find the cellcutoff library. Let's be nice with manually compiled stuff in
