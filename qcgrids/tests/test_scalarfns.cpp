@@ -171,6 +171,8 @@ TEST(ScalarFunctionTest, exceptions) {
   EXPECT_THROW(qcg::Rational(0.0, 1.0), std::domain_error);
   EXPECT_THROW(qcg::UniformCubicSpline(0), std::domain_error);
   EXPECT_THROW(qcg::UniformCubicSpline(1), std::domain_error);
+  EXPECT_THROW(qcg::Composed(&spline3, &constant_case, NULL, NULL, NULL), std::logic_error);
+  EXPECT_THROW(qcg::Composed(&spline3, NULL, &constant_case, NULL, NULL), std::logic_error);
 }
 
 TEST(ScalarFunctionTest, uniform_cubic_spline_basics) {
