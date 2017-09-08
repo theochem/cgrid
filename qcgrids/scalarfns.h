@@ -341,10 +341,15 @@ class Rational : public ScalarFunction {
 class Spline : public ScalarFunction {
  public:
   Spline() = delete;
-  //! Create a splin with npoint points.
+  //! Create a spline with npoint points.
   explicit Spline(size_t npoint);
 
   size_t npoint() const { return npoint_; }  //!< The number of points in the spline.
+
+  // Derived classes may return NULL for any of the following three functions.
+  virtual double* values() const = 0;   //!< Array with the function value at the grid points.
+  virtual double* derivs() const = 0;   //!< Array with the derivative at the grid points.
+  virtual double* derivs2() const = 0;  //!< Array with the second derivative at the grid points.
 
   //! The position of the left-most grid point.
   virtual double left() const = 0;
@@ -352,6 +357,15 @@ class Spline : public ScalarFunction {
   virtual double right() const = 0;
   //! Return position on x-axis of point with given index.
   virtual double x(const size_t index) const = 0;
+
+  /** @brief
+        Determine the (seoncd) derivatives at the grid points for the case of a natural
+        spline.
+
+      A natural cubic splint has vanishing second derivatives are edges and continuous
+      second derivatives at all other points.
+  */
+  virtual void fit_derivs() = 0;
 
  protected:
   const size_t npoint_;  //!< The number of points in the spline.
@@ -401,8 +415,9 @@ class UniformCubicSpline : public Spline {
 
   virtual ~UniformCubicSpline();
 
-  double* values() const { return values_; }  //!< Array with the function value at the grid points.
-  double* derivs() const { return derivs_; }  //!< Array with the derivative at the grid points.
+  double* values() const { return values_; }
+  double* derivs() const { return derivs_; }
+  double* derivs2() const { return NULL; }
 
   double left() const { return 0.0; }
   double right() const { return static_cast<double>(npoint_) - 1.0; }
@@ -410,12 +425,6 @@ class UniformCubicSpline : public Spline {
 
   void calc(const double x, const int nderiv, double* const output) const;
 
-  /** @brief
-        Determine the derivatives at the grid points for the case of a natural spline.
-
-      A natural cubic splint has vanishing second derivatives are edges and continuous
-      second derivatives at all other points.
-  */
   void fit_derivs();
 
  private:
@@ -424,6 +433,63 @@ class UniformCubicSpline : public Spline {
   double * const derivs_;  //!< Array with the derivative at the grid points.
 };
 
+
+/** @brief
+      Combination of pline and different functions for extrapolation and transformation.
+
+    Two functions can be provided for extrapolation on the left and the right of the
+    spline. Also a transformation of the input and output can be given. Transformation
+    functions must be invertible.
+
+    The composed function has the form y_transf(spline(inv_x_transf(x))) when
+    inv_x_transf(x) falls in the interval for which the underlying spline is define. The
+    extrapolation functions are called otherwise.
+*/
+class Composed : public ScalarFunction {
+ public:
+  Composed() = delete;
+  /**  @brief
+        Create a composed function based on a spline and some other functions. Spline will
+        not be modified.
+  */
+  explicit Composed(Spline* spline, ScalarFunction* x_transform, ScalarFunction* y_transform,
+                    ScalarFunction* left_extra, ScalarFunction* right_extra);
+
+  /**  @brief
+        Create a composed function based on a spline and some other functions. Spline will
+        derivatives will be fitted to inverse y-transform of values.
+  */
+  explicit Composed(Spline* spline, ScalarFunction* x_transform, ScalarFunction* y_transform,
+                    ScalarFunction* left_extra, ScalarFunction* right_extra,
+                    const double* values);
+
+  /**  @brief
+        Create a composed function based on a spline and some other functions. Spline will
+        be configured by inverse y-transformation of values and derivs.
+  */
+  explicit Composed(Spline* spline, ScalarFunction* x_transform, ScalarFunction* y_transform,
+                    ScalarFunction* left_extra, ScalarFunction* right_extra,
+                    const double* values, const double* derivs);
+
+  virtual ~Composed();
+
+  Spline* spline() const { return spline_; }                    //!< The underlying cubic spline.
+  ScalarFunction* x_transform() const { return x_transform_; }  //!< The transformation for x.
+  ScalarFunction* y_transform() const { return y_transform_; }  //!< The transformation for y.
+  ScalarFunction* left_extra() const { return left_extra_; }    //!< The left extrapolation.
+  ScalarFunction* right_extra() const { return right_extra_; }  //!< The right extrapolation.
+
+  void calc(const double x, const int nderiv, double* const output) const;
+
+ private:
+  Identity* const default_transform_;  //!< The default transformation for x and y.
+  Constant* const default_extra_;      //!< The default extrapolation for left and right.
+  Spline* const spline_;               //!< The underlying cubic spline.
+  ScalarFunction* const x_transform_;  //!< The transformation for x.
+  ScalarFunction* const y_transform_;  //!< The transformation for y.
+  ScalarFunction* const left_extra_;   //!< The left extrapolation.
+  ScalarFunction* const right_extra_;  //!< The right extrapolation.
+};
 
 }  // namespace qcgrids
 

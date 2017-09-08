@@ -128,6 +128,7 @@ qcg::Rational rational_case(20.0, 33.0);
 const double spline_input1[3] = {0.5, 1.0, 2.3};
 const double spline_input2[3] = {-0.1, 1.2, 2.0};
 qcg::UniformCubicSpline spline3(3, spline_input1, spline_input2);
+qcg::Composed composed_case1(&spline3, &exp_case1, &exp_case2, &linear_case, &identity_case);
 
 
 INSTANTIATE_TEST_CASE_P(Examples, ScalarFunctionTest, ::testing::Values(
@@ -144,7 +145,10 @@ INSTANTIATE_TEST_CASE_P(Examples, ScalarFunctionTest, ::testing::Values(
   SFTestParams(&rational_case, 11.0, 1.3, 20.0*11.0/(1 - 11.0/33.0)),
   SFTestParams(&spline3, 0.2, 0.3, 0.5008),
   SFTestParams(&spline3, -0.3, 0.3, 0.0),
-  SFTestParams(&spline3, 2.3, 0.3, 0.0)
+  SFTestParams(&spline3, 2.3, 0.3, 0.0),
+  SFTestParams(&composed_case1, 0.8, 0.3, 0.36769402408710405),
+  SFTestParams(&composed_case1, -0.5, 0.3, 0.4*(-0.5) + 1.2),
+  SFTestParams(&composed_case1, 15.5, 0.3, 15.5)
 ));
 
 
@@ -244,6 +248,66 @@ TEST(ScalarFunctionTest, uniform_cubic_spline_threepoint_sym) {
   EXPECT_NEAR(s.deriv(1.0), 0.0, EPS);
   EXPECT_NEAR(s.deriv2(0.0), 0.0, EPS);
   EXPECT_NEAR(s.deriv2(2.0), 0.0, EPS);
+}
+
+
+
+TEST(ScalarFunctionTest, composed_twopoint1) {
+  qcg::Linear x_transform(1.0, 0.5);
+  qcg::Exp y_transform(1.0, 0.5);
+  const double values[2] = {0.5, 1.0};
+  const double derivs[2] = {0.1, 1.2};
+  qcg::UniformCubicSpline s(2);
+  qcg::Composed c(&s, &x_transform, &y_transform, NULL, NULL, values, derivs);
+  EXPECT_EQ(c.spline()->npoint(), 2);
+  EXPECT_NEAR(c.value(0.5), 0.5, EPS);
+  EXPECT_NEAR(c.value(1.5), 1.0, EPS);
+  EXPECT_NEAR(c.deriv(0.5), 0.1, EPS);
+  EXPECT_NEAR(c.deriv(1.5), 1.2, EPS);
+}
+
+
+TEST(ScalarFunctionTest, composed_twopoint2) {
+  qcg::Linear x_transform(1.0, 0.5);
+  qcg::Exp y_transform(1.0, 0.5);
+  const double values[2] = {0.5, 1.0};
+  qcg::UniformCubicSpline s(2);
+  qcg::Composed c(&s, &x_transform, &y_transform, NULL, NULL, values);
+  EXPECT_EQ(c.spline()->npoint(), 2);
+  EXPECT_NEAR(c.value(0.5), 0.5, EPS);
+  EXPECT_NEAR(c.value(1.5), 1.0, EPS);
+}
+
+
+TEST(ScalarFunctionTest, composed_twopoint3) {
+  qcg::Linear x_transform(1.0, 0.5);
+  qcg::Exp y_transform(1.0, 0.5);
+  qcg::UniformCubicSpline s(2);
+  qcg::Composed c(&s, &x_transform, &y_transform, NULL, NULL);
+  EXPECT_EQ(c.spline()->npoint(), 2);
+  EXPECT_NEAR(c.value(0.5), 1.0, EPS);
+  EXPECT_NEAR(c.value(0.75), 1.0, EPS);
+  EXPECT_NEAR(c.value(1.0), 1.0, EPS);
+  EXPECT_NEAR(c.deriv(0.5), 0.0, EPS);
+  EXPECT_NEAR(c.deriv(0.75), 0.0, EPS);
+  EXPECT_NEAR(c.deriv(1.0), 0.0, EPS);
+  EXPECT_NEAR(c.deriv2(0.5), 0.0, EPS);
+  EXPECT_NEAR(c.deriv2(0.75), 0.0, EPS);
+  EXPECT_NEAR(c.deriv2(1.0), 0.0, EPS);
+}
+
+
+TEST(ScalarFunctionTest, composed_threepoint_sym) {
+  const double values[3] = {0.5, 1.0, 0.5};
+  qcg::Linear x_transform(0.5, 0.5);
+  qcg::Exp y_transform(1.0, 0.5);
+  qcg::UniformCubicSpline s(3);
+  qcg::Composed c(&s, &x_transform, &y_transform, NULL, NULL, values);
+  EXPECT_EQ(c.spline()->npoint(), 3);
+  EXPECT_NEAR(c.value(0.5), 0.5, EPS);
+  EXPECT_NEAR(c.value(1.0), 1.0, EPS);
+  EXPECT_NEAR(c.value(1.5), 0.5, EPS);
+  EXPECT_NEAR(c.deriv(1.0), 0.0, EPS);
 }
 
 

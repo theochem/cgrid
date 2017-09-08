@@ -441,6 +441,76 @@ void UniformCubicSpline::fit_derivs() {
 }
 
 
+Composed::Composed(Spline* spline, ScalarFunction* const x_transform,
+                   ScalarFunction* const y_transform, ScalarFunction* left_extra,
+                   ScalarFunction* right_extra)
+    : ScalarFunction(false),
+      default_transform_(new Identity()), default_extra_(new Constant(0.0)),
+      spline_(spline),
+      x_transform_((x_transform == NULL) ? default_transform_ : x_transform),
+      y_transform_((y_transform == NULL) ? default_transform_ : y_transform),
+      left_extra_((left_extra == NULL) ? default_extra_ : left_extra),
+      right_extra_((right_extra == NULL) ? default_extra_ : right_extra) {
+  if (!x_transform_->invertible())
+    throw std::logic_error("x_transform must be invertible.");
+  if (!y_transform_->invertible())
+    throw std::logic_error("y_transform must be invertible.");
+}
+
+Composed::Composed(Spline* spline, ScalarFunction* x_transform,
+                   ScalarFunction* y_transform, ScalarFunction* left_extra,
+                   ScalarFunction* right_extra, const double* values)
+    : Composed(spline, x_transform, y_transform, left_extra, right_extra) {
+  for (size_t i = 0; i < spline->npoint(); i++)
+    spline_->values()[i] = y_transform_->value_inv(values[i]);
+  spline->fit_derivs();
+}
+
+Composed::Composed(Spline* spline, ScalarFunction* x_transform,
+                   ScalarFunction* y_transform, ScalarFunction* left_extra,
+                   ScalarFunction* right_extra, const double* values,
+                   const double* derivs)
+    : Composed(spline, x_transform, y_transform, left_extra, right_extra) {
+  for (size_t i = 0; i < spline->npoint(); i++) {
+    double y_output[2];
+    y_transform->calc_inv(values[i], 1, y_output);
+    spline_->values()[i] = y_output[0];
+    spline_->derivs()[i] = y_output[1] * derivs[i] * x_transform_->deriv(static_cast<double>(i));
+  }
+}
+
+
+Composed::~Composed() {
+  delete default_transform_;
+  delete default_extra_;
+}
+
+
+void Composed::calc(const double x, const int nderiv, double* const output) const {
+  if (x < x_transform_->value(spline_->left())) {
+    left_extra_->calc(x, nderiv, output);
+  } else if (x > x_transform_->value(spline_->right())) {
+    right_extra_->calc(x, nderiv, output);
+  } else {
+    if (nderiv < 0)
+      throw std::domain_error("nderiv cannot be negative.");
+    if (nderiv > 2)
+      throw std::domain_error("nderiv cannot be larger than two.");
+    double tx[3];
+    double s[3];
+    double ty[3];
+    x_transform_->calc_inv(x, nderiv, tx);
+    spline_->calc(tx[0], nderiv, s);
+    y_transform_->calc(s[0], nderiv, ty);
+    output[0] = ty[0];
+    if (nderiv > 0)
+      output[1] = ty[1]*s[1]*tx[1];
+    if (nderiv > 1)
+      output[2] = ty[1]*s[1]*tx[2] + ty[1]*s[2]*tx[1]*tx[1] + ty[2]*s[1]*s[1]*tx[1]*tx[1];
+  }
+}
+
+
 }  // namespace qcgrids
 
 // vim: textwidth=90 et ts=2 sw=2
