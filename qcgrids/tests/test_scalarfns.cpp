@@ -171,18 +171,21 @@ TEST(ScalarFunctionTest, exceptions) {
 }
 
 TEST(ScalarFunctionTest, uniform_cubic_spline_basics) {
-  EXPECT_EQ(spline3.npoint(), 3);
-  EXPECT_EQ(spline3.left(), 0.0);
-  EXPECT_EQ(spline3.right(), 2.0);
-  EXPECT_EQ(spline3.x(0), 0.0);
-  EXPECT_EQ(spline3.x(1), 1.0);
-  EXPECT_EQ(spline3.x(2), 2.0);
-  EXPECT_EQ(spline3.values()[0], 0.5);
-  EXPECT_EQ(spline3.values()[1], 1.0);
-  EXPECT_EQ(spline3.values()[2], 2.3);
-  EXPECT_EQ(spline3.derivs()[0], -0.1);
-  EXPECT_EQ(spline3.derivs()[1], 1.2);
-  EXPECT_EQ(spline3.derivs()[2], 2.0);
+  qcg::UniformCubicSpline scopy(spline3);
+  for (qcg::UniformCubicSpline s : {spline3, scopy}) {
+    EXPECT_EQ(s.npoint(), 3);
+    EXPECT_EQ(s.left(), 0.0);
+    EXPECT_EQ(s.right(), 2.0);
+    EXPECT_EQ(s.x(0), 0.0);
+    EXPECT_EQ(s.x(1), 1.0);
+    EXPECT_EQ(s.x(2), 2.0);
+    EXPECT_EQ(s.values()[0], 0.5);
+    EXPECT_EQ(s.values()[1], 1.0);
+    EXPECT_EQ(s.values()[2], 2.3);
+    EXPECT_EQ(s.derivs()[0], -0.1);
+    EXPECT_EQ(s.derivs()[1], 1.2);
+    EXPECT_EQ(s.derivs()[2], 2.0);
+  }
 }
 
 
