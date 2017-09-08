@@ -80,118 +80,163 @@ double ScalarFunction::deriv2_inv(const double y) const {
 
 Exp::Exp(double prefac, double alpha) : ScalarFunction(true), prefac_(prefac), alpha_(alpha) {
   // Some checks to assure invertibility.
-  if (prefac == 0) throw std::domain_error("prefac cannot be zero in Exp function.");
-  if (alpha == 0) throw std::domain_error("alpha cannot be zero in Exp function.");
+  if (prefac == 0)
+    throw std::domain_error("prefac cannot be zero in Exp function.");
+  if (alpha == 0)
+    throw std::domain_error("alpha cannot be zero in Exp function.");
 }
 
 
 void Exp::calc(const double x, const int nderiv, double* const output) const {
-  if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
+  if (nderiv < 0)
+    throw std::domain_error("nderiv cannot be negative.");
   output[0] = prefac_*exp(alpha_*x);
-  if (nderiv > 0) output[1] = output[0]*alpha_;
-  if (nderiv > 1) output[2] = output[1]*alpha_;
-  if (nderiv > 2) throw std::domain_error("nderiv cannot be larger than two.");
+  if (nderiv > 0)
+    output[1] = output[0]*alpha_;
+  if (nderiv > 1)
+    output[2] = output[1]*alpha_;
+  if (nderiv > 2)
+    throw std::domain_error("nderiv cannot be larger than two.");
 }
 
 
 void Exp::calc_inv(const double y, const int nderiv, double* const output) const {
-  if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
+  if (nderiv < 0)
+    throw std::domain_error("nderiv cannot be negative.");
   output[0] = log(y/prefac_)/alpha_;
-  if (nderiv > 0) output[1] = 1.0/(y*alpha_);
-  if (nderiv > 1) output[2] = -output[1]/y;
-  if (nderiv > 2) throw std::domain_error("nderiv cannot be larger than two.");
+  if (nderiv > 0)
+    output[1] = 1.0/(y*alpha_);
+  if (nderiv > 1)
+    output[2] = -output[1]/y;
+  if (nderiv > 2)
+    throw std::domain_error("nderiv cannot be larger than two.");
 }
 
 
 Ln::Ln(double prefac, double alpha) : ScalarFunction(true), prefac_(prefac), alpha_(alpha) {
   // Some checks to assure invertibility.
-  if (prefac == 0) throw std::domain_error("prefac cannot be zero in Ln function.");
-  if (alpha == 0) throw std::domain_error("alpha cannot be zero in Ln function.");
+  if (prefac == 0)
+    throw std::domain_error("prefac cannot be zero in Ln function.");
+  if (alpha == 0)
+    throw std::domain_error("alpha cannot be zero in Ln function.");
 }
 
 
 void Ln::calc(const double x, const int nderiv, double* const output) const {
-  if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
+  if (nderiv < 0)
+    throw std::domain_error("nderiv cannot be negative.");
   output[0] = prefac_*log(alpha_*x);
-  if (nderiv > 0) output[1] = prefac_/x;
-  if (nderiv > 1) output[2] = -output[1]/x;
-  if (nderiv > 2) throw std::domain_error("nderiv cannot be larger than two.");
+  if (nderiv > 0)
+    output[1] = prefac_/x;
+  if (nderiv > 1)
+    output[2] = -output[1]/x;
+  if (nderiv > 2)
+    throw std::domain_error("nderiv cannot be larger than two.");
 }
 
 
 void Ln::calc_inv(const double y, const int nderiv, double* const output) const {
-  if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
+  if (nderiv < 0)
+    throw std::domain_error("nderiv cannot be negative.");
   output[0] = exp(y/prefac_)/alpha_;
-  if (nderiv > 0) output[1] = output[0]/prefac_;
-  if (nderiv > 1) output[2] = output[1]/prefac_;
-  if (nderiv > 2) throw std::domain_error("nderiv cannot be larger than two.");
+  if (nderiv > 0)
+    output[1] = output[0]/prefac_;
+  if (nderiv > 1)
+    output[2] = output[1]/prefac_;
+  if (nderiv > 2)
+    throw std::domain_error("nderiv cannot be larger than two.");
 }
 
 
 Linear::Linear(double slope, double offset) : ScalarFunction(true), slope_(slope),
       offset_(offset) {
   // Some checks to assure invertibility.
-  if (slope == 0) throw std::domain_error("slope cannot be zero in Linear function.");
+  if (slope == 0)
+    throw std::domain_error("slope cannot be zero in Linear function.");
 }
 
 
 void Linear::calc(const double x, const int nderiv, double* const output) const {
-  if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
+  if (nderiv < 0)
+    throw std::domain_error("nderiv cannot be negative.");
   output[0] = slope_*x + offset_;
-  if (nderiv > 0) output[1] = slope_;
-  if (nderiv > 1) output[2] = 0.0;
-  if (nderiv > 2) throw std::domain_error("nderiv cannot be larger than two.");
+  if (nderiv > 0)
+    output[1] = slope_;
+  if (nderiv > 1)
+    output[2] = 0.0;
+  if (nderiv > 2)
+    throw std::domain_error("nderiv cannot be larger than two.");
 }
 
 
 void Linear::calc_inv(const double y, const int nderiv, double* const output) const {
-  if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
+  if (nderiv < 0)
+    throw std::domain_error("nderiv cannot be negative.");
   output[0] = (y - offset_)/slope_;
-  if (nderiv > 0) output[1] = 1.0/slope_;
-  if (nderiv > 1) output[2] = 0.0;
-  if (nderiv > 2) throw std::domain_error("nderiv cannot be larger than two.");
+  if (nderiv > 0)
+    output[1] = 1.0/slope_;
+  if (nderiv > 1)
+    output[2] = 0.0;
+  if (nderiv > 2)
+    throw std::domain_error("nderiv cannot be larger than two.");
 }
 
 
 void Identity::calc(const double x, const int nderiv, double* const output) const {
-  if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
+  if (nderiv < 0)
+    throw std::domain_error("nderiv cannot be negative.");
   output[0] = x;
-  if (nderiv > 0) output[1] = 1.0;
-  if (nderiv > 1) output[2] = 0.0;
-  if (nderiv > 2) throw std::domain_error("nderiv cannot be larger than two.");
+  if (nderiv > 0)
+    output[1] = 1.0;
+  if (nderiv > 1)
+    output[2] = 0.0;
+  if (nderiv > 2)
+    throw std::domain_error("nderiv cannot be larger than two.");
 }
 
 
 void Identity::calc_inv(const double y, const int nderiv, double* const output) const {
-  if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
+  if (nderiv < 0)
+    throw std::domain_error("nderiv cannot be negative.");
   output[0] = y;
-  if (nderiv > 0) output[1] = 1.0;
-  if (nderiv > 1) output[2] = 0.0;
-  if (nderiv > 2) throw std::domain_error("nderiv cannot be larger than two.");
+  if (nderiv > 0)
+    output[1] = 1.0;
+  if (nderiv > 1)
+    output[2] = 0.0;
+  if (nderiv > 2)
+    throw std::domain_error("nderiv cannot be larger than two.");
 }
 
 
 void Constant::calc(const double, const int nderiv, double* const output) const {
-  if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
+  if (nderiv < 0)
+    throw std::domain_error("nderiv cannot be negative.");
   output[0] = offset_;
-  if (nderiv > 0) output[1] = 0.0;
-  if (nderiv > 1) output[2] = 0.0;
-  if (nderiv > 2) throw std::domain_error("nderiv cannot be larger than two.");
+  if (nderiv > 0)
+    output[1] = 0.0;
+  if (nderiv > 1)
+    output[2] = 0.0;
+  if (nderiv > 2)
+    throw std::domain_error("nderiv cannot be larger than two.");
 }
 
 
 Power::Power(double prefac, double power) : ScalarFunction(true), prefac_(prefac),
     power_(power) {
   // Some checks to assure invertibility.
-  if (prefac == 0) throw std::domain_error("prefac cannot be zero in Power function.");
-  if (power == 0) throw std::domain_error("The power cannot be zero in the Power function.");
+  if (prefac == 0)
+    throw std::domain_error("prefac cannot be zero in Power function.");
+  if (power == 0)
+    throw std::domain_error("The power cannot be zero in the Power function.");
 }
 
 
 void Power::calc(const double x, const int nderiv, double* const output) const {
-  if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
+  if (nderiv < 0)
+    throw std::domain_error("nderiv cannot be negative.");
   output[0] = prefac_*pow(x, power_);
-  if (nderiv > 0) output[1] = prefac_*power_*pow(x, power_ - 1);
+  if (nderiv > 0)
+    output[1] = prefac_*power_*pow(x, power_ - 1);
   if (nderiv > 1) {
     // Avoid risk for division by zero;
     if (power_ == 1) {
@@ -200,14 +245,17 @@ void Power::calc(const double x, const int nderiv, double* const output) const {
       output[2] = prefac_*power_*(power_-1)*pow(x, power_ - 2);
     }
   }
-  if (nderiv > 2) throw std::domain_error("nderiv cannot be larger than two.");
+  if (nderiv > 2)
+    throw std::domain_error("nderiv cannot be larger than two.");
 }
 
 
 void Power::calc_inv(const double y, const int nderiv, double* const output) const {
-  if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
+  if (nderiv < 0)
+    throw std::domain_error("nderiv cannot be negative.");
   output[0] = pow(y/prefac_, 1.0/power_);
-  if (nderiv > 0) output[1] = pow(y/prefac_, 1.0/power_ - 1.0)/(power_*prefac_);
+  if (nderiv > 0)
+    output[1] = pow(y/prefac_, 1.0/power_ - 1.0)/(power_*prefac_);
   if (nderiv > 1) {
     // Avoid risk for division by zero;
     if (power_ == 1) {
@@ -216,7 +264,8 @@ void Power::calc_inv(const double y, const int nderiv, double* const output) con
       output[2] = pow(y/prefac_, 1.0/power_ - 2.0)/(power_*prefac_*prefac_)*(1.0/power_ - 1.0);
     }
   }
-  if (nderiv > 2) throw std::domain_error("nderiv cannot be larger than two.");
+  if (nderiv > 2)
+    throw std::domain_error("nderiv cannot be larger than two.");
 }
 
 
@@ -241,33 +290,44 @@ double Power::deriv2_inv(const double y) const {
 Rational::Rational(double prefac, double root) : ScalarFunction(true), prefac_(prefac),
     root_(root) {
   // Some checks to assure invertibility and to avoid division be zero.
-  if (prefac == 0) throw std::domain_error("prefac cannot be zero in Rational function.");
-  if (root == 0) throw std::domain_error("The root cannot be zero in Rational function.");
+  if (prefac == 0)
+    throw std::domain_error("prefac cannot be zero in Rational function.");
+  if (root == 0)
+    throw std::domain_error("The root cannot be zero in Rational function.");
 }
 
 
 void Rational::calc(const double x, const int nderiv, double* const output) const {
-  if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
+  if (nderiv < 0)
+    throw std::domain_error("nderiv cannot be negative.");
   double t = 1 - x/root_;
   output[0] = prefac_*x/t;
-  if (nderiv > 0) output[1] = prefac_/(t*t);
-  if (nderiv > 1) output[2] = 2*output[1]/(root_*t);
-  if (nderiv > 2) throw std::domain_error("nderiv cannot be larger than two.");
+  if (nderiv > 0)
+    output[1] = prefac_/(t*t);
+  if (nderiv > 1)
+    output[2] = 2*output[1]/(root_*t);
+  if (nderiv > 2)
+    throw std::domain_error("nderiv cannot be larger than two.");
 }
 
 
 void Rational::calc_inv(const double y, const int nderiv, double* const output) const {
-  if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
+  if (nderiv < 0)
+    throw std::domain_error("nderiv cannot be negative.");
   double t = prefac_ + y/root_;
   output[0] = y/t;
-  if (nderiv > 0) output[1] = prefac_/(t*t);
-  if (nderiv > 1) output[2] = -2*output[1]/(root_*t);
-  if (nderiv > 2) throw std::domain_error("nderiv cannot be larger than two.");
+  if (nderiv > 0)
+    output[1] = prefac_/(t*t);
+  if (nderiv > 1)
+    output[2] = -2*output[1]/(root_*t);
+  if (nderiv > 2)
+    throw std::domain_error("nderiv cannot be larger than two.");
 }
 
 
 Spline::Spline(size_t npoint) : ScalarFunction(false), npoint_(npoint) {
-  if (npoint < 2) throw std::domain_error("A spline should have at least two points.");
+  if (npoint < 2)
+    throw std::domain_error("A spline should have at least two points.");
 }
 
 
@@ -322,11 +382,14 @@ UniformCubicSpline::~UniformCubicSpline() {
 
 
 void UniformCubicSpline::calc(const double x, const int nderiv, double* const output) const {
-  if (nderiv < 0) throw std::domain_error("nderiv cannot be negative.");
+  if (nderiv < 0)
+    throw std::domain_error("nderiv cannot be negative.");
   if ((x < 0) || (x > static_cast<double>(npoint_ - 1))) {
     output[0] = 0.0;
-    if (nderiv > 0) output[1] = 0.0;
-    if (nderiv > 1) output[2] = 0.0;
+    if (nderiv > 0)
+      output[1] = 0.0;
+    if (nderiv > 1)
+      output[2] = 0.0;
   } else {
     size_t j = static_cast<size_t>(floor(x));
     double u = x - static_cast<double>(j);
@@ -336,10 +399,13 @@ void UniformCubicSpline::calc(const double x, const int nderiv, double* const ou
     double c2 = 3.0*z - 2.0*derivs_[j] - derivs_[j+1];
     double c3 = -2.0*z + derivs_[j] + derivs_[j+1];
     output[0] = c0 + u*(c1 + u*(c2 + u*c3));
-    if (nderiv > 0) output[1] = c1 + u*(2.0*c2 + u*3.0*c3);
-    if (nderiv > 1) output[2] = 2.0*c2 + u*6.0*c3;
+    if (nderiv > 0)
+      output[1] = c1 + u*(2.0*c2 + u*3.0*c3);
+    if (nderiv > 1)
+      output[2] = 2.0*c2 + u*6.0*c3;
   }
-  if (nderiv > 2) throw std::domain_error("nderiv cannot be larger than two.");
+  if (nderiv > 2)
+    throw std::domain_error("nderiv cannot be larger than two.");
 }
 
 
