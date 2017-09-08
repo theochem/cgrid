@@ -160,24 +160,24 @@ class Exp : public ScalarFunction {
  public:
   Exp() = delete;
   //! Create an instance of Exp.
-  explicit Exp(double prefac, double alpha);
+  explicit Exp(double slope, double offset);
   virtual ~Exp() {}
 
-  double prefac() const { return prefac_; }  //!< prefac in y = prefac*exp(alpha*x)
-  double alpha() const { return alpha_; }    //!< alpha in y = prefac*exp(alpha*x)
+  double slope() const { return slope_; }    //!< slope in y = exp(slope*x + offset)
+  double offset() const { return offset_; }  //!< offset in y = exp(slope*x + offset)
 
   void calc(const double x, const int nderiv, double* const output) const;
   void calc_inv(const double y, const int nderiv, double* const output) const;
-  double value(const double x) const { return prefac_*exp(alpha_*x); }
-  double value_inv(const double y) const { return log(y/prefac_)/alpha_; }
-  double deriv(const double x) const { return prefac_*alpha_*exp(alpha_*x); }
-  double deriv_inv(const double y) const { return 1.0/(y*alpha_); }
-  double deriv2(const double x) const { return prefac_*alpha_*alpha_*exp(alpha_*x); }
-  double deriv2_inv(const double y) const { return -1.0/(y*y*alpha_); }
+  double value(const double x) const { return exp(slope_*x + offset_); }
+  double value_inv(const double y) const { return (log(y) - offset_)/slope_; }
+  double deriv(const double x) const { return slope_*exp(slope_*x + offset_); }
+  double deriv_inv(const double y) const { return 1.0/(y*slope_); }
+  double deriv2(const double x) const { return slope_*slope_*exp(slope_*x + offset_); }
+  double deriv2_inv(const double y) const { return -1.0/(y*y*slope_); }
 
  private:
-  const double prefac_;  //!< prefac in y = prefac*exp(alpha*x)
-  const double alpha_;   //!< alpha in y = prefac*exp(alpha*x)
+  const double slope_;   //!< slope in y = exp(slope*x + offset)
+  const double offset_;  //!< offset in y = exp(slope*x + offset)
 };
 
 

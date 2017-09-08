@@ -132,8 +132,8 @@ qcg::Composed composed_case1(&spline3, &exp_case1, &exp_case2, &linear_case, &id
 
 
 INSTANTIATE_TEST_CASE_P(Examples, ScalarFunctionTest, ::testing::Values(
-  SFTestParams(&exp_case1, 1.2, 0.75971, 0.5*exp(1.5*1.2)),
-  SFTestParams(&exp_case2, 0.2, 0.8, 0.1*exp(2.5*0.2)),
+  SFTestParams(&exp_case1, 1.2, 0.75971, exp(0.5*1.2 + 1.5)),
+  SFTestParams(&exp_case2, 0.2, 0.8, exp(0.1*0.2 + 2.5)),
   SFTestParams(&ln_case1, 1.2, 0.75971, 0.5*log(0.2*1.2)),
   SFTestParams(&ln_case2, 0.2, 0.6, 0.1*log(1.2*0.2)),
   SFTestParams(&linear_case, 0.2, 0.6, 0.4*0.2 + 1.2),
@@ -146,7 +146,7 @@ INSTANTIATE_TEST_CASE_P(Examples, ScalarFunctionTest, ::testing::Values(
   SFTestParams(&spline3, 0.2, 0.3, 0.5008),
   SFTestParams(&spline3, -0.3, 0.3, 0.0),
   SFTestParams(&spline3, 2.3, 0.3, 0.0),
-  SFTestParams(&composed_case1, 0.8, 0.3, 0.36769402408710405),
+  SFTestParams(&composed_case1, 10.0, 0.3, 14.405452746970118),
   SFTestParams(&composed_case1, -0.5, 0.3, 0.4*(-0.5) + 1.2),
   SFTestParams(&composed_case1, 15.5, 0.3, 15.5)
 ));
@@ -162,7 +162,6 @@ TEST(ScalarFunctionTest, corner_cases) {
 
 TEST(ScalarFunctionTest, exceptions) {
   EXPECT_THROW(qcg::Exp(0.0, 1.0), std::domain_error);
-  EXPECT_THROW(qcg::Exp(1.0, 0.0), std::domain_error);
   EXPECT_THROW(qcg::Ln(0.0, 1.0), std::domain_error);
   EXPECT_THROW(qcg::Ln(1.0, 0.0), std::domain_error);
   EXPECT_THROW(qcg::Linear(0.0, 1.0), std::domain_error);
@@ -285,9 +284,9 @@ TEST(ScalarFunctionTest, composed_twopoint3) {
   qcg::UniformCubicSpline s(2);
   qcg::Composed c(&s, &x_transform, &y_transform, NULL, NULL);
   EXPECT_EQ(c.spline()->npoint(), 2);
-  EXPECT_NEAR(c.value(0.5), 1.0, EPS);
-  EXPECT_NEAR(c.value(0.75), 1.0, EPS);
-  EXPECT_NEAR(c.value(1.0), 1.0, EPS);
+  EXPECT_NEAR(c.value(0.5), exp(0.5), EPS);
+  EXPECT_NEAR(c.value(0.75), exp(0.5), EPS);
+  EXPECT_NEAR(c.value(1.0), exp(0.5), EPS);
   EXPECT_NEAR(c.deriv(0.5), 0.0, EPS);
   EXPECT_NEAR(c.deriv(0.75), 0.0, EPS);
   EXPECT_NEAR(c.deriv(1.0), 0.0, EPS);

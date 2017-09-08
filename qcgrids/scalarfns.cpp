@@ -78,23 +78,21 @@ double ScalarFunction::deriv2_inv(const double y) const {
 }
 
 
-Exp::Exp(double prefac, double alpha) : ScalarFunction(true), prefac_(prefac), alpha_(alpha) {
+Exp::Exp(double slope, double offset) : ScalarFunction(true), slope_(slope), offset_(offset) {
   // Some checks to assure invertibility.
-  if (prefac == 0)
-    throw std::domain_error("prefac cannot be zero in Exp function.");
-  if (alpha == 0)
-    throw std::domain_error("alpha cannot be zero in Exp function.");
+  if (slope == 0)
+    throw std::domain_error("slope cannot be zero in Exp function.");
 }
 
 
 void Exp::calc(const double x, const int nderiv, double* const output) const {
   if (nderiv < 0)
     throw std::domain_error("nderiv cannot be negative.");
-  output[0] = prefac_*exp(alpha_*x);
+  output[0] = exp(slope_*x + offset_);
   if (nderiv > 0)
-    output[1] = output[0]*alpha_;
+    output[1] = output[0]*slope_;
   if (nderiv > 1)
-    output[2] = output[1]*alpha_;
+    output[2] = output[1]*slope_;
   if (nderiv > 2)
     throw std::domain_error("nderiv cannot be larger than two.");
 }
@@ -103,9 +101,9 @@ void Exp::calc(const double x, const int nderiv, double* const output) const {
 void Exp::calc_inv(const double y, const int nderiv, double* const output) const {
   if (nderiv < 0)
     throw std::domain_error("nderiv cannot be negative.");
-  output[0] = log(y/prefac_)/alpha_;
+  output[0] = (log(y) - offset_)/slope_;
   if (nderiv > 0)
-    output[1] = 1.0/(y*alpha_);
+    output[1] = 1.0/(y*slope_);
   if (nderiv > 1)
     output[2] = -output[1]/y;
   if (nderiv > 2)
@@ -457,6 +455,7 @@ Composed::Composed(Spline* spline, ScalarFunction* const x_transform,
     throw std::logic_error("y_transform must be invertible.");
 }
 
+
 Composed::Composed(Spline* spline, ScalarFunction* x_transform,
                    ScalarFunction* y_transform, ScalarFunction* left_extra,
                    ScalarFunction* right_extra, const double* values)
@@ -465,6 +464,7 @@ Composed::Composed(Spline* spline, ScalarFunction* x_transform,
     spline_->values()[i] = y_transform_->value_inv(values[i]);
   spline->fit_derivs();
 }
+
 
 Composed::Composed(Spline* spline, ScalarFunction* x_transform,
                    ScalarFunction* y_transform, ScalarFunction* left_extra,
