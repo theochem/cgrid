@@ -388,8 +388,7 @@ void tridiagsym_solve(double* diag1, double* diag2, double* rhs, double* solutio
 class UniformCubicSpline : public Spline {
  public:
   //! Construct new spline with npoints, zeroing values and derivs.
-  explicit UniformCubicSpline(size_t npoint) : Spline(npoint), values_(new double[npoint]),
-      derivs_(new double[npoint]) {}
+  explicit UniformCubicSpline(size_t npoint);
   //! Create new spline using function values at grid point. Derivatives are fitted.
   explicit UniformCubicSpline(size_t npoint, const double* const values);
   //! Create new spline using function values and derivatives at grid point.

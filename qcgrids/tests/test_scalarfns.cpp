@@ -142,7 +142,9 @@ INSTANTIATE_TEST_CASE_P(Examples, ScalarFunctionTest, ::testing::Values(
   SFTestParams(&power_case2, 0.7, 1.3, 1.1*pow(0.7, -2)),
   SFTestParams(&power_case3, 0.5, 0.9, 0.7*0.5),
   SFTestParams(&rational_case, 11.0, 1.3, 20.0*11.0/(1 - 11.0/33.0)),
-  SFTestParams(&spline3, 0.2, 0.3, 0.5008)
+  SFTestParams(&spline3, 0.2, 0.3, 0.5008),
+  SFTestParams(&spline3, -0.3, 0.3, 0.0),
+  SFTestParams(&spline3, 2.3, 0.3, 0.0)
 ));
 
 
@@ -182,5 +184,64 @@ TEST(ScalarFunctionTest, uniform_cubic_spline_basics) {
   EXPECT_EQ(spline3.derivs()[1], 1.2);
   EXPECT_EQ(spline3.derivs()[2], 2.0);
 }
+
+
+TEST(ScalarFunctionTest, uniform_cubic_spline_twopoint1) {
+  const double values[2] = {0.5, 1.0};
+  const double derivs[2] = {0.1, 1.2};
+  qcg::UniformCubicSpline s(2, values, derivs);
+  EXPECT_EQ(s.npoint(), 2);
+  EXPECT_EQ(s.value(0.0), 0.5);
+  EXPECT_EQ(s.value(1.0), 1.0);
+  EXPECT_EQ(s.deriv(0.0), 0.1);
+  EXPECT_NEAR(s.deriv(1.0), 1.2, EPS);
+  EXPECT_EQ(s.deriv2(0.0), 2*(3*0.5 - 2*0.1 - 1.2));
+  EXPECT_NEAR(s.deriv2(1.0), -2*(3*0.5 - 0.1 - 2*1.2), EPS);
+}
+
+
+TEST(ScalarFunctionTest, uniform_cubic_spline_twopoint2) {
+  const double values[2] = {0.5, 1.0};
+  qcg::UniformCubicSpline s(2, values);
+  EXPECT_EQ(s.npoint(), 2);
+  EXPECT_EQ(s.value(0.0), 0.5);
+  EXPECT_NEAR(s.value(0.5), 0.75, EPS);
+  EXPECT_EQ(s.value(1.0), 1.0);
+  EXPECT_NEAR(s.deriv(0.0), 0.5, EPS);
+  EXPECT_NEAR(s.deriv(0.5), 0.5, EPS);
+  EXPECT_NEAR(s.deriv(1.0), 0.5, EPS);
+  EXPECT_NEAR(s.deriv2(0.0), 0.0, EPS);
+  EXPECT_NEAR(s.deriv2(0.5), 0.0, EPS);
+  EXPECT_NEAR(s.deriv2(1.0), 0.0, EPS);
+}
+
+
+TEST(ScalarFunctionTest, uniform_cubic_spline_twopoint3) {
+  qcg::UniformCubicSpline s(2);
+  EXPECT_EQ(s.npoint(), 2);
+  EXPECT_EQ(s.value(0.0), 0.0);
+  EXPECT_NEAR(s.value(0.5), 0.0, EPS);
+  EXPECT_EQ(s.value(1.0), 0.0);
+  EXPECT_NEAR(s.deriv(0.0), 0.0, EPS);
+  EXPECT_NEAR(s.deriv(0.5), 0.0, EPS);
+  EXPECT_NEAR(s.deriv(1.0), 0.0, EPS);
+  EXPECT_NEAR(s.deriv2(0.0), 0.0, EPS);
+  EXPECT_NEAR(s.deriv2(0.5), 0.0, EPS);
+  EXPECT_NEAR(s.deriv2(1.0), 0.0, EPS);
+}
+
+
+TEST(ScalarFunctionTest, uniform_cubic_spline_threepoint_sym) {
+  const double values[3] = {0.5, 1.0, 0.5};
+  qcg::UniformCubicSpline s(3, values);
+  EXPECT_EQ(s.npoint(), 3);
+  EXPECT_EQ(s.value(0.0), 0.5);
+  EXPECT_EQ(s.value(1.0), 1.0);
+  EXPECT_EQ(s.value(2.0), 0.5);
+  EXPECT_NEAR(s.deriv(1.0), 0.0, EPS);
+  EXPECT_NEAR(s.deriv2(0.0), 0.0, EPS);
+  EXPECT_NEAR(s.deriv2(2.0), 0.0, EPS);
+}
+
 
 // vim: textwidth=90 et ts=2 sw=2

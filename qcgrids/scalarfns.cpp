@@ -354,6 +354,13 @@ void tridiagsym_solve(double* diag1, double* diag2, double* rhs, double* solutio
 }
 
 
+UniformCubicSpline::UniformCubicSpline(size_t npoint)
+    : Spline(npoint), values_(new double[npoint]), derivs_(new double[npoint]) {
+  std::fill(values_, values_ + npoint_, 0.0);
+  std::fill(derivs_, derivs_ + npoint_, 0.0);
+}
+
+
 UniformCubicSpline::UniformCubicSpline(size_t npoint, const double* const values,
     const double* const derivs) : UniformCubicSpline(npoint) {
   std::copy(values, values + npoint_, values_);
@@ -392,6 +399,10 @@ void UniformCubicSpline::calc(const double x, const int nderiv, double* const ou
       output[2] = 0.0;
   } else {
     size_t j = static_cast<size_t>(floor(x));
+    // When x coincides with the last point, we need to avoid accessing data past the last
+    // element of the values and derivs arrays.
+    if (j == npoint_ - 1)
+      j--;
     double u = x - static_cast<double>(j);
     double z = values_[j+1] - values_[j];
     double c0 = values_[j];
