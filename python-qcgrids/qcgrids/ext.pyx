@@ -207,8 +207,8 @@ cdef class ScalarFunction(object):
         return output
 
     def value(self, x):
-        result = np.zeros_like(x)
-        cdef np.broadcast it = np.broadcast(x, result)
+        result = np.zeros_like(x, dtype=float)
+        cdef np.broadcast it = np.broadcast(np.asarray(x, dtype=float), result)
         while np.PyArray_MultiIter_NOTDONE(it):
             (<double*>np.PyArray_MultiIter_DATA(it, 1))[0] = \
                 deref(self._this).value(deref(<double*>np.PyArray_MultiIter_DATA(it, 0)))
@@ -216,8 +216,8 @@ cdef class ScalarFunction(object):
         return result if isinstance(x, np.ndarray) else result[()]
 
     def value_inv(self, x):
-        result = np.zeros_like(x)
-        cdef np.broadcast it = np.broadcast(x, result)
+        result = np.zeros_like(x, dtype=float)
+        cdef np.broadcast it = np.broadcast(np.asarray(x, dtype=float), result)
         while np.PyArray_MultiIter_NOTDONE(it):
             (<double*>np.PyArray_MultiIter_DATA(it, 1))[0] = \
                 deref(self._this).value_inv(deref(<double*>np.PyArray_MultiIter_DATA(it, 0)))
@@ -225,8 +225,8 @@ cdef class ScalarFunction(object):
         return result if isinstance(x, np.ndarray) else result[()]
 
     def deriv(self, x):
-        result = np.zeros_like(x)
-        cdef np.broadcast it = np.broadcast(x, result)
+        result = np.zeros_like(x, dtype=float)
+        cdef np.broadcast it = np.broadcast(np.asarray(x, dtype=float), result)
         while np.PyArray_MultiIter_NOTDONE(it):
             (<double*>np.PyArray_MultiIter_DATA(it, 1))[0] = \
                 deref(self._this).deriv(deref(<double*>np.PyArray_MultiIter_DATA(it, 0)))
@@ -234,8 +234,8 @@ cdef class ScalarFunction(object):
         return result if isinstance(x, np.ndarray) else result[()]
 
     def deriv_inv(self, x):
-        result = np.zeros_like(x)
-        cdef np.broadcast it = np.broadcast(x, result)
+        result = np.zeros_like(x, dtype=float)
+        cdef np.broadcast it = np.broadcast(np.asarray(x, dtype=float), result)
         while np.PyArray_MultiIter_NOTDONE(it):
             (<double*>np.PyArray_MultiIter_DATA(it, 1))[0] = \
                 deref(self._this).deriv_inv(deref(<double*>np.PyArray_MultiIter_DATA(it, 0)))
@@ -243,8 +243,8 @@ cdef class ScalarFunction(object):
         return result if isinstance(x, np.ndarray) else result[()]
 
     def deriv2(self, x):
-        result = np.zeros_like(x)
-        cdef np.broadcast it = np.broadcast(x, result)
+        result = np.zeros_like(x, dtype=float)
+        cdef np.broadcast it = np.broadcast(np.asarray(x, dtype=float), result)
         while np.PyArray_MultiIter_NOTDONE(it):
             (<double*>np.PyArray_MultiIter_DATA(it, 1))[0] = \
                 deref(self._this).deriv2(deref(<double*>np.PyArray_MultiIter_DATA(it, 0)))
@@ -252,8 +252,8 @@ cdef class ScalarFunction(object):
         return result if isinstance(x, np.ndarray) else result[()]
 
     def deriv2_inv(self, x):
-        result = np.zeros_like(x)
-        cdef np.broadcast it = np.broadcast(x, result)
+        result = np.zeros_like(x, dtype=float)
+        cdef np.broadcast it = np.broadcast(np.asarray(x, dtype=float), result)
         while np.PyArray_MultiIter_NOTDONE(it):
             (<double*>np.PyArray_MultiIter_DATA(it, 1))[0] = \
                 deref(self._this).deriv2_inv(deref(<double*>np.PyArray_MultiIter_DATA(it, 0)))

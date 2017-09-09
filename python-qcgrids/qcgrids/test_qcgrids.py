@@ -38,11 +38,13 @@ def test_exp():
     expfn = Exp(0.2, -0.3)
     assert expfn.slope == 0.2
     assert expfn.offset == -0.3
-    check_fn(expfn, 1.2, np.exp(0.2*1.2 - 0.3))
+    check_fn(expfn, True, 1.2, np.exp(0.2*1.2 - 0.3))
 
 
-def check_fn(func, x, y):
+def check_fn(func, invertible, x, y):
     """Test if a subclass of ScalarFunction has the right API from the base class."""
+    # Test invertible
+    assert func.invertible == invertible
     # Test calc
     output = func.calc(x, 2)
     assert output.shape == (3,)
@@ -91,7 +93,13 @@ def check_fn(func, x, y):
             assert method(x, nderiv).shape == (nderiv + 1,)
             result = method(np.array([x, 2*x]), nderiv)
             assert result.shape == (2, nderiv + 1)
+            assert issubclass(result.dtype.type, float)
             assert (result == np.array([method(x, nderiv), method(2*x, nderiv)])).all()
+            result = method(np.array([int(x), 2*int(x) + 1]), nderiv)
+            assert result.shape == (2, nderiv + 1)
+            assert issubclass(result.dtype.type, float)
+            assert (result == np.array([
+                method(int(x), nderiv), method(2*int(x) + 1, nderiv)])).all()
     # Test broadcasting convenience functions
     methods = func.value, func.value_inv, func.deriv, func.deriv_inv, func.deriv2, func.deriv2_inv
     for method in methods:
@@ -99,3 +107,7 @@ def check_fn(func, x, y):
         result = method(np.array([x, 2*x]))
         assert result.shape == (2,)
         assert (result == np.array([method(x), method(2*x)])).all()
+        result = method(np.array([int(x), 2*int(x) + 1]))
+        assert result.shape == (2,)
+        assert issubclass(result.dtype.type, float)
+        assert (result == np.array([method(int(x)), method(2*int(x) + 1)])).all()
