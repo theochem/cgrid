@@ -63,6 +63,7 @@ def test_identity():
 
 def test_constant():
     func = Constant(0.3)
+    assert func.offset == 0.3
     check_fn(func, False, 1.2, 0.3)
 
 
@@ -94,6 +95,8 @@ def test_uniform_cubic_spline1():
     assert func.x(1) == 1.0
     assert func.x(2) == 2.0
     check_fn(func, False, 1.2, -0.2816)
+    with assert_raises(TypeError):
+        UniformCubicSpline(values, derivs[:2])
 
 
 def test_uniform_cubic_spline2():
@@ -134,6 +137,8 @@ def test_composed1():
     check_fn(composed, False, 10.0, 1.2192817112639593)
     check_fn(composed, False, -0.5, 0.4*(-0.5) + 1.2)
     check_fn(composed, False, 15.5, 15.5)
+    with assert_raises(TypeError):
+        Composed(exp1, exp2, linear, identity, values, derivs[:2])
 
 
 def test_composed2():
