@@ -19,9 +19,12 @@
 # --
 
 
-from cellcutoff import Cell
-from qcgrids.ext import Cellgrid
+from nose.tools import assert_raises
 import numpy as np
+from numpy.testing import assert_allclose
+
+from cellcutoff import Cell
+from qcgrids.ext import Cellgrid, Exp
 
 
 def test_something():
@@ -29,3 +32,56 @@ def test_something():
     grid = Cellgrid(cell)
     grid.append_many(np.random.uniform(0, 10, (2, 3)), np.random.uniform(0, 1, 2))
     assert grid.npoint == 2
+
+
+def test_exp():
+    expfn = Exp(0.2, -0.3)
+    assert expfn.slope == 0.2
+    assert expfn.offset == -0.3
+    check_fn(expfn, 1.2, np.exp(0.2*1.2 - 0.3))
+
+
+def check_fn(func, x, y):
+    """Test if a subclass of ScalarFunction has the right API from the base class."""
+    # Test calc
+    output = func.calc(x, 2)
+    assert output.shape == (3,)
+    assert_allclose(output[0], func.value(x))
+    assert_allclose(output[1], func.deriv(x))
+    assert_allclose(output[2], func.deriv2(x))
+    output = func.calc(x, 1)
+    assert output.shape == (2,)
+    assert_allclose(output[0], func.value(x))
+    assert_allclose(output[1], func.deriv(x))
+    output = func.calc(x, 0)
+    assert output.shape == (1,)
+    assert_allclose(output[0], func.value(x))
+    with assert_raises(ValueError):
+        func.calc(x, 3)
+    with assert_raises(IndexError):
+        func.calc(x, -1)
+    # Test calc_inv
+    output = func.calc_inv(y, 2)
+    assert output.shape == (3,)
+    assert_allclose(output[0], func.value_inv(y))
+    assert_allclose(output[1], func.deriv_inv(y))
+    assert_allclose(output[2], func.deriv2_inv(y))
+    output = func.calc_inv(y, 1)
+    assert output.shape == (2,)
+    assert_allclose(output[0], func.value_inv(y))
+    assert_allclose(output[1], func.deriv_inv(y))
+    output = func.calc_inv(y, 0)
+    assert output.shape == (1,)
+    assert_allclose(output[0], func.value_inv(y))
+    with assert_raises(ValueError):
+        func.calc_inv(y, 3)
+    with assert_raises(IndexError):
+        func.calc_inv(y, -1)
+    # Test convenience functions with some chain rules
+    assert_allclose(func.value(1.2), np.exp(0.2*1.2 - 0.3))
+    assert_allclose(func.value(func.value_inv(1.2)), 1.2)
+    assert_allclose(func.deriv(x)*func.deriv_inv(y), 1.0)
+    assert_allclose(func.deriv2_inv(y)*func.deriv(x)**2 + func.deriv_inv(y)*func.deriv2(x),
+                    0.0, atol=1e-10)
+    assert_allclose(func.deriv2(x)*func.deriv_inv(y)**2 + func.deriv(x)*func.deriv2_inv(y),
+                    0.0, atol=1e-10)

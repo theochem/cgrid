@@ -19,24 +19,21 @@
 # --
 
 
-from libcpp.memory cimport unique_ptr
+from libcpp cimport bool
 
-cimport cellgrid
-cimport scalarfns
+cdef extern from "qcgrids/scalarfns.h" namespace "qcgrids":
+    cdef cppclass ScalarFunction:
+        bool invertible()
+        void calc(const double x, const int nderiv, double* const output) except +
+        void calc_inv(const double y, const int nderiv, double* const output) except +
+        double value(const double x)
+        double value_inv(const double y)
+        double deriv(const double x)
+        double deriv_inv(const double y)
+        double deriv2(const double x)
+        double deriv2_inv(const double y)
 
-
-cdef class GridFunc:
-    cdef cellgrid.GridFunc _funcptr
-    cdef void* _extra_arg
-
-
-cdef class Cellgrid:
-    cdef cellgrid.Cellgrid* _this
-
-
-cdef class ScalarFunction:
-    cdef unique_ptr[scalarfns.ScalarFunction] _this
-
-
-cdef class Exp(ScalarFunction):
-    pass
+    cdef cppclass Exp(ScalarFunction):
+        Exp(double slope, double offset) except +
+        double slope()
+        double offset()

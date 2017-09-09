@@ -50,13 +50,13 @@ setup(
     cmdclass = {'build_ext': build_ext},
     packages = ['qcgrids'],
     package_data = {
-        'qcgrids': ['ext.pxd', 'cellgrid.pxd'],
+        'qcgrids': ['ext.pxd', 'cellgrid.pxd', 'scalarfns.pxd'],
     },
     ext_modules=[
         Extension(
             "qcgrids.ext",
             sources=['qcgrids/ext.pyx'],
-            depends=['qcgrids/ext.pxd', 'qcgrids/cellgrid.pxd'],
+            depends=['qcgrids/ext.pxd', 'qcgrids/cellgrid.pxd', 'qcgrids/scalarfns.pxd'],
             libraries=['qcgrids'],
             include_dirs=[np.get_include()],
             extra_compile_args=['-std=c++11', '-Wall'],

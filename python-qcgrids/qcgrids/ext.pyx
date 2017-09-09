@@ -23,17 +23,21 @@
 '''Python wrapper for the QCGrids library'''
 
 
+from cpython.ref cimport PyTypeObject
+from libc.string cimport memcpy
+from cpython cimport Py_INCREF
+from cython.operator cimport dereference as deref
+
+
 import numpy as np
 cimport numpy as np
 np.import_array()
 
-cimport cellgrid
-
 cimport cellcutoff.ext as cellcutoff
 
-from cpython.ref cimport PyTypeObject
-from libc.string cimport memcpy
-from cpython cimport Py_INCREF
+cimport cellgrid
+cimport scalarfns
+
 
 cdef extern from "numpy/arrayobject.h":
     object PyArray_NewFromDescr(PyTypeObject* subtype, np.dtype descr,
@@ -41,7 +45,12 @@ cdef extern from "numpy/arrayobject.h":
                                 void* data, int flags, object obj)
 
 
-__all__ = ['Cellgrid']
+__all__ = [
+    # cellgrid.h
+    'Cellgrid'
+    # scalarfns.h
+    'ScalarFunction', 'Exp',
+]
 
 
 def check_array_arg(name, arg, expected_shape):
@@ -157,3 +166,56 @@ cdef class Cellgrid(object):
     def integrate(self, *factors):
         subscripts = '%s->' % (','.join(['i']*(len(factors)+1)))
         return np.einsum(subscripts, self.weights, *factors)
+
+
+cdef class ScalarFunction(object):
+    def __init__(self):
+        raise RuntimeError("Cannot instantiate abstract base class ScalarFunction.")
+
+    property invertible:
+        def __get__(self):
+            return deref(self._this).invertible()
+
+    def calc(self, double x, int nderiv):
+        cdef np.ndarray[double, ndim=1] output = np.zeros(nderiv + 1, dtype=float)
+        deref(self._this).calc(x, nderiv, &output[0])
+        return output
+
+    def calc_inv(self, double x, int nderiv):
+        cdef np.ndarray[double, ndim=1] output = np.zeros(nderiv + 1, dtype=float)
+        deref(self._this).calc_inv(x, nderiv, &output[0])
+        return output
+
+    def value(self, double x):
+        return deref(self._this).value(x)
+
+    def value_inv(self, double x):
+        return deref(self._this).value_inv(x)
+
+    def deriv(self, double x):
+        return deref(self._this).deriv(x)
+
+    def deriv_inv(self, double x):
+        return deref(self._this).deriv_inv(x)
+
+    def deriv2(self, double x):
+        return deref(self._this).deriv2(x)
+
+    def deriv2_inv(self, double x):
+        return deref(self._this).deriv2_inv(x)
+
+
+cdef class Exp(ScalarFunction):
+    def __cinit__(self, double slope, double offset):
+        self._this.reset(new scalarfns.Exp(slope, offset))
+
+    def __init__(self, double slope, double offset):
+        pass
+
+    property slope:
+        def __get__(self):
+            return deref(<scalarfns.Exp*?>self._this.get()).slope()
+
+    property offset:
+        def __get__(self):
+            return deref(<scalarfns.Exp*?>self._this.get()).offset()
