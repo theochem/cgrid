@@ -176,33 +176,89 @@ cdef class ScalarFunction(object):
         def __get__(self):
             return deref(self._this).invertible()
 
-    def calc(self, double x, int nderiv):
-        cdef np.ndarray[double, ndim=1] output = np.zeros(nderiv + 1, dtype=float)
-        deref(self._this).calc(x, nderiv, &output[0])
+    def calc(self, xpy, int nderiv):
+        x = np.asarray(xpy, dtype=float)
+        output = np.zeros(x.shape + (nderiv + 1,), dtype=float)
+        cdef np.flatiter itx = np.PyArray_IterNew(x)
+        cdef int xndim = x.ndim
+        cdef np.flatiter ito = np.PyArray_IterAllButAxis(output, &(xndim))
+        while np.PyArray_ITER_NOTDONE(itx):
+            deref(self._this).calc(
+                deref(<double*>np.PyArray_ITER_DATA(itx)),
+                nderiv, <double*>np.PyArray_ITER_DATA(ito),
+            )
+            np.PyArray_ITER_NEXT(itx)
+            np.PyArray_ITER_NEXT(ito)
         return output
 
-    def calc_inv(self, double x, int nderiv):
-        cdef np.ndarray[double, ndim=1] output = np.zeros(nderiv + 1, dtype=float)
-        deref(self._this).calc_inv(x, nderiv, &output[0])
+    def calc_inv(self, xpy, int nderiv):
+        x = np.asarray(xpy, dtype=float)
+        output = np.zeros(x.shape + (nderiv + 1,), dtype=float)
+        cdef np.flatiter itx = np.PyArray_IterNew(x)
+        cdef int xndim = x.ndim
+        cdef np.flatiter ito = np.PyArray_IterAllButAxis(output, &(xndim))
+        while np.PyArray_ITER_NOTDONE(itx):
+            deref(self._this).calc_inv(
+                deref(<double*>np.PyArray_ITER_DATA(itx)),
+                nderiv, <double*>np.PyArray_ITER_DATA(ito),
+            )
+            np.PyArray_ITER_NEXT(itx)
+            np.PyArray_ITER_NEXT(ito)
         return output
 
-    def value(self, double x):
-        return deref(self._this).value(x)
+    def value(self, x):
+        result = np.zeros_like(x)
+        cdef np.broadcast it = np.broadcast(x, result)
+        while np.PyArray_MultiIter_NOTDONE(it):
+            (<double*>np.PyArray_MultiIter_DATA(it, 1))[0] = \
+                deref(self._this).value(deref(<double*>np.PyArray_MultiIter_DATA(it, 0)))
+            np.PyArray_MultiIter_NEXT(it)
+        return result if isinstance(x, np.ndarray) else result[()]
 
-    def value_inv(self, double x):
-        return deref(self._this).value_inv(x)
+    def value_inv(self, x):
+        result = np.zeros_like(x)
+        cdef np.broadcast it = np.broadcast(x, result)
+        while np.PyArray_MultiIter_NOTDONE(it):
+            (<double*>np.PyArray_MultiIter_DATA(it, 1))[0] = \
+                deref(self._this).value_inv(deref(<double*>np.PyArray_MultiIter_DATA(it, 0)))
+            np.PyArray_MultiIter_NEXT(it)
+        return result if isinstance(x, np.ndarray) else result[()]
 
-    def deriv(self, double x):
-        return deref(self._this).deriv(x)
+    def deriv(self, x):
+        result = np.zeros_like(x)
+        cdef np.broadcast it = np.broadcast(x, result)
+        while np.PyArray_MultiIter_NOTDONE(it):
+            (<double*>np.PyArray_MultiIter_DATA(it, 1))[0] = \
+                deref(self._this).deriv(deref(<double*>np.PyArray_MultiIter_DATA(it, 0)))
+            np.PyArray_MultiIter_NEXT(it)
+        return result if isinstance(x, np.ndarray) else result[()]
 
-    def deriv_inv(self, double x):
-        return deref(self._this).deriv_inv(x)
+    def deriv_inv(self, x):
+        result = np.zeros_like(x)
+        cdef np.broadcast it = np.broadcast(x, result)
+        while np.PyArray_MultiIter_NOTDONE(it):
+            (<double*>np.PyArray_MultiIter_DATA(it, 1))[0] = \
+                deref(self._this).deriv_inv(deref(<double*>np.PyArray_MultiIter_DATA(it, 0)))
+            np.PyArray_MultiIter_NEXT(it)
+        return result if isinstance(x, np.ndarray) else result[()]
 
-    def deriv2(self, double x):
-        return deref(self._this).deriv2(x)
+    def deriv2(self, x):
+        result = np.zeros_like(x)
+        cdef np.broadcast it = np.broadcast(x, result)
+        while np.PyArray_MultiIter_NOTDONE(it):
+            (<double*>np.PyArray_MultiIter_DATA(it, 1))[0] = \
+                deref(self._this).deriv2(deref(<double*>np.PyArray_MultiIter_DATA(it, 0)))
+            np.PyArray_MultiIter_NEXT(it)
+        return result if isinstance(x, np.ndarray) else result[()]
 
-    def deriv2_inv(self, double x):
-        return deref(self._this).deriv2_inv(x)
+    def deriv2_inv(self, x):
+        result = np.zeros_like(x)
+        cdef np.broadcast it = np.broadcast(x, result)
+        while np.PyArray_MultiIter_NOTDONE(it):
+            (<double*>np.PyArray_MultiIter_DATA(it, 1))[0] = \
+                deref(self._this).deriv2_inv(deref(<double*>np.PyArray_MultiIter_DATA(it, 0)))
+            np.PyArray_MultiIter_NEXT(it)
+        return result if isinstance(x, np.ndarray) else result[()]
 
 
 cdef class Exp(ScalarFunction):

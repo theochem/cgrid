@@ -58,7 +58,7 @@ def check_fn(func, x, y):
     assert_allclose(output[0], func.value(x))
     with assert_raises(ValueError):
         func.calc(x, 3)
-    with assert_raises(IndexError):
+    with assert_raises(ValueError):
         func.calc(x, -1)
     # Test calc_inv
     output = func.calc_inv(y, 2)
@@ -75,13 +75,27 @@ def check_fn(func, x, y):
     assert_allclose(output[0], func.value_inv(y))
     with assert_raises(ValueError):
         func.calc_inv(y, 3)
-    with assert_raises(IndexError):
+    with assert_raises(ValueError):
         func.calc_inv(y, -1)
     # Test convenience functions with some chain rules
-    assert_allclose(func.value(1.2), np.exp(0.2*1.2 - 0.3))
-    assert_allclose(func.value(func.value_inv(1.2)), 1.2)
+    assert_allclose(func.value(x), y)
+    assert_allclose(func.value_inv(y), x)
     assert_allclose(func.deriv(x)*func.deriv_inv(y), 1.0)
     assert_allclose(func.deriv2_inv(y)*func.deriv(x)**2 + func.deriv_inv(y)*func.deriv2(x),
                     0.0, atol=1e-10)
     assert_allclose(func.deriv2(x)*func.deriv_inv(y)**2 + func.deriv(x)*func.deriv2_inv(y),
                     0.0, atol=1e-10)
+    # Test broadcasting calc and calc_inv
+    for method in func.calc, func.calc_inv:
+        for nderiv in 0, 1, 2:
+            assert method(x, nderiv).shape == (nderiv + 1,)
+            result = method(np.array([x, 2*x]), nderiv)
+            assert result.shape == (2, nderiv + 1)
+            assert (result == np.array([method(x, nderiv), method(2*x, nderiv)])).all()
+    # Test broadcasting convenience functions
+    methods = func.value, func.value_inv, func.deriv, func.deriv_inv, func.deriv2, func.deriv2_inv
+    for method in methods:
+        assert isinstance(method(x), float)
+        result = method(np.array([x, 2*x]))
+        assert result.shape == (2,)
+        assert (result == np.array([method(x), method(2*x)])).all()
