@@ -40,3 +40,43 @@ cdef class ScalarFunction:
 
 cdef class Exp(ScalarFunction):
     pass
+
+
+cdef class Ln(ScalarFunction):
+    pass
+
+
+cdef class Linear(ScalarFunction):
+    pass
+
+
+cdef class Identity(ScalarFunction):
+    pass
+
+
+cdef class Constant(ScalarFunction):
+    pass
+
+
+cdef class Power(ScalarFunction):
+    pass
+
+
+cdef class Rational(ScalarFunction):
+    pass
+
+
+cdef class Spline(ScalarFunction):
+    pass
+
+
+cdef class UniformCubicSpline(Spline):
+    pass
+
+
+cdef class Composed(ScalarFunction):
+    cdef Spline _spline
+    cdef ScalarFunction _x_transform
+    cdef ScalarFunction _y_transform
+    cdef ScalarFunction _left_extra
+    cdef ScalarFunction _right_extra

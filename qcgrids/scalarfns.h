@@ -17,7 +17,16 @@
 // along with this program; if not, see <http://www.gnu.org/licenses/>
 // --
 
-/** @file */
+/** @file
+    @brief
+      Parameterized scalar functions, their inverses and first and second derivatives.
+
+    These scalar functions, including splines, are an important auxiliary for the
+    definition of several different types of numerical integration grids. A special case
+    is the composed function, which can be used to represent radial density or potential
+    functions with splines, including the correct functional behavior towards the limits
+    (defined by extrapolation functions).
+*/
 
 
 #include <memory>
@@ -359,7 +368,7 @@ class Spline : public ScalarFunction {
   virtual double x(const size_t index) const = 0;
 
   /** @brief
-        Determine the (seoncd) derivatives at the grid points for the case of a natural
+        Determine the (second) derivatives at the grid points for the case of a natural
         spline.
 
       A natural cubic splint has vanishing second derivatives are edges and continuous
@@ -435,7 +444,7 @@ class UniformCubicSpline : public Spline {
 
 
 /** @brief
-      Combination of pline and different functions for extrapolation and transformation.
+      Combination of spline and different functions for extrapolation and transformation.
 
     Two functions can be provided for extrapolation on the left and the right of the
     spline. Also a transformation of the input and output can be given. Transformation
@@ -491,8 +500,11 @@ class Composed : public ScalarFunction {
   ScalarFunction* const right_extra_;  //!< The right extrapolation.
 };
 
+
 }  // namespace qcgrids
 
+
 #endif  // QCGRIDS_SCALARFNS_H_
+
 
 // vim: textwidth=90 et ts=2 sw=2

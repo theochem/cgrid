@@ -49,7 +49,8 @@ __all__ = [
     # cellgrid.h
     'Cellgrid'
     # scalarfns.h
-    'ScalarFunction', 'Exp',
+    'ScalarFunction', 'Exp', 'Ln', 'Linear', 'Identity', 'Constant', 'Power', 'Rational',
+    'Spline', 'UniformCubicSpline', 'Composed',
 ]
 
 
@@ -275,3 +276,197 @@ cdef class Exp(ScalarFunction):
     property offset:
         def __get__(self):
             return deref(<scalarfns.Exp*?>self._this.get()).offset()
+
+
+cdef class Ln(ScalarFunction):
+    def __cinit__(self, double prefac, double alpha):
+        self._this.reset(new scalarfns.Ln(prefac, alpha))
+
+    def __init__(self, double prefac, double alpha):
+        pass
+
+    property prefac:
+        def __get__(self):
+            return deref(<scalarfns.Ln*?>self._this.get()).prefac()
+
+    property alpha:
+        def __get__(self):
+            return deref(<scalarfns.Ln*?>self._this.get()).alpha()
+
+
+cdef class Linear(ScalarFunction):
+    def __cinit__(self, double slope, double offset):
+        self._this.reset(new scalarfns.Linear(slope, offset))
+
+    def __init__(self, double slope, double offset):
+        pass
+
+    property slope:
+        def __get__(self):
+            return deref(<scalarfns.Linear*?>self._this.get()).slope()
+
+    property offset:
+        def __get__(self):
+            return deref(<scalarfns.Linear*?>self._this.get()).offset()
+
+
+cdef class Identity(ScalarFunction):
+    def __cinit__(self):
+        self._this.reset(new scalarfns.Identity())
+
+    def __init__(self):
+        pass
+
+
+cdef class Constant(ScalarFunction):
+    def __cinit__(self, double offset):
+        self._this.reset(new scalarfns.Constant(offset))
+
+    def __init__(self, double offset):
+        pass
+
+    property offset:
+        def __get__(self):
+            return deref(<scalarfns.Constant*?>self._this.get()).offset()
+
+
+cdef class Power(ScalarFunction):
+    def __cinit__(self, double prefac, double power):
+        self._this.reset(new scalarfns.Power(prefac, power))
+
+    def __init__(self, double prefac, double power):
+        pass
+
+    property prefac:
+        def __get__(self):
+            return deref(<scalarfns.Power*?>self._this.get()).prefac()
+
+    property power:
+        def __get__(self):
+            return deref(<scalarfns.Power*?>self._this.get()).power()
+
+
+cdef class Rational(ScalarFunction):
+    def __cinit__(self, double prefac, double root):
+        self._this.reset(new scalarfns.Rational(prefac, root))
+
+    def __init__(self, double prefac, double root):
+        pass
+
+    property prefac:
+        def __get__(self):
+            return deref(<scalarfns.Rational*?>self._this.get()).prefac()
+
+    property root:
+        def __get__(self):
+            return deref(<scalarfns.Rational*?>self._this.get()).root()
+
+
+cdef class Spline(ScalarFunction):
+    def __init__(self, npoint):
+        raise RuntimeError("Cannot instantiate abstract base class Spline.")
+
+    property npoint:
+        def __get__(self):
+            return deref(<scalarfns.Spline*?>self._this.get()).npoint()
+
+    property values:
+        def __get__(self):
+            cdef double* ptr = deref(<scalarfns.Spline*?>self._this.get()).values()
+            if ptr != NULL:
+                return np.asarray(<np.float64_t[:self.npoint:1]>ptr)
+
+    property derivs:
+        def __get__(self):
+            cdef double* ptr = deref(<scalarfns.Spline*?>self._this.get()).derivs()
+            if ptr != NULL:
+                return np.asarray(<np.float64_t[:self.npoint:1]>ptr)
+
+    property derivs2:
+        def __get__(self):
+            cdef double* ptr = deref(<scalarfns.Spline*?>self._this.get()).derivs2()
+            if ptr != NULL:
+                return np.asarray(<np.float64_t[:self.npoint:1]>ptr)
+
+    property left:
+        def __get__(self):
+            return deref(<scalarfns.Spline*?>self._this.get()).left()
+
+    property right:
+        def __get__(self):
+            return deref(<scalarfns.Spline*?>self._this.get()).right()
+
+    def x(self, size_t index):
+        return deref(<scalarfns.Spline*?>self._this.get()).x(index)
+
+    def fit_derivs(self):
+        deref(<scalarfns.Spline*?>self._this.get()).fit_derivs()
+
+
+cdef class UniformCubicSpline(Spline):
+    def __cinit__(self, np.float64_t[::1] values not None, np.float64_t[::1] derivs=None):
+        cdef size_t npoint = values.shape[0]
+        if derivs is None:
+            self._this.reset(new scalarfns.UniformCubicSpline(npoint, &values[0]))
+        else:
+            if derivs.shape[0] != npoint:
+                raise TypeError("The arrays values and derivs must have the same size.")
+            self._this.reset(new scalarfns.UniformCubicSpline(npoint, &values[0], &derivs[0]))
+
+    def __init__(self, np.float64_t[::1] values=None, np.float64_t[::1] derivs=None):
+        pass
+
+
+cdef class Composed(ScalarFunction):
+    def __cinit__(self, ScalarFunction x_transform, ScalarFunction y_transform,
+                  ScalarFunction left_extra, ScalarFunction right_extra,
+                  np.float64_t[::1] values not None, np.float64_t[::1] derivs=None):
+        cdef size_t npoint = values.shape[0]
+        self._spline = UniformCubicSpline(np.zeros(npoint, dtype=float))
+        self._x_transform = x_transform
+        self._y_transform = y_transform
+        self._left_extra = left_extra
+        self._right_extra = right_extra
+        if derivs is None:
+            self._this.reset(new scalarfns.Composed(
+                <scalarfns.Spline*?>self._spline._this.get(),
+                x_transform._this.get() if x_transform is not None else NULL,
+                y_transform._this.get() if y_transform is not None else NULL,
+                left_extra._this.get() if left_extra is not None else NULL,
+                right_extra._this.get() if right_extra is not None else NULL,
+                &values[0]))
+        else:
+            if derivs.shape[0] != npoint:
+                raise TypeError("The arrays values and derivs must have the same size.")
+            self._this.reset(new scalarfns.Composed(
+                <scalarfns.Spline*?>self._spline._this.get(),
+                x_transform._this.get() if x_transform is not None else NULL,
+                y_transform._this.get() if y_transform is not None else NULL,
+                left_extra._this.get() if left_extra is not None else NULL,
+                right_extra._this.get() if right_extra is not None else NULL,
+                &values[0], &derivs[0]))
+
+    def __init__(self, ScalarFunction x_transform, ScalarFunction y_transform,
+                  ScalarFunction left_extra, ScalarFunction right_extra,
+                  np.float64_t[::1] values not None, np.float64_t[::1] derivs=None):
+        pass
+
+    property spline:
+        def __get__(self):
+            return self._spline
+
+    property x_transform:
+        def __get__(self):
+            return self._x_transform
+
+    property y_transform:
+        def __get__(self):
+            return self._y_transform
+
+    property left_extra:
+        def __get__(self):
+            return self._left_extra
+
+    property right_extra:
+        def __get__(self):
+            return self._right_extra

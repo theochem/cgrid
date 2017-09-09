@@ -37,3 +37,64 @@ cdef extern from "qcgrids/scalarfns.h" namespace "qcgrids":
         Exp(double slope, double offset) except +
         double slope()
         double offset()
+
+    cdef cppclass Ln(ScalarFunction):
+        Ln(double prefac, double alpha) except +
+        double prefac()
+        double alpha()
+
+    cdef cppclass Linear(ScalarFunction):
+        Linear(double slope, double offset) except +
+        double slope()
+        double offset()
+
+    cdef cppclass Identity(ScalarFunction):
+        Identity() except +
+
+    cdef cppclass Constant(ScalarFunction):
+        Constant(double offset) except +
+        double offset()
+
+    cdef cppclass Power(ScalarFunction):
+        Power(double prefac, double power) except +
+        double prefac()
+        double power()
+
+    cdef cppclass Rational(ScalarFunction):
+        Rational(double prefac, double root) except +
+        double prefac()
+        double root()
+
+    cdef cppclass Spline(ScalarFunction):
+        Spline(size_t npoint) except +
+        size_t npoint()
+
+        double* values();
+        double* derivs();
+        double* derivs2();
+
+        double left();
+        double right();
+        double x(const size_t index);
+
+        void fit_derivs();
+
+    cdef cppclass UniformCubicSpline(Spline):
+        UniformCubicSpline(size_t npoint);
+        UniformCubicSpline(size_t npoint, const double* const values);
+        UniformCubicSpline(size_t npoint, const double* const values, double* const derivs);
+
+    cdef cppclass Composed(ScalarFunction):
+        Composed(Spline* spline, ScalarFunction* x_transform, ScalarFunction* y_transform,
+                 ScalarFunction* left_extra, ScalarFunction* right_extra,
+                 const double* values);
+
+        Composed(Spline* spline, ScalarFunction* x_transform, ScalarFunction* y_transform,
+                 ScalarFunction* left_extra, ScalarFunction* right_extra,
+                 const double* values, const double* derivs);
+
+        Spline* spline();
+        ScalarFunction* x_transform();
+        ScalarFunction* y_transform();
+        ScalarFunction* left_extra();
+        ScalarFunction* right_extra();
