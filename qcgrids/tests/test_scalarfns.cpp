@@ -48,13 +48,12 @@ class SFTestParams {
   /** @brief
         Create a SFTestParams object
   */
-  SFTestParams(qcg::ScalarFunction* sfn, double x, double y, double val) :
-      sfn(sfn), x(x), y(y), val(val) {}
+  SFTestParams(qcg::ScalarFunction* sfn, double x, double y) :
+      sfn(sfn), x(x), y(y) {}
 
   const qcg::ScalarFunction* sfn;
   const double x;
   const double y;
-  const double val;
 };
 
 class ScalarFunctionTest : public ::testing::TestWithParam<SFTestParams> {};
@@ -64,7 +63,7 @@ TEST_P(ScalarFunctionTest, basics) {
   const qcg::ScalarFunction* sfn(GetParam().sfn);
   const double x(GetParam().x);
   const double y(GetParam().y);
-  EXPECT_NEAR(sfn->value(x), GetParam().val, EPS);
+  EXPECT_NEAR(sfn->value(x), y, EPS);
   {
     // Test consistency between general and specialized functions.
     EXPECT_NEAR(sfn->qcg::ScalarFunction::value(x), sfn->value(x), EPS);
@@ -87,8 +86,15 @@ TEST_P(ScalarFunctionTest, basics) {
   }
   if (sfn->invertible()) {
     // Test consistency of function and its inverse.
+    EXPECT_NEAR(sfn->value_inv(y), x, EPS);
     EXPECT_NEAR(sfn->value_inv(sfn->value(x)), x, EPS);
     EXPECT_NEAR(sfn->value(sfn->value_inv(y)), y, EPS);
+    // Test consistency of derivatives and derivatives of inverse function
+    EXPECT_NEAR(sfn->deriv(x)*sfn->deriv_inv(y), 1.0, EPS);
+    EXPECT_NEAR(sfn->deriv2(x)*sfn->deriv_inv(y)*sfn->deriv_inv(y) +
+                sfn->deriv(x)*sfn->deriv2_inv(y), 0.0, EPS);
+    EXPECT_NEAR(sfn->deriv2_inv(y)*sfn->deriv(x)*sfn->deriv(x) +
+                sfn->deriv_inv(y)*sfn->deriv2(x), 0.0, EPS);
     // Test consistency between general and specialized functions.
     EXPECT_NEAR(sfn->qcg::ScalarFunction::value_inv(x), sfn->value_inv(x), EPS);
     EXPECT_NEAR(sfn->qcg::ScalarFunction::deriv_inv(x), sfn->deriv_inv(x), EPS);
@@ -132,23 +138,23 @@ qcg::Composed composed_case1(&spline3, &exp_case1, &exp_case2, &linear_case, &id
 
 
 INSTANTIATE_TEST_CASE_P(Examples, ScalarFunctionTest, ::testing::Values(
-  SFTestParams(&exp_case1, 1.2, 0.75971, exp(0.5*1.2 + 1.5)),
-  SFTestParams(&exp_case2, 0.2, 0.8, exp(0.1*0.2 + 2.5)),
-  SFTestParams(&ln_case1, 1.2, 0.75971, 0.5*log(0.2*1.2)),
-  SFTestParams(&ln_case2, 0.2, 0.6, 0.1*log(1.2*0.2)),
-  SFTestParams(&linear_case, 0.2, 0.6, 0.4*0.2 + 1.2),
-  SFTestParams(&identity_case, 0.2, 0.6, 0.2),
-  SFTestParams(&constant_case, 0.2, 0.6, 0.88),
-  SFTestParams(&power_case1, 0.5, 0.6, 0.3*pow(0.5, 2.3)),
-  SFTestParams(&power_case2, 0.7, 1.3, 1.1*pow(0.7, -2)),
-  SFTestParams(&power_case3, 0.5, 0.9, 0.7*0.5),
-  SFTestParams(&rational_case, 11.0, 1.3, 20.0*11.0/(1 - 11.0/33.0)),
-  SFTestParams(&spline3, 0.2, 0.3, 0.5008),
-  SFTestParams(&spline3, -0.3, 0.3, 0.0),
-  SFTestParams(&spline3, 2.3, 0.3, 0.0),
-  SFTestParams(&composed_case1, 10.0, 0.3, 14.405452746970118),
-  SFTestParams(&composed_case1, -0.5, 0.3, 0.4*(-0.5) + 1.2),
-  SFTestParams(&composed_case1, 15.5, 0.3, 15.5)
+  SFTestParams(&exp_case1, 1.2, exp(0.5*1.2 + 1.5)),
+  SFTestParams(&exp_case2, 0.2, exp(0.1*0.2 + 2.5)),
+  SFTestParams(&ln_case1, 1.2, 0.5*log(0.2*1.2)),
+  SFTestParams(&ln_case2, 0.2, 0.1*log(1.2*0.2)),
+  SFTestParams(&linear_case, 0.2, 0.4*0.2 + 1.2),
+  SFTestParams(&identity_case, 0.2, 0.2),
+  SFTestParams(&constant_case, 0.2, 0.88),
+  SFTestParams(&power_case1, 0.5, 0.3*pow(0.5, 2.3)),
+  SFTestParams(&power_case2, 0.7, 1.1*pow(0.7, -2)),
+  SFTestParams(&power_case3, 0.5, 0.7*0.5),
+  SFTestParams(&rational_case, 11.0, 20.0*11.0/(1 - 11.0/33.0)),
+  SFTestParams(&spline3, 0.2, 0.5008),
+  SFTestParams(&spline3, -0.3, 0.0),
+  SFTestParams(&spline3, 2.3, 0.0),
+  SFTestParams(&composed_case1, 10.0, 14.405452746970118),
+  SFTestParams(&composed_case1, -0.5, 0.4*(-0.5) + 1.2),
+  SFTestParams(&composed_case1, 15.5, 15.5)
 ));
 
 
