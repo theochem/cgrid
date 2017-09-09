@@ -170,14 +170,32 @@ cdef class Cellgrid(object):
 
 
 cdef class ScalarFunction(object):
+    """Abstract base class for all scalar functions."""
+
     def __init__(self):
         raise RuntimeError("Cannot instantiate abstract base class ScalarFunction.")
 
     property invertible:
         def __get__(self):
+            """Is the function invertible or not?"""
             return deref(self._this).invertible()
 
     def calc(self, xpy, int nderiv):
+        """Compute the function value and optional first and second derivatives.
+
+        Parameters
+        ----------
+        xpy : float or np.ndarray
+            The input to the function.
+        nderiv : int
+            The number of derivatives (0, 1, 2).
+
+        Returns
+        -------
+        output : np.ndarray
+            Array with ``shape = xpy.shape + (nderiv + 1,)``. The last index is used for
+            function value (0), first derivative (1) and second derivative (3).
+        """
         x = np.asarray(xpy, dtype=float)
         output = np.zeros(x.shape + (nderiv + 1,), dtype=float)
         cdef np.flatiter itx = np.PyArray_IterNew(x)
@@ -193,6 +211,21 @@ cdef class ScalarFunction(object):
         return output
 
     def calc_inv(self, xpy, int nderiv):
+        """Compute the inverse function value and optional first and second derivatives.
+
+        Parameters
+        ----------
+        xpy : float or np.ndarray
+            The input to the function.
+        nderiv : int
+            The number of derivatives (0, 1, 2).
+
+        Returns
+        -------
+        output : np.ndarray
+            Array with ``shape = xpy.shape + (nderiv + 1,)``. The last index is used for
+            function value (0), first derivative (1) and second derivative (3).
+        """
         x = np.asarray(xpy, dtype=float)
         output = np.zeros(x.shape + (nderiv + 1,), dtype=float)
         cdef np.flatiter itx = np.PyArray_IterNew(x)
@@ -208,6 +241,7 @@ cdef class ScalarFunction(object):
         return output
 
     def value(self, x):
+        """Compute the function value. Works as u-func."""
         result = np.zeros_like(x, dtype=float)
         cdef np.broadcast it = np.broadcast(np.asarray(x, dtype=float), result)
         while np.PyArray_MultiIter_NOTDONE(it):
@@ -217,6 +251,7 @@ cdef class ScalarFunction(object):
         return result if isinstance(x, np.ndarray) else result[()]
 
     def value_inv(self, x):
+        """Compute the inverse function value. Works as u-func."""
         result = np.zeros_like(x, dtype=float)
         cdef np.broadcast it = np.broadcast(np.asarray(x, dtype=float), result)
         while np.PyArray_MultiIter_NOTDONE(it):
@@ -226,6 +261,7 @@ cdef class ScalarFunction(object):
         return result if isinstance(x, np.ndarray) else result[()]
 
     def deriv(self, x):
+        """Compute the derivative. Works as u-func."""
         result = np.zeros_like(x, dtype=float)
         cdef np.broadcast it = np.broadcast(np.asarray(x, dtype=float), result)
         while np.PyArray_MultiIter_NOTDONE(it):
@@ -235,6 +271,7 @@ cdef class ScalarFunction(object):
         return result if isinstance(x, np.ndarray) else result[()]
 
     def deriv_inv(self, x):
+        """Compute the derivative of the inverse. Works as u-func."""
         result = np.zeros_like(x, dtype=float)
         cdef np.broadcast it = np.broadcast(np.asarray(x, dtype=float), result)
         while np.PyArray_MultiIter_NOTDONE(it):
@@ -244,6 +281,7 @@ cdef class ScalarFunction(object):
         return result if isinstance(x, np.ndarray) else result[()]
 
     def deriv2(self, x):
+        """Compute the second derivative. Works as u-func."""
         result = np.zeros_like(x, dtype=float)
         cdef np.broadcast it = np.broadcast(np.asarray(x, dtype=float), result)
         while np.PyArray_MultiIter_NOTDONE(it):
@@ -253,6 +291,7 @@ cdef class ScalarFunction(object):
         return result if isinstance(x, np.ndarray) else result[()]
 
     def deriv2_inv(self, x):
+        """Compute the second derivative of the inverse. Works as u-func."""
         result = np.zeros_like(x, dtype=float)
         cdef np.broadcast it = np.broadcast(np.asarray(x, dtype=float), result)
         while np.PyArray_MultiIter_NOTDONE(it):
@@ -263,6 +302,8 @@ cdef class ScalarFunction(object):
 
 
 cdef class Exp(ScalarFunction):
+    """Exponential function: y = exp(slope*x + offset)."""
+
     def __cinit__(self, double slope, double offset):
         self._this.reset(new scalarfns.Exp(slope, offset))
 
@@ -279,6 +320,8 @@ cdef class Exp(ScalarFunction):
 
 
 cdef class Ln(ScalarFunction):
+    """Logarithmic function: y = prefac*ln(alpha*x)."""
+
     def __cinit__(self, double prefac, double alpha):
         self._this.reset(new scalarfns.Ln(prefac, alpha))
 
@@ -295,6 +338,8 @@ cdef class Ln(ScalarFunction):
 
 
 cdef class Linear(ScalarFunction):
+    """Linear function: y = slone*x + offset."""
+
     def __cinit__(self, double slope, double offset):
         self._this.reset(new scalarfns.Linear(slope, offset))
 
@@ -311,6 +356,8 @@ cdef class Linear(ScalarFunction):
 
 
 cdef class Identity(ScalarFunction):
+    """Identity function: y = x."""
+
     def __cinit__(self):
         self._this.reset(new scalarfns.Identity())
 
@@ -319,6 +366,8 @@ cdef class Identity(ScalarFunction):
 
 
 cdef class Constant(ScalarFunction):
+    """Constant function: y = offset."""
+
     def __cinit__(self, double offset):
         self._this.reset(new scalarfns.Constant(offset))
 
@@ -331,6 +380,8 @@ cdef class Constant(ScalarFunction):
 
 
 cdef class Power(ScalarFunction):
+    """Power function: y = prefac*x**power."""
+
     def __cinit__(self, double prefac, double power):
         self._this.reset(new scalarfns.Power(prefac, power))
 
@@ -347,6 +398,8 @@ cdef class Power(ScalarFunction):
 
 
 cdef class Rational(ScalarFunction):
+    """Rational function: y = prefac*x/(1 + x/root)."""
+
     def __cinit__(self, double prefac, double root):
         self._this.reset(new scalarfns.Rational(prefac, root))
 
@@ -363,47 +416,59 @@ cdef class Rational(ScalarFunction):
 
 
 cdef class Spline(ScalarFunction):
+    """Abstract base class for all splines."""
+
     def __init__(self, npoint):
         raise RuntimeError("Cannot instantiate abstract base class Spline.")
 
     property npoint:
         def __get__(self):
+            """Number of grid points."""
             return deref(<scalarfns.Spline*?>self._this.get()).npoint()
 
     property values:
         def __get__(self):
+            """Function values at the grid points that parameterize the spline."""
             cdef double* ptr = deref(<scalarfns.Spline*?>self._this.get()).values()
             if ptr != NULL:
                 return np.asarray(<np.float64_t[:self.npoint:1]>ptr)
 
     property derivs:
         def __get__(self):
+            """Derivatives values at the grid points that parameterize the spline."""
             cdef double* ptr = deref(<scalarfns.Spline*?>self._this.get()).derivs()
             if ptr != NULL:
                 return np.asarray(<np.float64_t[:self.npoint:1]>ptr)
 
     property derivs2:
         def __get__(self):
+            """Second derivatives values at the grid points that parameterize the spline."""
             cdef double* ptr = deref(<scalarfns.Spline*?>self._this.get()).derivs2()
             if ptr != NULL:
                 return np.asarray(<np.float64_t[:self.npoint:1]>ptr)
 
     property left:
         def __get__(self):
+            """Left-most grid point."""
             return deref(<scalarfns.Spline*?>self._this.get()).left()
 
     property right:
         def __get__(self):
+            """Right-most grid point."""
             return deref(<scalarfns.Spline*?>self._this.get()).right()
 
     def x(self, size_t index):
+        """Position of grid point with given index, in [0, npoint - 1]."""
         return deref(<scalarfns.Spline*?>self._this.get()).x(index)
 
     def fit_derivs(self):
+        """Fit the derivatives of a natural cubic spline, using the function values."""
         deref(<scalarfns.Spline*?>self._this.get()).fit_derivs()
 
 
 cdef class UniformCubicSpline(Spline):
+    """Cubic spline with grid points [0.0, 1.0, ... npoint - 1]."""
+
     def __cinit__(self, np.float64_t[::1] values not None, np.float64_t[::1] derivs=None):
         cdef size_t npoint = values.shape[0]
         if derivs is None:
@@ -418,6 +483,16 @@ cdef class UniformCubicSpline(Spline):
 
 
 cdef class Composed(ScalarFunction):
+    """Composition of spline and additional functions.
+
+    Central to the composed function is a spline, for now only an instance
+    UniformCubicSpline. For a given value x, the composed function is computed as:
+
+    - if x < x_transform.value_inv(0) : right_extra(x)
+    - if x > x_transform.value_inv(npoint - 1) : left_extra(x)
+    - else : y_transform.value(spline.value(x_transform.value_inv(x)))
+    """
+
     def __cinit__(self, ScalarFunction x_transform, ScalarFunction y_transform,
                   ScalarFunction left_extra, ScalarFunction right_extra,
                   np.float64_t[::1] values not None, np.float64_t[::1] derivs=None):
@@ -453,20 +528,25 @@ cdef class Composed(ScalarFunction):
 
     property spline:
         def __get__(self):
+            """Spline used in the composed function."""
             return self._spline
 
     property x_transform:
         def __get__(self):
+            """Transformation from spline x coordinate to composed x coordinate."""
             return self._x_transform
 
     property y_transform:
         def __get__(self):
+            """Transformation from spline y coordinate to composed y coordinate."""
             return self._y_transform
 
     property left_extra:
         def __get__(self):
+            """Extrapolation to the left of the spline."""
             return self._left_extra
 
     property right_extra:
         def __get__(self):
+            """Extrapolation to the right of the spline."""
             return self._right_extra
