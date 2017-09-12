@@ -38,7 +38,7 @@ namespace qcgrids {
 
 class CellgridPoint {
  public:
-  CellgridPoint(const double* cart, const double weight, const int index);
+    CellgridPoint(const double* cart, const double weight, const int index);
   CellgridPoint() : cart_{0.0, 0.0, 0.0}, icell_{0, 0, 0}, weight_(0.0), index_(0) {}
 
   double cart_[3];
