@@ -63,7 +63,7 @@ Build and install (into home directory):
 
     ./setup.py build_ext -L${LD_LIBRARY_PATH}
     ./setup.py install --user
-    
+
 .. |Travis| image:: https://travis-ci.org/theochem/qcgrids.svg?branch=master
     :target: https://travis-ci.org/theochem/qcgrids
 .. |Codecov| image:: https://img.shields.io/codecov/c/github/theochem/qcgrids/master.svg
@@ -74,4 +74,3 @@ Build and install (into home directory):
     :target: https://anaconda.org/theochem/python-qcgrids
 .. |CondaVersion| image:: https://img.shields.io/conda/pn/theochem/qcgrids.svg
     :target: https://anaconda.org/theochem/qcgrids
-
