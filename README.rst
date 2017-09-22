@@ -1,3 +1,9 @@
+|Travis|
+|Conda|
+|PythonConda|
+|Codecov|
+|CondaVersion|
+
 QCGrids is a numerical integration library for quantum chemistry.
 
 Dependencies
@@ -57,3 +63,15 @@ Build and install (into home directory):
 
     ./setup.py build_ext -L${LD_LIBRARY_PATH}
     ./setup.py install --user
+    
+.. |Travis| image:: https://travis-ci.org/theochem/qcgrids.svg?branch=master
+    :target: https://travis-ci.org/theochem/qcgrids
+.. |Codecov| image:: https://img.shields.io/codecov/c/github/theochem/qcgrids/master.svg
+    :target: https://codecov.io/gh/theochem/qcgrids
+.. |Conda| image:: https://img.shields.io/conda/v/theochem/qcgrids.svg
+    :target: https://anaconda.org/theochem/qcgrids
+.. |PythonConda| image:: https://img.shields.io/conda/vn/theochem/python-qcgrids.svg
+    :target: https://anaconda.org/theochem/python-qcgrids
+.. |CondaVersion| image:: https://img.shields.io/conda/pn/theochem/qcgrids.svg
+    :target: https://anaconda.org/theochem/qcgrids
+
