@@ -19,7 +19,7 @@
 # --
 #
 # Needed for coverage analysis:
-# cython: linetrace=True
+# cython: linetrace=True, embedsignature=True
 '''Python wrapper for the QCGrids library'''
 
 
