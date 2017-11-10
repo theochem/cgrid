@@ -91,9 +91,8 @@ install:
 
 # Configure conda and get a few essentials
 - conda config --set always_yes yes
-- conda config --add channels theochem
 - conda install -q conda conda-build
-
+- conda config --add channels theochem
 
 # Set the version info from the git tag
 - git fetch origin --tags &&
@@ -116,6 +115,9 @@ install:
 # dependencies on metal.yaml and setup.py, unless setup.py already imports them.
 # Install conda tools for packaging and uploading
 - conda install -q python=${MYCONDAPY} cppcheck doxygen anaconda-client ${CONDA_DEPENDENCIES}
+# Deactivate build env and reactivate it to refresh compilers.
+- source deactivate && source $HOME/miniconda/bin/activate
+- hash -r
 # Install more recent stuff with pip
 - pip install --upgrade pylint codecov coverage pycodestyle pydocstyle
 # Get the latest cpplint
@@ -123,6 +125,7 @@ install:
   chmod +x cpplint.py
 # Show conda info for debugging
 - conda info -a
+
 
 # Install the latest cardboardlinter
 - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
