@@ -19,6 +19,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 # --
 
+import os
 import numpy as np
 from distutils.core import setup
 from distutils.extension import Extension
@@ -34,6 +35,11 @@ def get_version():
     """
     with open('qcgrids/version.py', 'r') as f:
         return f.read().split('=')[-1].replace('\'', '').strip()
+
+
+def get_cxxflags():
+    """If the CXXFLAGS variable is defined (clang/osx) then get it."""
+    return os.environ.get("CXXFLAGS", "").split()
 
 
 def parse_cpath():
@@ -59,6 +65,6 @@ setup(
             depends=['qcgrids/ext.pxd', 'qcgrids/cellgrid.pxd'],
             libraries=['qcgrids'],
             include_dirs=[np.get_include()],
-            extra_compile_args=['-std=c++11', '-Wall'],
+            extra_compile_args=extra_compile_args=get_cxxflags() or ['-std=c++11', '-Wall'],
             language="c++")],
 )

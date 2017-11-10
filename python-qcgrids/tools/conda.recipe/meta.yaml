@@ -22,7 +22,8 @@ requirements:
     - qcgrids
     - setuptools
     - nose
-    - gcc
+    - {{ compiler("cxx") }}
+    - {{ compiler("c") }}
   run:
     - cellcutoff
     - python-cellcutoff
@@ -30,7 +31,6 @@ requirements:
     - python
     - numpy
     - nose
-    - libgcc
 
 about:
   description: A numerical integration library for quantum chemistry
