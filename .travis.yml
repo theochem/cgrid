@@ -173,7 +173,7 @@ script:
 
 # Make CPP and PY source package for github deployment
 - if [[ $TRAVIS_TAG ]]; then
-    (cd debug; make sdist) &&
+    (mkdir dist; cd dist; CMAKE_PREFIX_PATH=$HOME/miniconda cmake ..; make sdist) &&
     (cd ${PYDIR}; python setup.py sdist);
   fi
 
@@ -194,7 +194,7 @@ deploy:
   skip_cleanup: true
   api_key: ${GITHUB_TOKEN}
   file:
-  - debug/${CONDA_PKG_NAME_CPP}-${TRAVIS_TAG}.tar.gz
+  - dist/${CONDA_PKG_NAME_CPP}-${TRAVIS_TAG}.tar.gz
   - ${PYDIR}/dist/${CONDA_PKG_NAME_PY}-${TRAVIS_TAG}.tar.gz
   on:
     repo: ${GITHUB_REPO_NAME}
@@ -206,7 +206,7 @@ deploy:
   skip_cleanup: true
   api_key: ${GITHUB_TOKEN}
   file:
-  - debug/${CONDA_PKG_NAME_CPP}-${TRAVIS_TAG}.tar.gz
+  - dist/${CONDA_PKG_NAME_CPP}-${TRAVIS_TAG}.tar.gz
   - ${PYDIR}/dist/${CONDA_PKG_NAME_PY}-${TRAVIS_TAG}.tar.gz
   on:
     repo: ${GITHUB_REPO_NAME}
@@ -223,4 +223,4 @@ deploy:
   on:
     repo: ${GITHUB_REPO_NAME}
     tags: true
-    condition: "$TRAVIS_TAG == *a*"
+    condition: "$TRAVIS_TAG != *[ab]*"
