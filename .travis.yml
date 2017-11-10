@@ -21,7 +21,7 @@ language: generic
 os:
 - linux
 - osx
-osx_image: xcode6.4
+osx_image: xcode8.3
 dist: trusty
 sudo: false
 
@@ -151,7 +151,7 @@ script:
     conda uninstall ${CONDA_PKG_NAME_PY} &&
     conda uninstall ${CONDA_PKG_NAME_CPP};
   else
-    (mkdir debug; cd debug; cmake -DCMAKE_BUILD_TYPE=debug ..; make) &&
+    (mkdir debug; cd debug; CMAKE_PREFIX_PATH=$HOME/miniconda cmake -DCMAKE_BUILD_TYPE=debug ..; VERBOSE=1 make) &&
     (cd debug; ./${PROJECT_NAME}/tests/test_${PROJECT_NAME}) &&
 
     if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
