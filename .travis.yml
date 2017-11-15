@@ -186,7 +186,7 @@ after_success:
 
 before_deploy:
 # Try to set some env vars to configure deployment.
-  - export ANACONDA_LABEL_ARG=$(sed -e 's/.*a.*/-l alpha/' -e 's/.*b.*/-l beta/' <<< ${TRAVIS_TAG})
+  - export ANACONDA_LABEL_ARG=$(sed -e 's/.*a.*/alpha/' -e 's/.*b.*/beta/' <<< ${TRAVIS_TAG})
 
 # In deployment, the env var TRAVIS_TAG contains the name of the current tag, if any.
 deploy:
@@ -217,7 +217,7 @@ deploy:
 - provider: script
   skip_cleanup: true
   script:
-    anaconda -t $ANACONDA_TOKEN upload --force ${ANACONDA_LABEL_ARG}
+    anaconda -t $ANACONDA_TOKEN upload --force -l ${ANACONDA_LABEL_ARG}
     ${HOME}/miniconda/conda-bld/*/${CONDA_PKG_NAME_CPP}-*.tar.bz2
     ${HOME}/miniconda/conda-bld/*/${CONDA_PKG_NAME_PY}-*.tar.bz2
   on:
