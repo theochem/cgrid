@@ -28,6 +28,38 @@ set(QCGRIDS_VERSION ${GIT_TAG_VERSION})
 set(QCGRIDS_SOVERSION ${GIT_TAG_SOVERSION})
 set(PROJECT_BRIEF "A numerical integration library for quantum chemistry.")
 
+# The googletest snippets were taken from:
+#    http://crascit.com/2015/07/25/cmake-gtest/
+# and modified to work with googletest-1.8.0 instead of the latest git revision.
+
+# Download and unpack googletest at configure time
+configure_file(CMakeListsGTest.txt.in
+               googletest-download/CMakeLists.txt)
+execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/googletest-download)
+execute_process(COMMAND ${CMAKE_COMMAND} --build .
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/googletest-download)
+
+# Add googletest directly to our build. This adds the following targets: gtest,
+# gtest_main, gmock and gmock_main
+add_subdirectory(${CMAKE_BINARY_DIR}/googletest-src
+                 ${CMAKE_BINARY_DIR}/googletest-build
+                 EXCLUDE_FROM_ALL )
+
+# NOTE: A change request has been submitted to the GoogleTest
+#       project to remove the need for the following lines.
+#       They add the gtest and gmock include directories as
+#       target dependencies, since they are not added by
+#       googletest (yet).
+target_include_directories(gtest INTERFACE
+    "${CMAKE_BINARY_DIR}/googletest-src/include")
+target_include_directories(gtest_main INTERFACE
+    "${CMAKE_BINARY_DIR}/googletest-src/include")
+
+# # Only switch this one when done with googletest.
+# set(CMAKE_VERBOSE_MAKEFILE "ON")
+
+
 # General compiler flags
 set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wconversion -Wextra")
 
