@@ -217,10 +217,9 @@ deploy:
 - provider: script
   skip_cleanup: true
   script:
-    anaconda -t $ANACONDA_TOKEN upload --force ${ANACONDA_LABEL_ARG}
+    anaconda -t $ANACONDA_TOKEN upload --force -l ${ANACONDA_LABEL_ARG}
     ${HOME}/miniconda/conda-bld/*/${CONDA_PKG_NAME_CPP}-*.tar.bz2
     ${HOME}/miniconda/conda-bld/*/${CONDA_PKG_NAME_PY}-*.tar.bz2
   on:
     repo: ${GITHUB_REPO_NAME}
     tags: true
-    condition: "$TRAVIS_TAG != *[ab]*"
