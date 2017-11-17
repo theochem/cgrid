@@ -15,6 +15,7 @@ requirements:
   build:
     - cmake
     - {{ compiler("cxx") }}
+    - {{ compiler("c") }}
     - cellcutoff
   run:
     - cellcutoff
