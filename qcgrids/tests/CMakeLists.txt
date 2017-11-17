@@ -29,7 +29,11 @@ add_executable(test_qcgrids ${TEST_SOURCE_FILES})
 set_property(TARGET test_qcgrids PROPERTY CXX_STANDARD 11)
 
 # How the testing executable has to be linked...
-target_link_libraries(test_qcgrids qcgrids ${CELLCUTOFF_LIBRARY} gtest gtest_main gcov pthread)
+if(UNIX AND NOT APPLE)
+  set(GCOV gcov)
+endif()
+
+target_link_libraries(test_qcgrids qcgrids ${CELLCUTOFF_LIBRARY} gtest gtest_main ${GCOV} pthread)
 
 # Install the test in libexec
 install (TARGETS test_qcgrids DESTINATION libexec/qcgrids)
