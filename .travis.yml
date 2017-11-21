@@ -186,7 +186,7 @@ after_success:
 
 before_deploy:
 # Try to set some env vars to configure deployment.
-  - export ANACONDA_LABEL_ARG=$(sed -e 's/.*a.*/dev/' -e 's/.*b.*/test/' -e 's/*.*.*/main/' <<< ${TRAVIS_TAG})
+  - export ANACONDA_LABEL_ARG=$(sed -e 's/.*a.*/dev/' -e 's/.*b.*/test/' -e 's/.*.*/main/' <<< ${TRAVIS_TAG})
 
 # In deployment, the env var TRAVIS_TAG contains the name of the current tag, if any.
 deploy:
