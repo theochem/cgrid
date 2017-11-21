@@ -158,7 +158,7 @@ script:
       cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic';
     fi &&
 
-    (cd ${PYDIR}; python setup.py build_ext -i --define CYTHON_TRACE_NOGIL) &&
+    (cd ${PYDIR}; PREFIX=$HOME/miniconda python setup.py build_ext -i --define CYTHON_TRACE_NOGIL) &&
     (cd ${PYDIR};
      LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../debug/${PROJECT_NAME} nosetests ${PROJECT_NAME}
          -v --detailed-errors --with-coverage --cover-package=${PROJECT_NAME}
