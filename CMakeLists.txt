@@ -92,7 +92,7 @@ endif(DOXYGEN_FOUND)
 
 set(CPACK_SOURCE_GENERATOR "TGZ")
 set(CPACK_SOURCE_PACKAGE_FILE_NAME
-  "cellcutoff-${CELLCUTOFF_VERSION}")
+  "qcgrids-${QCGRIDS_VERSION}")
 set(CPACK_SOURCE_IGNORE_FILES
   "/build/;/release/;/debug/;/.git/;/python-cellcutoff/;/HEADER/;${CPACK_SOURCE_IGNORE_FILES}")
 include(CPack)
