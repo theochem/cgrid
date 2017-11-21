@@ -41,27 +41,27 @@ install (TARGETS test_qcgrids DESTINATION libexec/qcgrids)
 # Use our own test target because ctest hides relevant output.
 if(QCGRIDS_DO_COVERAGE)
 add_custom_target(clean_coverage
-		  COMMAND ${PROJECT_SOURCE_DIR}/tools/coverage_clean.sh
-		  WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-		  COMMENT "Removing old coverage statistics")
+                  COMMAND ${PROJECT_SOURCE_DIR}/tools/coverage_clean.sh
+                  WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+                  COMMENT "Removing old coverage statistics")
 
 add_custom_target(check
-		  COMMAND test_qcgrids
-		  DEPENDS test_qcgrids clean_coverage
-		  COMMENT "Running tests")
+                  COMMAND test_qcgrids
+                  DEPENDS test_qcgrids clean_coverage
+                  COMMENT "Running tests")
 
 add_custom_target(coverage
-		  COMMAND ${PROJECT_SOURCE_DIR}/tools/coverage_analyze.py
-		  DEPENDS check
-		  WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-		  COMMENT "Coverage analysis")
+                  COMMAND ${PROJECT_SOURCE_DIR}/tools/coverage_analyze.py
+                  DEPENDS check
+                  WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+                  COMMENT "Coverage analysis")
 
 else()
 add_custom_target(check
-		  COMMAND test_qcgrids
-		  DEPENDS test_qcgrids
-		  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-		  COMMENT "Running tests")
+                  COMMAND test_qcgrids
+                  DEPENDS test_qcgrids
+                  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+                  COMMENT "Running tests")
 
 
 endif()
