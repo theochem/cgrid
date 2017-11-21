@@ -24,6 +24,7 @@ cmake_minimum_required(VERSION 3.1)
 project(QCGrids CXX)
 
 # Version information
+include(CMakeListsVersion.txt.in)
 set(QCGRIDS_VERSION ${GIT_TAG_VERSION})
 set(QCGRIDS_SOVERSION ${GIT_TAG_SOVERSION})
 set(PROJECT_BRIEF "A numerical integration library for quantum chemistry.")
@@ -91,9 +92,8 @@ if(DOXYGEN_FOUND)
 endif(DOXYGEN_FOUND)
 
 set(CPACK_SOURCE_GENERATOR "TGZ")
-set(CPACK_SOURCE_PACKAGE_FILE_NAME
-  "qcgrids-${QCGRIDS_VERSION}")
+set(CPACK_SOURCE_PACKAGE_FILE_NAME "qcgrids-${QCGRIDS_VERSION}")
 set(CPACK_SOURCE_IGNORE_FILES
-  "/build/;/release/;/debug/;/.git/;/python-cellcutoff/;/HEADER/;${CPACK_SOURCE_IGNORE_FILES}")
+  "/build/;/release/;/debug/;/.git/;/python-qcgrids/;/HEADER/;${CPACK_SOURCE_IGNORE_FILES}")
 include(CPack)
 add_custom_target(sdist COMMAND ${CMAKE_MAKE_PROGRAM} package_source)
