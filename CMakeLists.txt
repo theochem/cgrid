@@ -24,9 +24,42 @@ cmake_minimum_required(VERSION 3.1)
 project(QCGrids CXX)
 
 # Version information
+include(CMakeListsVersion.txt.in)
 set(QCGRIDS_VERSION ${GIT_TAG_VERSION})
 set(QCGRIDS_SOVERSION ${GIT_TAG_SOVERSION})
 set(PROJECT_BRIEF "A numerical integration library for quantum chemistry.")
+
+# The googletest snippets were taken from:
+#    http://crascit.com/2015/07/25/cmake-gtest/
+# and modified to work with googletest-1.8.0 instead of the latest git revision.
+
+# Download and unpack googletest at configure time
+configure_file(CMakeListsGTest.txt.in
+               googletest-download/CMakeLists.txt)
+execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/googletest-download)
+execute_process(COMMAND ${CMAKE_COMMAND} --build .
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/googletest-download)
+
+# Add googletest directly to our build. This adds the following targets: gtest,
+# gtest_main, gmock and gmock_main
+add_subdirectory(${CMAKE_BINARY_DIR}/googletest-src
+                 ${CMAKE_BINARY_DIR}/googletest-build
+                 EXCLUDE_FROM_ALL )
+
+# NOTE: A change request has been submitted to the GoogleTest
+#       project to remove the need for the following lines.
+#       They add the gtest and gmock include directories as
+#       target dependencies, since they are not added by
+#       googletest (yet).
+target_include_directories(gtest INTERFACE
+    "${CMAKE_BINARY_DIR}/googletest-src/include")
+target_include_directories(gtest_main INTERFACE
+    "${CMAKE_BINARY_DIR}/googletest-src/include")
+
+# # Only switch this one when done with googletest.
+# set(CMAKE_VERBOSE_MAKEFILE "ON")
+
 
 # General compiler flags
 set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wconversion -Wextra")
@@ -41,6 +74,8 @@ if(CMAKE_BUILD_TYPE STREQUAL "DEBUG")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -coverage")
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_CXX_FLAGS} -coverage")
         set(QCGRIDS_DO_COVERAGE "ON")
+        # Google test uses comparisons between signed and unsigned ...
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-sign-compare")
     endif()
 endif()
 
@@ -57,9 +92,8 @@ if(DOXYGEN_FOUND)
 endif(DOXYGEN_FOUND)
 
 set(CPACK_SOURCE_GENERATOR "TGZ")
-set(CPACK_SOURCE_PACKAGE_FILE_NAME
-  "cellcutoff-${CELLCUTOFF_VERSION}")
+set(CPACK_SOURCE_PACKAGE_FILE_NAME "qcgrids-${QCGRIDS_VERSION}")
 set(CPACK_SOURCE_IGNORE_FILES
-  "/build/;/release/;/debug/;/.git/;/python-cellcutoff/;/HEADER/;${CPACK_SOURCE_IGNORE_FILES}")
+  "/build/;/release/;/debug/;/.git/;/python-qcgrids/;/HEADER/;${CPACK_SOURCE_IGNORE_FILES}")
 include(CPack)
 add_custom_target(sdist COMMAND ${CMAKE_MAKE_PROGRAM} package_source)

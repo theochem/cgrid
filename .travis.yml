@@ -21,7 +21,7 @@ language: generic
 os:
 - linux
 - osx
-osx_image: xcode6.4
+osx_image: xcode8.3
 dist: trusty
 sudo: false
 
@@ -91,9 +91,8 @@ install:
 
 # Configure conda and get a few essentials
 - conda config --set always_yes yes
-- conda config --add channels theochem
 - conda install -q conda conda-build
-
+- conda config --add channels theochem
 
 # Set the version info from the git tag
 - git fetch origin --tags &&
@@ -116,6 +115,8 @@ install:
 # dependencies on metal.yaml and setup.py, unless setup.py already imports them.
 # Install conda tools for packaging and uploading
 - conda install -q python=${MYCONDAPY} cppcheck doxygen anaconda-client ${CONDA_DEPENDENCIES}
+# Deactivate build env and reactivate it to refresh compilers.
+- source deactivate && source $HOME/miniconda/bin/activate
 # Install more recent stuff with pip
 - pip install --upgrade pylint codecov coverage pycodestyle pydocstyle
 # Get the latest cpplint
@@ -123,6 +124,7 @@ install:
   chmod +x cpplint.py
 # Show conda info for debugging
 - conda info -a
+
 
 # Install the latest cardboardlinter
 - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
@@ -148,14 +150,14 @@ script:
     conda uninstall ${CONDA_PKG_NAME_PY} &&
     conda uninstall ${CONDA_PKG_NAME_CPP};
   else
-    (mkdir debug; cd debug; cmake -DCMAKE_BUILD_TYPE=debug ..; make) &&
+    (mkdir debug; cd debug; CMAKE_PREFIX_PATH=$HOME/miniconda cmake -DCMAKE_BUILD_TYPE=debug ..; VERBOSE=1 make) &&
     (cd debug; ./${PROJECT_NAME}/tests/test_${PROJECT_NAME}) &&
 
     if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
       cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic';
     fi &&
 
-    (cd ${PYDIR}; python setup.py build_ext -i --define CYTHON_TRACE_NOGIL) &&
+    (cd ${PYDIR}; PREFIX=$HOME/miniconda python setup.py build_ext -i --define CYTHON_TRACE_NOGIL) &&
     (cd ${PYDIR};
      LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../debug/${PROJECT_NAME} nosetests ${PROJECT_NAME}
          -v --detailed-errors --with-coverage --cover-package=${PROJECT_NAME}
@@ -170,7 +172,7 @@ script:
 
 # Make CPP and PY source package for github deployment
 - if [[ $TRAVIS_TAG ]]; then
-    (cd debug; make sdist) &&
+    (mkdir dist; cd dist; CMAKE_PREFIX_PATH=$HOME/miniconda cmake ..; make sdist) &&
     (cd ${PYDIR}; python setup.py sdist);
   fi
 
@@ -183,7 +185,7 @@ after_success:
 
 before_deploy:
 # Try to set some env vars to configure deployment.
-  - export ANACONDA_LABEL_ARG=$(sed -e 's/.*a.*/-l alpha/' -e 's/.*b.*/-l beta/' <<< ${TRAVIS_TAG})
+  - export ANACONDA_LABEL_ARG=$(sed -e 's/.*a.*/dev/' -e 's/.*b.*/test/' -e 's/.*.*/main/' <<< ${TRAVIS_TAG})
 
 # In deployment, the env var TRAVIS_TAG contains the name of the current tag, if any.
 deploy:
@@ -191,7 +193,7 @@ deploy:
   skip_cleanup: true
   api_key: ${GITHUB_TOKEN}
   file:
-  - debug/${CONDA_PKG_NAME_CPP}-${TRAVIS_TAG}.tar.gz
+  - dist/${CONDA_PKG_NAME_CPP}-${TRAVIS_TAG}.tar.gz
   - ${PYDIR}/dist/${CONDA_PKG_NAME_PY}-${TRAVIS_TAG}.tar.gz
   on:
     repo: ${GITHUB_REPO_NAME}
@@ -203,7 +205,7 @@ deploy:
   skip_cleanup: true
   api_key: ${GITHUB_TOKEN}
   file:
-  - debug/${CONDA_PKG_NAME_CPP}-${TRAVIS_TAG}.tar.gz
+  - dist/${CONDA_PKG_NAME_CPP}-${TRAVIS_TAG}.tar.gz
   - ${PYDIR}/dist/${CONDA_PKG_NAME_PY}-${TRAVIS_TAG}.tar.gz
   on:
     repo: ${GITHUB_REPO_NAME}
@@ -214,10 +216,9 @@ deploy:
 - provider: script
   skip_cleanup: true
   script:
-    anaconda -t $ANACONDA_TOKEN upload --force ${ANACONDA_LABEL_ARG}
+    anaconda -t $ANACONDA_TOKEN upload --force -l ${ANACONDA_LABEL_ARG}
     ${HOME}/miniconda/conda-bld/*/${CONDA_PKG_NAME_CPP}-*.tar.bz2
     ${HOME}/miniconda/conda-bld/*/${CONDA_PKG_NAME_PY}-*.tar.bz2
   on:
     repo: ${GITHUB_REPO_NAME}
     tags: true
-    condition: "$TRAVIS_TAG == *a*"

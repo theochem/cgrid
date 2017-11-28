@@ -14,11 +14,10 @@ build:
 requirements:
   build:
     - cmake
-    - gcc
-    - gtest
+    - {{ compiler("cxx") }}
+    - {{ compiler("c") }}
     - cellcutoff
   run:
-    - libgcc
     - cellcutoff
 
 about:
