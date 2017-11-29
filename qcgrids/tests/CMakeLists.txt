@@ -29,6 +29,8 @@ ${CMAKE_CURRENT_SOURCE_DIR}/common.cpp
 # The testing executable
 add_executable(test_qcgrids ${TEST_SOURCE_FILES})
 set_property(TARGET test_qcgrids PROPERTY CXX_STANDARD 11)
+# Google test uses many tricks that generate warnings, which we cannot be fixed easily.
+set_property(TARGET test_qcgrids PROPERTY COMPILE_FLAGS -Wno-error)
 
 # How the testing executable has to be linked...
 if(UNIX AND NOT APPLE)
