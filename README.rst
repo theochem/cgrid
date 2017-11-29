@@ -10,7 +10,7 @@ Dependencies
 ============
 
 -  celllists, python-celllists
--  C++11 compiler (tested: GNU and Intel)
+-  C++11 compiler (tested: GNU and Clang)
 -  Python, >=2.7.x, <3.x
 -  Numpy, >1.9
 -  Cython, >= 0.24.1
