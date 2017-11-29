@@ -21,6 +21,7 @@
 cimport cellcutoff.cell
 from libcpp.vector cimport vector
 
+
 cdef extern from "qcgrids/cellgrid.h" namespace "qcgrids":
     cdef cppclass CellgridPoint:
         CellgridPoint(const double* cart, const double weight, const int index);

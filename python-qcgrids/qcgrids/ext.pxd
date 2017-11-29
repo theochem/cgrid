@@ -19,7 +19,10 @@
 # --
 
 
+from libcpp.memory cimport unique_ptr
+
 cimport cellgrid
+cimport scalarfns
 
 
 cdef class GridFunc:
@@ -29,3 +32,51 @@ cdef class GridFunc:
 
 cdef class Cellgrid:
     cdef cellgrid.Cellgrid* _this
+
+
+cdef class ScalarFunction:
+    cdef unique_ptr[scalarfns.ScalarFunction] _this
+
+
+cdef class Exp(ScalarFunction):
+    pass
+
+
+cdef class Ln(ScalarFunction):
+    pass
+
+
+cdef class Linear(ScalarFunction):
+    pass
+
+
+cdef class Identity(ScalarFunction):
+    pass
+
+
+cdef class Constant(ScalarFunction):
+    pass
+
+
+cdef class Power(ScalarFunction):
+    pass
+
+
+cdef class Rational(ScalarFunction):
+    pass
+
+
+cdef class Spline(ScalarFunction):
+    pass
+
+
+cdef class UniformCubicSpline(Spline):
+    pass
+
+
+cdef class Composed(ScalarFunction):
+    cdef Spline _spline
+    cdef ScalarFunction _x_transform
+    cdef ScalarFunction _y_transform
+    cdef ScalarFunction _left_extra
+    cdef ScalarFunction _right_extra

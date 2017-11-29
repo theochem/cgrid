@@ -18,8 +18,10 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 # --
 
+
 # Define test source files
 set(TEST_SOURCE_FILES
+${CMAKE_CURRENT_SOURCE_DIR}/test_scalarfns.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/test_supergrid.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/common.cpp
 )
@@ -27,6 +29,8 @@ ${CMAKE_CURRENT_SOURCE_DIR}/common.cpp
 # The testing executable
 add_executable(test_qcgrids ${TEST_SOURCE_FILES})
 set_property(TARGET test_qcgrids PROPERTY CXX_STANDARD 11)
+# Google test uses many tricks that generate warnings, which cannot be fixed easily.
+set_property(TARGET test_qcgrids PROPERTY COMPILE_FLAGS -Wno-error)
 
 # How the testing executable has to be linked...
 if(UNIX AND NOT APPLE)
@@ -44,4 +48,3 @@ add_custom_target(check
                   DEPENDS test_qcgrids
                   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
                   COMMENT "Running tests")
-
