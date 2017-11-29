@@ -74,8 +74,9 @@ if(CMAKE_BUILD_TYPE STREQUAL "DEBUG")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -coverage")
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_CXX_FLAGS} -coverage")
         set(QCGRIDS_DO_COVERAGE "ON")
-        # Google test uses comparisons between signed and unsigned ...
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-sign-compare")
+        # Google test uses comparisons between signed and unsigned.
+        # Google test uses variadic macros that are not compliant with C++11.
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-sign-compare -Wno-variadic-macros")
     endif()
 endif()
 

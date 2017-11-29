@@ -136,10 +136,6 @@ const double spline_input2[3] = {-0.1, 1.2, 2.0};
 qcg::UniformCubicSpline spline3(3, spline_input1, spline_input2);
 qcg::Composed composed_case1(&spline3, &exp_case1, &exp_case2, &linear_case, &identity_case);
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wgnu-zero-variadic-macro-arguments"
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wvariadic-macros"
 INSTANTIATE_TEST_CASE_P(Examples, ScalarFunctionTest, ::testing::Values(
   SFTestParams(&exp_case1, 1.2, exp(0.5*1.2 + 1.5)),
   SFTestParams(&exp_case2, 0.2, exp(0.1*0.2 + 2.5)),
@@ -159,9 +155,6 @@ INSTANTIATE_TEST_CASE_P(Examples, ScalarFunctionTest, ::testing::Values(
   SFTestParams(&composed_case1, -0.5, 0.4*(-0.5) + 1.2),
   SFTestParams(&composed_case1, 15.5, 15.5)
 ));
-#pragma GCC diagnostic pop
-#pragma clang diagnostic pop
-
 
 TEST(ScalarFunctionTest, corner_cases) {
   EXPECT_NEAR(power_case1.value(0.0), 0.0, EPS);
