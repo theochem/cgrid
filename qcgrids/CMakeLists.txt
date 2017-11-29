@@ -25,10 +25,13 @@ configure_file (
   ${CMAKE_CURRENT_BINARY_DIR}/config.h
 )
 
+# Find cellcutoff include
+find_path(CELL_INCLUDE_PATH cellcutoff/cell.h)
+
 # Explain that the current directory has to be in the source path/
 # This allows use to use include "qcgrids/foo.h", which is consistent
 # with the way external programs would compile against qcgrids.
-include_directories(${PROJECT_SOURCE_DIR})
+include_directories(${PROJECT_SOURCE_DIR} ${CELL_INCLUDE_PATH})
 
 # Define source files
 set(SOURCE_FILES

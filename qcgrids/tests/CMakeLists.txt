@@ -18,39 +18,31 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 # --
 
-# Make use of the GTest CMake module
-find_package(GTest)
 
-if(GTEST_FOUND)
-    # Make sure the header files are found
-    include_directories(${GTEST_INCLUDE_DIRS})
+# Define test source files
+set(TEST_SOURCE_FILES
+${CMAKE_CURRENT_SOURCE_DIR}/test_scalarfns.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/test_supergrid.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/common.cpp
+)
 
-    # Find the cellcutoff library. Let's be nice with manually compiled stuff in
-    # LD_LIBRARY_PATH...
-    find_library(CELLCUTOFF_LIBRARY cellcutoff
-                 HINTS ENV LD_LIBRARY_PATH)
+# The testing executable
+add_executable(test_qcgrids ${TEST_SOURCE_FILES})
+set_property(TARGET test_qcgrids PROPERTY CXX_STANDARD 11)
 
-    # Define test source files
-    set(TEST_SOURCE_FILES
-      ${CMAKE_CURRENT_SOURCE_DIR}/test_scalarfns.cpp
-      ${CMAKE_CURRENT_SOURCE_DIR}/test_supergrid.cpp
-      ${CMAKE_CURRENT_SOURCE_DIR}/common.cpp
-    )
-
-    # The testing executable
-    add_executable(test_qcgrids ${TEST_SOURCE_FILES})
-    set_property(TARGET test_qcgrids PROPERTY CXX_STANDARD 11)
-
-    # How the testing executable has to be linked...
-    target_link_libraries(test_qcgrids qcgrids ${CELLCUTOFF_LIBRARY} ${GTEST_BOTH_LIBRARIES} gcov pthread)
-
-    # Install the test in libexec
-    install (TARGETS test_qcgrids DESTINATION libexec/qcgrids)
-
-    # Use our own test target because ctest hides relevant output.
-    add_custom_target(check
-                      COMMAND test_qcgrids
-                      DEPENDS test_qcgrids
-                      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-                      COMMENT "Running tests")
+# How the testing executable has to be linked...
+if(UNIX AND NOT APPLE)
+  set(GCOV gcov)
 endif()
+
+target_link_libraries(test_qcgrids qcgrids ${CELLCUTOFF_LIBRARY} gtest gtest_main ${GCOV} pthread)
+
+# Install the test in libexec
+install (TARGETS test_qcgrids DESTINATION libexec/qcgrids)
+
+# Use our own test target because ctest hides relevant output.
+add_custom_target(check
+                  COMMAND test_qcgrids
+                  DEPENDS test_qcgrids
+                  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+                  COMMENT "Running tests")

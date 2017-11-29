@@ -19,6 +19,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 # --
 
+import os
 import numpy as np
 from distutils.core import setup
 from distutils.extension import Extension
@@ -36,9 +37,18 @@ def get_version():
         return f.read().split('=')[-1].replace('\'', '').strip()
 
 
-def parse_cpath():
-    import os
-    return [s for s in os.getenv('CPATH').split(':') if len(s) > 0]
+def get_cxxflags():
+    """If the CXXFLAGS variable is defined (clang/osx) then get it."""
+    return os.environ.get("CXXFLAGS", "").split()
+
+
+def get_include_path():
+    """If the PREFIX variable is defined (conda) then get the conda include prefix."""
+    prefix = os.environ.get("PREFIX", "")
+    if prefix:
+        return [os.path.join(prefix, "include")]
+    else:
+        return []
 
 
 setup(
@@ -58,7 +68,7 @@ setup(
             sources=['qcgrids/ext.pyx'],
             depends=['qcgrids/ext.pxd', 'qcgrids/cellgrid.pxd', 'qcgrids/scalarfns.pxd'],
             libraries=['qcgrids'],
-            include_dirs=[np.get_include()],
-            extra_compile_args=['-std=c++11', '-Wall'],
+            include_dirs=[np.get_include()] + get_include_path(),
+            extra_compile_args=get_cxxflags() or ['-std=c++11', '-Wall'],
             language="c++")],
 )
