@@ -1,0 +1,21 @@
+linters:
+  - header:
+      filefilter: ['+ *.py', '+ *.pyx', '+ *.pxd']
+      shebang: '#!/usr/bin/env python3'
+      extra: []
+  - import:
+      packages: ['cgrid']
+  - namespace:
+      filefilter: ['- */__init__.py', '- */test_*.py', '- *setup.py', '+ *.py', '+ *.pyx']
+  - pylint:
+  - pycodestyle:
+      config: .pycodestylerc
+  - autopep8:
+      config: .pycodestylerc
+      line-range: [79, 100]
+  - pydocstyle:
+  - whitespace:
+  - yamllint:
+      filefilter: ['- *conda.recipe/meta.yaml', '+ *.yml', '+ *.yaml']
+  - rst-lint:
+      filefilter: ['- doc*', '+ *.rst']

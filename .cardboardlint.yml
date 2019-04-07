@@ -1,14 +1,21 @@
-pre_filefilter: ['- python-qcgrids', '+ *']
+pre_filefilter: ['- python-cgrid*', '+ *']
 
 linters:
   - cppcheck:
   - cpplint:
-      script: ./cpplint.py
+      filter: '-build/include_order,-runtime/int'
   - doxygen:
   - header:
+      filefilter: ['+ *.py', '+ *.pyx', '+ *.pxd', '+ CMakeLists*.txt']
+      shebang: '#!/usr/bin/env python3'
+      extra: []
   - header:
       filefilter: ['+ *.cpp', '+ *.h', '+ *.h.in']
       comment: '// '
       shebang:
       extra: []
   - whitespace:
+  - yamllint:
+      filefilter: ['- *conda.recipe/meta.yaml', '+ *.yml', '+ *.yaml']
+  - rst-lint:
+      filefilter: ['- doc*', '+ *.rst']
