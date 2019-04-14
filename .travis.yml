@@ -42,10 +42,10 @@ env:
 
     # GITHUB_TOKEN
     # yamllint disable-line rule:line-length
-    - secure: ""
+    - secure: "Gohg3DOI7VAPBLspY8uxtF65FS1rmuclRD5+9ZVYel0Dd87tZTfT9b47gCJ/YVkdP52pzw+wgdILFsdE613az96oCaHy38EmcyA39OpjS4450s4YEEFHDX+0yR5HnyPPCbJ1X/J37jkvbvop0Or/OHauNvPS46l6dEfJWNxDPEitfNuBB905zlkZGZozPj4P9Yl0ic1+TmoDIK+WreqknlHhyYBsKsJbjjrdYNibuS4JlSZv9Q4OHNQ8YI3rEyDWXm3L1Xyace4/mrc05ghJzK73AnlsYAi2zby4ToUDDsA8guDyjdGaUkQ3RIjqh+dBliysFZ4iOzzLlLnUb9y4IHKJrvzJrYde5QCiY8mOuttV97klygsVGv7RCmfs5pR5TUOiQirO4z0t831A01NBPLsCDRZsFxZ7z5Lv9LoAgh2PzSL8jraa2DUj9Z8ZIH5Q0uCQYy7T0ZpQq+EPr7paIJycGwDy/n0WPo3Rluovn0vNa0FkXLnLbzL4Qvkjyt11MzPQZYGCJTxvFqMfXtAvLkTkA9ugl0AwuU2f3FDBoYp6yc9dLW/WDbcqlIfIxmfmX2h1qRU1VtjTfex7YThtUGuhFYTT93LqBI3+yB5Sfdy8FJz5c2FuE2mzB+HnFYQ374B0J0IUOzy8de0Ng4aspw+n4BCHDJPTkNks8TnfvmU="
     # ANACONDA_API_TOKEN
     # yamllint disable-line rule:line-length
-    - secure: ""
+    - secure: "ENDDtkyuwYcIykCEyzSw6azZnb+2ZOTQo/fiZroCsPoVetCgyH6rrt1Stmyd6pXxtA3cpN4VnySs9sGJwNIOmP/DBb9koAiyUkJ3y5oB7DqiXXMJTsbkWhPuPYUPFRQYHDZOBPwxiaNs7msD1MI62/fySYmKOvwr3RftZBShNUkj0Owych0GZ/LgF/E2brcKhjjQqeGS9vhDw9SZeTWk22v27IMi/tUAQibhzjlZ9vikdSFm6v8jsksyw5WzqefsTzed7gvxasmpguJ8+f7cMLlWRRMB/3KQYqHEZBFsTMGWEvuQ3KF2AM8LorMEhs2ddqHH5ZuEHNcQjLGsX0nrFtHE2HQpQL6zv8+qxN+5FhY5K3MqCzk5dyOcTcUgn7+E5t9NEVlpIGle0m/Vjg0woGBNDNg0qkLXpXCYQQuu/p5FcZ5JjuH+wnXsrSouwgS2YK71gabeMLPAVr1GpaYXnkJcNNJE/R4s3XKfCIl+98JL9k3Snti5XrMCHT2RNdZL+Be0oj90dKznlWdiDWUUWvwP5LUdpDsAVIYl0/wHaejNPzW+vtRAcx9ATRw7gfr/GYtz7jDXQtwKCo2G6MSMqSVObqImd1JQCrWcqg5CszJyoYEVWbKyuiaJigYeDkc2icCDKL4FFY1QAxJBbUR7fGSUe40iBZSTZbostfqulGA="
 
 cache:
   # More time is needed for caching due to the sheer size of the conda env.
