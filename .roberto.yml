@@ -4,7 +4,7 @@ conda:
 project:
   name: cgrid
   packages:
-    - conda_name: cgrid
+    - dist_name: cgrid
       tools:
         - write-cmake-version
         - cardboardlint-static
@@ -16,7 +16,7 @@ project:
         - build-conda
         - deploy-conda
         - deploy-github
-    - conda_name: python-cgrid
+    - dist_name: python-cgrid
       path: python-cgrid
       tools:
         - write-py-version
