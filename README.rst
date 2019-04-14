@@ -1,76 +1,43 @@
-|Travis|
-|Conda|
-|PythonConda|
-|Codecov|
-|CondaVersion|
+.. image:: https://travis-ci.org/theochem/cgrid.svg?branch=master
+    :target: https://travis-ci.org/theochem/cgrid
+.. image:: https://img.shields.io/codecov/c/github/theochem/cgrid/master.svg
+    :target: https://codecov.io/gh/theochem/cgrid
+.. image:: https://img.shields.io/conda/v/theochem/cgrid.svg
+    :target: https://anaconda.org/theochem/cgrid
+.. image:: https://img.shields.io/conda/vn/theochem/python-cgrid.svg
+    :target: https://anaconda.org/theochem/python-cgrid
+.. image:: https://img.shields.io/conda/pn/theochem/cgrid.svg
+    :target: https://anaconda.org/theochem/cgrid
+.. image:: https://img.shields.io/github/release/theochem/cgrid.svg
+    :target: https://github.com/theochem/cgrid/releases
 
-QCGrids is a numerical integration library for quantum chemistry.
+CGrid is a library for for molecular numerical integration.
 
-Dependencies
+Installation
 ============
 
--  celllists, python-celllists
--  C++11 compiler (tested: GNU and Clang)
--  Python, >=2.7.x, <3.x
--  Numpy, >1.9
--  Cython, >= 0.24.1
+When you are interested in using cgrid (without needing to modify it), you
+can install cgrid with conda. After installing and activating a miniconda
+environment, run:
 
-Runtime environment configuration
-=================================
+.. code-block:: bash
 
-The instructions below explain how to install everything in
-``${HOME}/.local``, such that you do not need root permissions to
-install all the software. To make this work, some environment variables
-must be set, e.g. in your ``~/.bashrc``.
+  conda install -c theochem cgrid python-cgrid
 
-::
+If you are interesed in working on the development of cgrid, you first need
+to check out the latest version from the git repository
 
-    export PATH=${HOME}/.local/bin:${PATH}
-    export LD_LIBRARY_PATH=${HOME}/.local/lib:${HOME}/.local/lib64:${LD_LIBRARY_PATH}
+.. code-block:: bash
 
-Installation of ``qcgrids``
-===========================
+  git clone git@github.com:theochem/cgrid.git
+  cd cgrid
 
-Build (for installation in home directory):
+Then install Roberto and run it in the root of the repository:
 
-::
+.. code-block:: bash
 
-    mkdir build
-    cd build
-    cmake .. -DCMAKE_BUILD_TYPE=release -DCMAKE_INSTALL_PREFIX=${HOME}/.local
-    make
+  pip install --user --upgrade 'roberto<2.0.0'
+  rob quality
 
-Install:
-
-::
-
-    make install
-
-Installation of ``python-qcgrids``
-==================================
-
-In-place build and test
-
-::
-
-    cd python-qcgrids
-    ./setup.py build_ext -i -L${LD_LIBRARY_PATH}
-    nosetests -v
-
-Build and install (into home directory):
-
-::
-
-    ./setup.py build_ext -L${LD_LIBRARY_PATH}
-    ./setup.py install --user
-
-.. |Travis| image:: https://travis-ci.org/theochem/qcgrids.svg?branch=master
-    :target: https://travis-ci.org/theochem/qcgrids
-.. |Codecov| image:: https://img.shields.io/codecov/c/github/theochem/qcgrids/master.svg
-    :target: https://codecov.io/gh/theochem/qcgrids
-.. |Conda| image:: https://img.shields.io/conda/v/theochem/qcgrids.svg
-    :target: https://anaconda.org/theochem/qcgrids
-.. |PythonConda| image:: https://img.shields.io/conda/vn/theochem/python-qcgrids.svg
-    :target: https://anaconda.org/theochem/python-qcgrids
-.. |CondaVersion| image:: https://img.shields.io/conda/pn/theochem/qcgrids.svg
-    :target: https://anaconda.org/theochem/qcgrids
+This will build cgrid in-place and run all tests. More details for
+potential contributors are given in `CONTRIBUTING.rst <CONTRIBUTING.rst>`_.

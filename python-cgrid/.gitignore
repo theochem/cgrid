@@ -1,0 +1,6 @@
+cgrid/ext.cpp
+build
+MANIFEST
+coverage*.xml
+.coverage
+cgrid/version.py

@@ -1,0 +1,31 @@
+conda:
+  channels: [conda-forge, theochem]
+
+project:
+  name: cgrid
+  packages:
+    - conda_name: cgrid
+      tools:
+        - write-cmake-version
+        - cardboardlint-static
+        - cardboardlint-dynamic
+        - build-cmake-inplace
+        - maketest
+        - upload-codecov
+        - build-cmake-source
+        - build-conda
+        - deploy-conda
+        - deploy-github
+    - conda_name: python-cgrid
+      path: python-cgrid
+      tools:
+        - write-py-version
+        - cardboardlint-static
+        - cardboardlint-dynamic
+        - build-py-inplace
+        - pytest
+        - upload-codecov
+        - build-py-source
+        - build-conda
+        - deploy-conda
+        - deploy-github

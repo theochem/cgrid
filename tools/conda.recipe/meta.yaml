@@ -1,31 +1,49 @@
 package:
-  name: qcgrids
+  name: cgrid
   version: "{{ PROJECT_VERSION }}"
 
 source:
   path: ../../
 
 build:
-  script_env:
-   - PROJECT_VERSION
   number: 0
   string: 0
+  script:
+    - rm -rf build
+    - mkdir build
+    - cd build
+    - >-
+      cmake ..
+      -DCMAKE_INSTALL_PREFIX=${PREFIX}
+      -DCMAKE_BUILD_TYPE=release
+      -DCMAKE_OSX_SYSROOT=${CONDA_BUILD_SYSROOT}  # [osx]
+    - VERBOSE=1 make install -j ${CPU_COUNT}
 
 requirements:
   build:
-    - cmake
     - {{ compiler("cxx") }}
     - {{ compiler("c") }}
+  host:
     - cellcutoff
+    - make
+    - cmake
+    - gtest
+    - doxygen
+    - graphviz
   run:
     - cellcutoff
 
+test:
+  commands:
+    - conda inspect linkages cgrid
+    - ${PREFIX}/libexec/cgrid/test_cgrid
+
 about:
-  description: A numerical integration library for quantum chemistry
-  home: https://github.com/theochem/qcgrids
+  description: A library for for molecular numerical integration
+  home: https://github.com/theochem/cgrids
   license: GPL3
   license_file: LICENSE.txt
-  summary: QCGrids is a numerical integration library for quantum chemistry.
+  summary: CGrid is a library for for molecular numerical integration
 
 extra:
   recipe-maintainers: Toon Verstraelen <toon.verstraelen@gmail.com>

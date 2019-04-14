@@ -1,225 +1,85 @@
-env:
-  matrix:
-  - MYCONDAPY=2.7
-  #- MYCONDAPY=3.5
-  #- MYCONDAPY=3.6
-  global:
-    - secure: "k4XK37vv/8HySKJXZmGIXRX+DRt1ZBRSc8M7pYCH3nrYuuO65o6Hziphe1JB/mxp8499aNe008dDPsRSvSHGA/IaNjHfNetok13navlSdfKABzQfENJbRtuFlKq/zC6/pAIAUqqm3LCcMs7kM+2cqIUVv4QIhPhq/HK6TneUWqi0wA9Rg3DavUbAinh1BnxA/f+8he2vZNgsRUfuB4nHpZ3mAPzuwGepQwGpi7eM5CApYfTG7ovlwFXAtaZiyQUxyIuq8E5l2X7RSWlzZ2w+xVJYPFF5B5g/p73U8C2xBxaid3VfXULKxLhXeDRHgpeOVxDZjscekH1Cac+53PDNcIamXPXzgNg4cIWr7OvL/KiWvnIIXO5nsrEUjCWrLiqXyzgbLZZBcBRySQ9CUe5jLNhxI6se1J3Qo7BWnFkPcNELxkUcZyTvZ96DBo7QiDYodE3SDVAtLRxTfpCqea/L3kTvNGlF9bNc5dA8427gAB5sb8FuhEliXArrtet3EK9fYfiaXoiIMJKwxVb7ydu43W/9f986TglGN0pk3tLX0Qg2jsHsyArshSZQJCiNH99KHJnkTwDmYiL2KnBHePHEkILNWpXE4pbwkW9JymQnwVhhmAseXDT+MKC3yyohfkP4wfbzmiNpQ5AKjEpDqx6cI51dh+PL4jfOW3Yct1MSrC4="
-    - secure: "XlRLGJwV1vIaoLRxkd+ISQIKT4+PAPA4Pt8qVlvZ6pNM5v4PpS1t/xoPS0SH+LfPuB+EwjH/yLksM48DA/ZZwsFIUKd6bEjCroaIYwq0xf1d4TirT6n+wjq8HAD8zmO/GA8R6CAjbqBD35ORKxgviVe9j70DtE+aNdnPPYgBz8uJ5EY4MxOW7swTamIV7YAtu+pXKmVT375eB5Kg33Wd16kF9nRSnOS3UuDnK3dovMTPXtQ1dVSiUM37CcJXqXEFYsKXtvxVXJe96XBkj9lkCEVrGV7MWnUtnJKFdXRwuQf2BsdvGrtZWBiJq3XwK6B0nQv8hFYaXeg0PQcnJs/51MrXrVacXWkqs8fFkil0gf9XSAovkEVXn/s/WHKj/JDRnNU6kM7MeIRSY38Rt9VM9K/UzYj8BlkkdCMqWxdDu60a9H6AKmbrz+loWQqB6OAmP/wdsAlG2GH57e3BRY4wno1l4zED3/MmswNOaregy0SEWvtspUzi6foiqw4jh5TM7+wCfe32i2YpLwjIIzJMhNDph2VWch2I9Gcz/i8aQG3Ee7O9miU8Uvcrf8IgBoTtsBf4LiN8JM/ng8jLnGQHWcouwDClziivJs3IOwIVqotqoScbVTaU1NjZuY5cawAS9t/pZ6/h/KLtjMVOnFtYbZA+dz3KnFZtj9BZXLLw7vs="
-    - PROJECT_NAME=qcgrids
-    - PYDIR=python-qcgrids
-    - CONDA_PKG_NAME_CPP=qcgrids
-    - CONDA_PKG_NAME_PY=python-qcgrids
-    - GITHUB_REPO_NAME=theochem/qcgrids
-
-####
-# EVERYTHING BELOW THIS LINE WILL BE COPIED INTO OTHER YMLs
-####
-# V1.0
-
-# Do not use Travis Python to save some time.
-language: generic
-os:
-- linux
-- osx
-osx_image: xcode8.3
-dist: trusty
-sudo: false
-
 matrix:
-  # We only test on Linux with one specific Python version, unless we make a release. All
-  # other cases are allowed to fail and will exit early. With the fast_finish option,
-  # travis will send a status update to github as soon as the non-allowed-to-fail has
-  # finished. This speeds up testing in PRs.
-  #
-  # This is not ideal. It would be better to run just one item from the build matrix when
-  # not preparing a release. This is not possible on Travis. There are several tickets on
-  # travis-ci related to this limitation.
-  #
-  #    https://github.com/travis-ci/travis-ci/issues/7451
-  #    https://github.com/travis-ci/travis-ci/issues/7149
-  #    https://github.com/travis-ci/travis-ci/issues/2778
-  #    ...
-  fast_finish: true
-  allow_failures:
-  - os: osx
+  include:
+    - os: linux
+      dist: xenial
+      language: generic
+      env:
+        - ROBERTO_CONDA_PINNING="python 3.6"
+        - ROBERTO_DEPLOY_BINARY=1
+    - os: linux
+      dist: xenial
+      language: generic
+      env:
+        - ROBERTO_CONDA_PINNING="python 3.7"
+        - ROBERTO_DEPLOY_NOARCH=1
+        - ROBERTO_DEPLOY_BINARY=1
+    - os: osx
+      osx_image: xcode9.4
+      language: generic
+      env:
+        - ROBERTO_CONDA_PINNING="python 3.6"
+        - ROBERTO_DEPLOY_BINARY=1
+    - os: osx
+      osx_image: xcode9.4
+      language: generic
+      env:
+        - ROBERTO_CONDA_PINNING="python 3.7"
+        - ROBERTO_DEPLOY_BINARY=1
+
+env:
+  global:
+    # Install conda in a *sub*directory of a directory cached by travis.
+    - ROBERTO_CONDA_BASE_PATH=${HOME}/cache/miniconda3
+    # Tell Roberto to upload coverage results
+    - ROBERTO_UPLOAD_COVERAGE=1
+    # Build conda packages outside the miniconda tree, to avoid caching.
+    # This makes it possible to still deploy packages after cache cleaning.
+    - CONDA_BLD_PATH=${HOME}/conda-bld
+    # Tell roberto which branch is being merged into, in case of a PR.
+    - ROBERTO_GIT_MERGE_BRANCH=${TRAVIS_BRANCH}
+    # Debugging options
+    # - HUB_VERBOSE=1
+
+    # GITHUB_TOKEN
+    # yamllint disable-line rule:line-length
+    - secure: ""
+    # ANACONDA_API_TOKEN
+    # yamllint disable-line rule:line-length
+    - secure: ""
 
 cache:
+  # More time is needed for caching due to the sheer size of the conda env.
+  timeout: 1000
   directories:
-    - $HOME/download
-    - $HOME/miniconda
-
-before_cache:
-- if ! [[ $TRAVIS_TAG ]]; then rm -rf $HOME/miniconda/conda-bld; fi
-- rm -rf $HOME/miniconda/locks $HOME/miniconda/pkgs $HOME/miniconda/var $HOME/miniconda/conda-meta/history
-- pip uninstall -y cardboardlint # Cardboardlint always installs even if no changes are made.
-
-branches:
-  only:
-    - master
-    - /^[0-9]+\.[0-9]+(\.[0-9]+)?([ab][0-9]+)?$/
-
-before_install:
-- if ! [[ $TRAVIS_TAG || $TRAVIS_OS_NAME == "linux" && $MYCONDAPY == "2.7" ]]; then exit 0; fi
-# Get miniconda. Take the right version, so re-installing python is hopefully not needed.
-- if test -e $HOME/miniconda/bin; then
-    echo "miniconda already installed.";
-  else
-    echo "Installing miniconda.";
-    rm -rf $HOME/miniconda;
-    mkdir -p $HOME/download;
-    if [[ -d $HOME/download/miniconda.sh ]]; then rm -rf $HOME/download/miniconda.sh; fi;
-    if [ "${MYCONDAPY}" = "2.7" ]; then
-      if [ "${TRAVIS_OS_NAME}" = "linux" ]; then
-        wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O $HOME/download/miniconda.sh;
-      else
-        wget https://repo.continuum.io/miniconda/Miniconda2-latest-MacOSX-x86_64.sh -O $HOME/download/miniconda.sh;
-      fi;
-    else
-      if [ "${TRAVIS_OS_NAME}" = "linux" ]; then
-        wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O $HOME/download/miniconda.sh;
-      else
-        wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O $HOME/download/miniconda.sh;
-      fi;
-    fi;
-    bash $HOME/download/miniconda.sh -b -p $HOME/miniconda;
-  fi
-
+    - ${HOME}/cache
 
 install:
-- source $HOME/miniconda/bin/activate
-- hash -r
-
-# Configure conda and get a few essentials
-- conda config --set always_yes yes
-- conda install -q conda conda-build
-- conda config --add channels theochem
-
-# Set the version info from the git tag
-- git fetch origin --tags &&
-  export PROJECT_VERSION=$(python tools/gitversion.py) &&
-  python tools/gitversion.py python > ${PYDIR}/${PROJECT_NAME}/version.py &&
-  python tools/gitversion.py cmake > CMakeListsVersion.txt.in
-
-# Get a list of all build and runtime dependencies.
-# This should become easier, without the copy to conda.recipe.ugly.
-- conda render -f tools/conda.recipe/rendered.yaml tools/conda.recipe
-- conda render -f ${PYDIR}/tools/conda.recipe/rendered.yaml ${PYDIR}/tools/conda.recipe
-- CONDA_DEPENDENCIES=$(python -c "from yaml import load;
-    req1 = load(open('tools/conda.recipe/rendered.yaml'))['requirements'];
-    req2 = load(open('${PYDIR}/tools/conda.recipe/rendered.yaml'))['requirements'];
-    deps = req1['build'] + req1['run'] + req2['build'] + req2['run'];
-    print(' '.join(set(dep.split()[0] for dep in deps if not dep.startswith('${CONDA_PKG_NAME_CPP}'))))")
-
-# Get the right python version for building. This only does something for 3.5.
-# Install extra package needed to make things work. Most things can be listed as
-# dependencies on metal.yaml and setup.py, unless setup.py already imports them.
-# Install conda tools for packaging and uploading
-- conda install -q python=${MYCONDAPY} cppcheck doxygen anaconda-client ${CONDA_DEPENDENCIES}
-# Deactivate build env and reactivate it to refresh compilers.
-- source deactivate && source $HOME/miniconda/bin/activate
-# Install more recent stuff with pip
-- pip install --upgrade pylint codecov coverage pycodestyle pydocstyle
-# Get the latest cpplint
-- wget https://raw.githubusercontent.com/google/styleguide/gh-pages/cpplint/cpplint.py &&
-  chmod +x cpplint.py
-# Show conda info for debugging
-- conda info -a
-
-
-# Install the latest cardboardlinter
-- if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
-    pip install --upgrade git+https://github.com/theochem/cardboardlint.git@master#egg=cardboardlint;
-  fi
+  # Disable deployment when TRAVIS_TAG is not set. This avoids duplicate deployments.
+  - if [[ -z $TRAVIS_TAG ]]; then
+      export ROBERTO_DEPLOY_BINARY=0 ROBERTO_DEPLOY_NOARCH=0;
+    fi
+  # Get a basic python 3 with pip to run roberto
+  - python3 --version
+  - wget --no-clobber -O ${HOME}/cache/get-pip.py https://bootstrap.pypa.io/get-pip.py || true
+  - python3 ${HOME}/cache/get-pip.py --user
+  # - python3 -m pip install 'roberto<2.0.0' --user
+  # Use development version of Roberto to avoid having to make too many releases.
+  - python3 -m pip install git+https://github.com/theochem/roberto#egg=roberto --user
 
 script:
-# Static linting
-# ~~~~~~~~~~~~~~
-- if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
-    cardboardlinter --refspec $TRAVIS_BRANCH -f static &&
-    (cd ${PYDIR}; cardboardlinter --refspec $TRAVIS_BRANCH -f static);
-  fi
-
-# Unit tests and dynamic linting
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-- if [[ $TRAVIS_TAG ]]; then
-    conda build -q tools/conda.recipe &&
-    (cd ${PYDIR}; conda build -q tools/conda.recipe) &&
-    conda install --use-local ${CONDA_PKG_NAME_CPP} ${CONDA_PKG_NAME_PY} &&
-    ${CONDA_PREFIX}/libexec/${PROJECT_NAME}/test_${PROJECT_NAME} &&
-    (cd; nosetests ${PROJECT_NAME} -v --detailed-errors) &&
-    conda uninstall ${CONDA_PKG_NAME_PY} &&
-    conda uninstall ${CONDA_PKG_NAME_CPP};
-  else
-    (mkdir debug; cd debug; CMAKE_PREFIX_PATH=$HOME/miniconda cmake -DCMAKE_BUILD_TYPE=debug ..; VERBOSE=1 make) &&
-    (cd debug; ./${PROJECT_NAME}/tests/test_${PROJECT_NAME}) &&
-
-    if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
-      cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic';
-    fi &&
-
-    (cd ${PYDIR}; PREFIX=$HOME/miniconda python setup.py build_ext -i --define CYTHON_TRACE_NOGIL) &&
-    (cd ${PYDIR};
-     LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../debug/${PROJECT_NAME} nosetests ${PROJECT_NAME}
-         -v --detailed-errors --with-coverage --cover-package=${PROJECT_NAME}
-         --cover-tests --cover-inclusive --cover-branches;
-     coverage xml -i) &&
-
-    if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
-      (cd ${PYDIR}; LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../debug/${PROJECT_NAME}
-       cardboardlinter --refspec $TRAVIS_BRANCH -f 'dynamic');
+  # Instead of simply calling `rob`, we do something that always works on osx too.
+  - if [[ "$TRAVIS_PULL_REQUEST" == "false" ]]; then
+      python3 -m roberto robot;
+    else
+      python3 -m roberto;
     fi
-  fi
 
-# Make CPP and PY source package for github deployment
-- if [[ $TRAVIS_TAG ]]; then
-    (mkdir dist; cd dist; CMAKE_PREFIX_PATH=$HOME/miniconda cmake ..; make sdist) &&
-    (cd ${PYDIR}; python setup.py sdist);
-  fi
-
-after_success:
-# Upload the coverage analysis
-- if ! [[ $TRAVIS_TAG ]]; then
-    codecov --file ${PYDIR}/coverage.xml &&
-    codecov;
-  fi
-
-before_deploy:
-# Try to set some env vars to configure deployment.
-  - export ANACONDA_LABEL_ARG=$(sed -e 's/.*a.*/dev/' -e 's/.*b.*/test/' -e 's/.*.*/main/' <<< ${TRAVIS_TAG})
-
-# In deployment, the env var TRAVIS_TAG contains the name of the current tag, if any.
-deploy:
-- provider: releases
-  skip_cleanup: true
-  api_key: ${GITHUB_TOKEN}
-  file:
-  - dist/${CONDA_PKG_NAME_CPP}-${TRAVIS_TAG}.tar.gz
-  - ${PYDIR}/dist/${CONDA_PKG_NAME_PY}-${TRAVIS_TAG}.tar.gz
-  on:
-    repo: ${GITHUB_REPO_NAME}
-    tags: true
-    condition: "$TRAVIS_TAG != *[ab]* && $MYCONDAPY == 2.7 && $TRAVIS_OS_NAME == linux"
-  prerelease: false
-
-- provider: releases
-  skip_cleanup: true
-  api_key: ${GITHUB_TOKEN}
-  file:
-  - dist/${CONDA_PKG_NAME_CPP}-${TRAVIS_TAG}.tar.gz
-  - ${PYDIR}/dist/${CONDA_PKG_NAME_PY}-${TRAVIS_TAG}.tar.gz
-  on:
-    repo: ${GITHUB_REPO_NAME}
-    tags: true
-    condition: "$TRAVIS_TAG == *[ab]* && $MYCONDAPY == 2.7 && $TRAVIS_OS_NAME == linux"
-  prerelease: true
-
-- provider: script
-  skip_cleanup: true
-  script:
-    anaconda -t $ANACONDA_TOKEN upload --force -l ${ANACONDA_LABEL_ARG}
-    ${HOME}/miniconda/conda-bld/*/${CONDA_PKG_NAME_CPP}-*.tar.bz2
-    ${HOME}/miniconda/conda-bld/*/${CONDA_PKG_NAME_PY}-*.tar.bz2
-  on:
-    repo: ${GITHUB_REPO_NAME}
-    tags: true
+before_cache:
+  - rm -rf ${ROBERTO_CONDA_BASE_PATH}/conda-bld
+  - rm -rf ${ROBERTO_CONDA_BASE_PATH}/locks
+  - rm -rf ${ROBERTO_CONDA_BASE_PATH}/pkgs
+  - rm -rf ${ROBERTO_CONDA_BASE_PATH}/var
+  - rm -rf ${ROBERTO_CONDA_BASE_PATH}/envs/*/conda-bld
+  - rm -rf ${ROBERTO_CONDA_BASE_PATH}/envs/*/locks
+  - rm -rf ${ROBERTO_CONDA_BASE_PATH}/envs/*/pkgs
+  - rm -rf ${ROBERTO_CONDA_BASE_PATH}/envs/*/var

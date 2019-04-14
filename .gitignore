@@ -12,3 +12,5 @@ dist
 cpplint.py
 CMakeListsVersion.txt.in
 .idea
+.pytest_cache
+activate-*-dev-*.sh
