@@ -26,6 +26,10 @@ set(CGRID_VERSION ${GIT_TAG_VERSION})
 set(CGRID_SOVERSION ${GIT_TAG_SOVERSION})
 set(PROJECT_BRIEF "A library for for molecular numerical integration.")
 
+# Make dynamic linking also work on macOS.
+# See https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling#common-questions
+SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
 # General compiler flags
 set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wconversion -Wextra")
 
