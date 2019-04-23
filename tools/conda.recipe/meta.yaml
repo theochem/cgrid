@@ -12,6 +12,14 @@ build:
     - rm -rf build
     - mkdir build
     - cd build
+    # Unset variables on OSX to keep CMake happy and to preserve mental health.
+    # https://docs.conda.io/projects/conda-build/en/latest/user-guide/environment-variables.html
+    # See also
+    # https://github.com/conda/conda-build/issues/3481
+    # https://gitlab.kitware.com/cmake/cmake/issues/17966
+    - unset CXXFLAGS  # [osx]
+    - unset CFLAGS  # [osx]
+    - unset LDFLAGS  # [osx]
     - >-
       cmake ..
       -DCMAKE_INSTALL_PREFIX=${PREFIX}
