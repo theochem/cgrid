@@ -20,7 +20,7 @@
 cmake_minimum_required(VERSION 3.1)
 project(CGrid CXX)
 
-# Version information
+# Get the version from an include file:
 include(CMakeListsVersion.txt.in)
 set(CGRID_VERSION ${GIT_TAG_VERSION})
 set(CGRID_SOVERSION ${GIT_TAG_SOVERSION})
@@ -32,19 +32,23 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wconversion -Wextra")
 # Additional compiler settings when doing a debug build
 string(TOUPPER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE)
 if(CMAKE_BUILD_TYPE STREQUAL "DEBUG")
-    # These settings are only useful in dev mode.
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -pedantic")
     if(CMAKE_COMPILER_IS_GNUCXX)
+        # These settings are only useful in dev mode. For now, only used for
+        # GNU compilers, because the current developers do not actively work
+        # with CLang.
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -pedantic")
         # When coding (debug mode), we want to know when there might be trouble ...
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -coverage")
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_CXX_FLAGS} -coverage")
-        set(CGRID_DO_COVERAGE "ON")
+        # Google test uses comparisons between signed and unsigned ...
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-sign-compare")
     endif()
 endif()
 
 # Compilation of cgrid according to cgrid/CMakeLists.txt
 add_subdirectory(cgrid)
 
+# Documentation with doxygen
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
     configure_file(${PROJECT_SOURCE_DIR}/doxygen.conf.in ${PROJECT_BINARY_DIR}/doxygen.conf @ONLY)
@@ -54,6 +58,7 @@ if(DOXYGEN_FOUND)
 )
 endif(DOXYGEN_FOUND)
 
+# Source package with CPack
 set(CPACK_SOURCE_GENERATOR "TGZ")
 set(CPACK_SOURCE_PACKAGE_FILE_NAME "cgrid-${CGRID_VERSION}")
 set(CPACK_SOURCE_IGNORE_FILES
