@@ -24,14 +24,14 @@ requirements:
     - {{ compiler("cxx") }}
     - {{ compiler("c") }}
   host:
-    - cellcutoff
+    - cellcutoff 0.2.*
     - make
     - cmake
     - gtest
     - doxygen
     - graphviz
   run:
-    - cellcutoff
+    - cellcutoff 0.2.*
 
 test:
   commands:

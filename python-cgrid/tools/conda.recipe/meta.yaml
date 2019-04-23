@@ -24,17 +24,16 @@ requirements:
     - setuptools
     - numpy >=1.0
     - cgrid =={{ PROJECT_VERSION }}
-    - cellcutoff
+    - cellcutoff 0.2.*
   run:
     - cgrid
-    - cellcutoff
-    - python-cellcutoff
+    - cellcutoff 0.2.*
+    - python-cellcutoff 0.2.*
     - python
     - numpy
 
 test:
   requires:
-    - python
     - pytest >=4.2.0
     - pytest-xdist
   commands:
