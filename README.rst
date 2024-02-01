@@ -11,7 +11,7 @@
 .. image:: https://img.shields.io/github/release/theochem/cgrid.svg
     :target: https://github.com/theochem/cgrid/releases
 
-CGrid is a library for for molecular numerical integration.
+`CGrid` is a library for for molecular numerical integration. In general we recommend using the new [grid](grid.qcdevs.org) [repository](https://github.com/theochem/grid). For functionality that is present in both repositories, `CGrid` may have better performance. However, it is not actively maintained or developed.
 
 Installation
 ============
